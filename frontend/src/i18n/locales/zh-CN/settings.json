@@ -73,7 +73,8 @@
       "baseUrlRequired": "请输入 Base URL",
       "apiKeyRequired": "请输入 API Key",
       "updateFailed": "更新失败，请重试"
-    }
+    },
+    "apiKeyAskOwner": "地址已经默认填好，Key 请向站长索取。"
   },
   "chatModels": {
     "title": "对话模型",

@@ -73,7 +73,8 @@
       "baseUrlRequired": "Enter Base URL",
       "apiKeyRequired": "Enter API Key",
       "updateFailed": "Update failed. Please try again."
-    }
+    },
+    "apiKeyAskOwner": "The address is pre-filled; ask the site owner for a key."
   },
   "chatModels": {
     "title": "Chat Models",

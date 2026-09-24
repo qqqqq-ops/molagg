@@ -12,6 +12,12 @@ import { cn } from '@/lib/utils'
 import { userSettingsService } from '@/lib/api/services/userSettings'
 import type { Channel, UpdateChannelDto } from '@/lib/api/types/admin/channels'
 
+/**
+ * 默认地址指向站长自己中转站的渠道（GPT Image → api.opusapi.xyz、Molagg 视频 → molagg.com，见 prisma/default-api-channels.json）。
+ * 地址默认填好，但 key 不预置——要用的人向站长索取，这里提示一句。
+ */
+const OWNER_RELAY_CHANNEL_IDS = new Set(['3', '17'])
+
 const labelClassName = 'block font-ui text-sm font-medium text-stone-700 dark:text-stone-200'
 const inputClassName =
   'w-full rounded-lg border border-stone-200 bg-white px-4 py-2.5 font-mono text-sm text-stone-900 placeholder:text-stone-400 transition-colors focus:border-aurora-purple focus:ring-2 focus:ring-aurora-purple/20 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100 dark:placeholder:text-stone-500'
@@ -129,6 +135,9 @@ export function ChannelModal({
             className={inputClassName}
             required={!channel?.apiKey}
           />
+          {channel && OWNER_RELAY_CHANNEL_IDS.has(String(channel.id)) && !channel.apiKey ? (
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">{t('apiKeyAskOwner')}</p>
+          ) : null}
         </div>
 
         {error ? (
