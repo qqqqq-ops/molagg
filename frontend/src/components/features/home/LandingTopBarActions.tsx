@@ -55,10 +55,10 @@ export function LandingTopBarActions({
         target="_blank"
         rel="noreferrer"
         className={`${styles.capsuleMenuItem} ${styles.capsuleMenuIconItem}`}
-        aria-label="Molagg"
-        title="Molagg"
+        aria-label="OpusAPI"
+        title="OpusAPI"
       >
-        <img src="/icons/molagg.svg" alt="" aria-hidden="true" />
+        <img src="/icons/opusapi.svg" alt="" aria-hidden="true" />
       </a>
     </nav>
   )

@@ -29,7 +29,7 @@ export const Logo = ({ className, variant = 'default' }: LogoProps) => {
       {/* Logo Icon */}
       <div className="relative h-10 w-10 overflow-hidden rounded-xl">
         <img
-          src="/icons/molagg.svg"
+          src="/icons/opusapi.svg"
           alt=""
           className="h-full w-full object-cover"
           aria-hidden="true"

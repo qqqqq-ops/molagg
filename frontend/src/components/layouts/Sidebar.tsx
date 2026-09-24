@@ -153,7 +153,7 @@ export function Sidebar({ forceCollapsed: _forceCollapsed = false }: SidebarProp
   const searchParams = useSearchParams()
 
   const SITE_TITLE = 'Molagg'
-  const RELAY_LABEL = locale.toLowerCase().startsWith('zh') ? 'Molagg 中转站' : 'Molagg relay'
+  const RELAY_LABEL = locale.toLowerCase().startsWith('zh') ? 'OpusAPI 中转站' : 'OpusAPI relay'
   const isCreateRoute = pathname.startsWith(`/${locale}/create`)
   // 创作页缺省就是图片模式，所以非 video 即 image
   const isVideoCreateMode = searchParams.get('mode') === 'video'
@@ -230,7 +230,7 @@ export function Sidebar({ forceCollapsed: _forceCollapsed = false }: SidebarProp
             className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-110"
             aria-label={SITE_TITLE}
           >
-            <img src="/icons/molagg.svg" alt="" className="h-full w-full object-cover" aria-hidden="true" />
+            <img src="/icons/opusapi.svg" alt="" className="h-full w-full object-cover" aria-hidden="true" />
           </Link>
         </TooltipShell>
 
