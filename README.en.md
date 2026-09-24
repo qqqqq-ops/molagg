@@ -23,13 +23,25 @@
 
 ## 🖼️ Screenshots
 
-**Sign-in page**: a dotted globe showing the built-in image and video models.
+**Create · first / last frame**: lock the opening and closing shots with two frames. On the right are real 30-second sample clips; clicking one fills in its prompt and ratio.
 
-![Sign-in page](image/login.jpg)
+![Create · first / last frame](image/create-frames.jpg)
+
+**Create · reference**: upload reference images / video / audio to keep a person, animal or scene consistent. The inset shows the reference image used for the sample.
+
+![Create · reference](image/create-reference.jpg)
+
+**Canvas**: director desk, script, character design, scene, video generation and clip stitching wired into one flow, run in order with Cascade run. Shown: the "short drama" preset.
+
+![Canvas](image/canvas.jpg)
 
 **Home**: one sentence to an image or a video, with sample prompts to try.
 
 ![Home](image/home.jpg)
+
+**Sign-in page**: a dotted globe showing the built-in image and video models.
+
+![Sign-in page](image/login.jpg)
 
 ## ✨ Features
 
