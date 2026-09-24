@@ -556,6 +556,12 @@ export function getAspectRatioOptions(provider?: string): AspectRatioOption[] {
     return NANO_BANANA_ASPECT_RATIO_OPTIONS
   }
 
+  // Molagg 按次 Seedance：中转站只收这 5 种比例，别的会被拒（见后端 src/adapters/molagg）
+  if (normalizedProvider.includes('molagg')) {
+    const allowed = new Set(['', '16:9', '9:16', '1:1', '4:3', '3:4'])
+    return COMMON_ASPECT_RATIO_OPTIONS.filter((option) => allowed.has(option.value))
+  }
+
   // 豆包 / Bytedance / Ark
   if (normalizedProvider.includes('doubao') || normalizedProvider.includes('bytedance') || normalizedProvider.includes('ark')) {
     return [] // 豆包只需要分辨率，不需要比例选项

@@ -354,6 +354,22 @@ export function buildModelCapabilities(model: AiModel, providerConfig?: ModelPro
       return withAdminOverrides(caps, model, remoteModel);
     }
 
+    if (providerKey === 'molagg') {
+      // Molagg 按次 Seedance：只接公网图片直链，本站上传的参考图是本机地址、它下载不到，所以先只开文生视频
+      caps.supports.imageInput = false;
+      caps.supports.multiImageInput = false;
+      caps.operations = [
+        {
+          key: 'molagg.video',
+          execution: 'async',
+          description: 'Molagg Seedance 按次视频（固定 30 秒）',
+          requiredParameters: ['model', 'prompt'],
+          optionalParameters: ['ratio', 'resolution'],
+        },
+      ];
+      return withAdminOverrides(caps, model, remoteModel);
+    }
+
     if (['kling', 'sora', 'veo', 'hailuo', 'vidu'].includes(providerKey)) {
       caps.supports.multiImageInput = true;
       caps.limits.maxInputImages = providerKey === 'kling' || providerKey === 'sora' ? 1 : 4;

@@ -97,5 +97,14 @@
     "timeout": 900000,
     "maxRetry": 3,
     "priority": 100
+  },
+  {
+    "id": 17,
+    "name": "Molagg 视频",
+    "provider": "molagg",
+    "baseUrl": "https://api.molagg.com",
+    "timeout": 900000,
+    "maxRetry": 0,
+    "priority": 100
   }
 ]

@@ -141,5 +141,18 @@
     "webhookRequired": false,
     "isActive": true,
     "sortOrder": 150
+  },
+  {
+    "id": 18,
+    "provider": "molagg",
+    "displayName": "Molagg",
+    "adapterClass": "MolaggVideoAdapter",
+    "icon": null,
+    "supportTypes": ["video"],
+    "defaultParams": null,
+    "paramSchema": null,
+    "webhookRequired": false,
+    "isActive": true,
+    "sortOrder": 150
   }
 ]

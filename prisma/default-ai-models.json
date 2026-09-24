@@ -724,5 +724,27 @@
     "supportsAutoMode": true,
     "maxContextRounds": null,
     "systemPrompt": null
+  },
+  {
+    "id": 49,
+    "name": "Seedance 2.5（Molagg · 30 秒）",
+    "modelKey": "seedance-2-5-special",
+    "icon": "/model-icons/doubao.svg",
+    "type": "video",
+    "provider": "molagg",
+    "channelId": 17,
+    "defaultParams": null,
+    "paramConstraints": null,
+    "isActive": true,
+    "sortOrder": 0,
+    "description": "通过 Molagg 中转站调用的 Seedance 2.5。固定 30 秒一条、按次计费；只做文字生视频，含真人肖像会被拒（失败自动退款）；竖屏目前可能仍出横屏。",
+    "supportsImageInput": false,
+    "supportsResolutionSelect": false,
+    "supportsSizeSelect": false,
+    "supportsQuickMode": true,
+    "supportsAgentMode": true,
+    "supportsAutoMode": true,
+    "maxContextRounds": null,
+    "systemPrompt": null
   }
 ]

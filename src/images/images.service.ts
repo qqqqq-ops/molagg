@@ -7,6 +7,7 @@ import { AdapterFactory } from '../adapters/adapter.factory';
 import { ImageGenerateParams } from '../adapters/base/base-image.adapter';
 import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
 import { LocalTaskRunnerService } from '../local-runner/local-task-runner.service';
+import { UserCredentialsService } from '../credentials/user-credentials.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeImageTask, serializeImageTaskLite } from '../common/serializers/task.serializer';
 import { ImageGenerateDto } from './dto/image-generate.dto';
@@ -25,6 +26,7 @@ export class ImagesService {
     private readonly prisma: PrismaService,
     private readonly projects: ProjectsService,
     private readonly taskRunner: LocalTaskRunnerService,
+    private readonly credentials: UserCredentialsService,
   ) {}
 
   private ensureActiveOwnedTask(task: ImageTask | null, userId: bigint): ImageTask {
@@ -66,7 +68,12 @@ export class ImagesService {
     }
   }
 
-  private async resolveRunnableImageModel(tx: Prisma.TransactionClient, modelId: bigint) {
+  /**
+   * 取能跑的图片模型，渠道换成「这个用户自己填的 Base URL + Key」合并后的版本。
+   * 以前这里直接看全站渠道（api_channels）有没有 key——可个人版的 key 是按用户存的（user_channel_credentials），
+   * 全站渠道永远没 key，于是用户在设置页填好了 key，生图照样报「请先配置渠道」。视频那边一直是按用户合并的。
+   */
+  private async resolveRunnableImageModel(tx: Prisma.TransactionClient, userId: bigint, modelId: bigint) {
     const model = await tx.aiModel.findUnique({
       where: { id: modelId },
       include: { channel: true },
@@ -77,14 +84,11 @@ export class ImagesService {
     if (!isFixedMediaModelId(model.id)) {
       throw new BadRequestException('个人版只支持内置固定图片模型');
     }
-    if (
-      model.channel.status !== ApiChannelStatus.active ||
-      !model.channel.baseUrl.trim() ||
-      !model.channel.apiKey
-    ) {
-      throw new BadRequestException(`请先配置 ${model.channel.name} 渠道的 Base URL 和 API Key`);
+    const channel = await this.credentials.mergeChannel(userId, model.channel);
+    if (channel.status !== ApiChannelStatus.active || !channel.baseUrl.trim() || !channel.apiKey) {
+      throw new BadRequestException(`请先配置 ${channel.name} 渠道的 Base URL 和 API Key`);
     }
-    return model;
+    return { ...model, channel };
   }
 
   private resolveRetryParameters(task: ImageTask, targetModelId: bigint, dto?: RetryImageTaskDto) {
@@ -149,23 +153,7 @@ export class ImagesService {
       if (!user) throw new NotFoundException('User not found');
       if (user.status !== UserStatus.active) throw new ForbiddenException('User is banned');
 
-      const model = await tx.aiModel.findUnique({
-        where: { id: modelId },
-        include: { channel: true },
-      });
-      if (!model) throw new NotFoundException('Model not found');
-      if (!model.isActive) throw new BadRequestException('Model disabled');
-      if (model.type !== AiModelType.image) throw new BadRequestException('Model is not image type');
-      if (!isFixedMediaModelId(model.id)) {
-        throw new BadRequestException('个人版只支持内置固定图片模型');
-      }
-      if (
-        model.channel.status !== ApiChannelStatus.active ||
-        !model.channel.baseUrl.trim() ||
-        !model.channel.apiKey
-      ) {
-        throw new BadRequestException(`请先配置 ${model.channel.name} 渠道的 Base URL 和 API Key`);
-      }
+      const model = await this.resolveRunnableImageModel(tx, userId, modelId);
 
       // Validate params early before creating the local task.
       // Merge model.defaultParams + user parameters, then inject modelKey as provider "model" if not specified.
@@ -272,7 +260,7 @@ export class ImagesService {
       }
 
       const targetModelId = dto?.modelId ? this.parseModelId(dto.modelId) : ownedTask.modelId;
-      const model = await this.resolveRunnableImageModel(tx, targetModelId);
+      const model = await this.resolveRunnableImageModel(tx, userId, targetModelId);
       const nextParameters = this.resolveRetryParameters(ownedTask, targetModelId, dto);
       const mergedParams: ImageGenerateParams = {
         ...(parseSqliteJson<Record<string, unknown>>(model.defaultParams) ?? {}),

@@ -85,7 +85,10 @@ export function getVideoDurationOptions(model: ModelWithCapabilities | undefined
   const name = resolveModelName(model)
   let options: number[]
 
-  if (provider.includes('kling')) {
+  if (provider.includes('molagg')) {
+    // Molagg 按次 Seedance：固定 30 秒一条
+    options = [30]
+  } else if (provider.includes('kling')) {
     const isV3 = name.includes('kling-v3') || name.includes('kling-3') || name.includes('omni')
     options = isV3 ? [5, 10, 15] : [5, 10]
   } else if (provider.includes('hailuo') || provider.includes('minimax')) {

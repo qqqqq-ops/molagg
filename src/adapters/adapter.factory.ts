@@ -8,6 +8,7 @@ import { KlingVideoAdapter } from './kling/kling-video.adapter';
 import { MidjourneyImageAdapter } from './midjourney/midjourney-image.adapter';
 import { NanobananaImageAdapter } from './nanobanana/nanobanana-image.adapter';
 import { QianwenImageAdapter } from './qianwen/qianwen-image.adapter';
+import { MolaggVideoAdapter } from './molagg/molagg-video.adapter';
 import { SoraVideoAdapter } from './sora/sora-video.adapter';
 import { VeoVideoAdapter } from './veo/veo-video.adapter';
 import { ViduVideoAdapter } from './vidu/vidu-video.adapter';
@@ -43,6 +44,7 @@ export class AdapterFactory {
     ['hailuo', HailuoVideoAdapter],
     ['minimax', HailuoVideoAdapter],
     ['vidu', ViduVideoAdapter],
+    ['molagg', MolaggVideoAdapter],
   ]);
 
   static createImageAdapter(provider: string, channel: ApiChannel): BaseImageAdapter {

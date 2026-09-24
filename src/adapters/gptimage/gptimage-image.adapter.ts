@@ -4,6 +4,25 @@ import { BaseImageAdapter, ImageGenerateParams, TaskStatusResponse, ValidationRe
 
 const DEFAULT_GPT_IMAGE_MODEL = 'gpt-image-2-all';
 
+/**
+ * 同一个 GPT Image 2，不同中转站叫法不一样：有的叫 gpt-image-2-all，有的（比如 opusapi）只认 gpt-image-2。
+ * 中转站回「模型不存在」时换另一个名字再发一次——「不存在」是网关直接拒掉、没开始生成、不扣费，
+ * 所以这次重发不会多花钱。只在这一种错误上重发，别的错误（参数、额度、审核）照原样抛出。
+ */
+const GPT_IMAGE_MODEL_ALIASES: Record<string, string> = {
+  'gpt-image-2-all': 'gpt-image-2',
+  'gpt-image-2': 'gpt-image-2-all',
+};
+
+function isModelNotFoundError(error: unknown): boolean {
+  const response = (error as { response?: { status?: number; data?: unknown } })?.response;
+  if (!response || ![400, 404, 503].includes(response.status ?? 0)) return false;
+  const data = (response.data ?? {}) as { error?: { code?: unknown; message?: unknown }; message?: unknown };
+  const code = String(data.error?.code ?? '');
+  const message = String(data.error?.message ?? data.message ?? '');
+  return code === 'model_not_found' || /model_not_found|不存在或已下架|does not exist/i.test(message);
+}
+
 type OpenAIImageDataItem = {
   url?: string;
   b64_json?: string;
@@ -113,8 +132,24 @@ function toDataUrlFromB64(b64: string) {
   return `data:image/png;base64,${v}`;
 }
 
+function resolveGptImageModel(params: ImageGenerateParams): string {
+  const p = params as Record<string, unknown>;
+  return asString(p.model) ?? asString(p.gptImageModel) ?? asString(p.modelId) ?? DEFAULT_GPT_IMAGE_MODEL;
+}
+
 export class GptImageAdapter extends BaseImageAdapter {
   async submitTask(params: ImageGenerateParams): Promise<string> {
+    try {
+      return await this.submitOnce(params);
+    } catch (error) {
+      const current = resolveGptImageModel(params);
+      const alias = GPT_IMAGE_MODEL_ALIASES[current];
+      if (!alias || !isModelNotFoundError(error)) throw error;
+      return this.submitOnce({ ...params, model: alias } as ImageGenerateParams);
+    }
+  }
+
+  private async submitOnce(params: ImageGenerateParams): Promise<string> {
     const op = getOperation(params);
 
     if (op === 'generations') {
@@ -199,8 +234,7 @@ export class GptImageAdapter extends BaseImageAdapter {
       prompt: params.prompt,
     };
 
-    const model = asString((params as any).model) ?? asString((params as any).gptImageModel) ?? asString((params as any).modelId);
-    body.model = model ?? DEFAULT_GPT_IMAGE_MODEL;
+    body.model = resolveGptImageModel(params);
 
     const n = asNumber((params as any).n ?? (params as any)['n']);
     body.n = n ?? 1;
@@ -253,8 +287,7 @@ export class GptImageAdapter extends BaseImageAdapter {
       form.append('mask', blob, `mask.${ext}`);
     }
 
-    const model = asString((params as any).model) ?? asString((params as any).gptImageModel);
-    form.append('model', model ?? DEFAULT_GPT_IMAGE_MODEL);
+    form.append('model', resolveGptImageModel(params));
 
     const n = asNumber((params as any).n ?? (params as any)['n']);
     if (n !== undefined) form.append('n', String(n));

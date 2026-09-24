@@ -348,7 +348,10 @@ export class LocalTaskRunnerService {
     model: { provider: string; modelKey?: string | null },
   ) {
     let delayMs = 5_000;
-    const deadline = Date.now() + 20 * 60_000;
+    // Molagg 按次 Seedance 文档写明「可能耗时数分钟至一小时以上」：20 分钟就判超时的话，
+    // 上游照样出片照样扣费，本站却已经不等了——所以这条线多等一会儿
+    const waitMinutes = String(model.provider ?? '').toLowerCase() === 'molagg' ? 90 : 20;
+    const deadline = Date.now() + waitMinutes * 60_000;
 
     while (Date.now() < deadline) {
       await sleep(delayMs);
