@@ -3,419 +3,114 @@
 </p>
 
 <p align="center">
-  <img src="frontend/public/icons/icon-192x192.png" width="96" height="96" alt="FlowMuse logo" />
+  <img src="frontend/public/icons/opusapi.svg" width="96" height="96" alt="Molagg logo" />
 </p>
 
-<h1 align="center">FlowMuse</h1>
+<h1 align="center">Molagg</h1>
 
 <p align="center">
-  A local-first AI image and video creation workspace that brings prompts, generation tasks, project assets, chat workflows, and a desktop app into one place.
+  An AI creation workbench built around video: make clips one at a time on the create page, or wire a whole pipeline on the canvas and run it in batches.
 </p>
 
 <p align="center">
-  <a href="https://github.com/hjxwz123/FlowMuseGallery">
-    <img alt="GitHub Repo" src="https://img.shields.io/badge/GitHub-FlowMuseGallery-181717?style=flat-square&logo=github" />
-  </a>
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=111" />
   <img alt="Vite" src="https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=fff" />
   <img alt="NestJS" src="https://img.shields.io/badge/NestJS-10-E0234E?style=flat-square&logo=nestjs" />
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-local-003B57?style=flat-square&logo=sqlite" />
-  <img alt="Electron" src="https://img.shields.io/badge/Electron-ready-47848F?style=flat-square&logo=electron&logoColor=fff" />
-</p>
-
-<p align="center">
-  <a href="#-quick-start">Quick Start</a>
-  ·
-  <a href="#-screenshots">Screenshots</a>
-  ·
-  <a href="#-features">Features</a>
-  ·
-  <a href="#-core-modules">Core Modules</a>
-  ·
-  <a href="#-desktop-app">Desktop App</a>
-  ·
-  <a href="#-project-structure">Project Structure</a>
 </p>
 
 ---
 
 ## 🖼️ Screenshots
 
-FlowMuse is centered around a creation workspace. It connects the home entry, quick generation, conversational workflows, an online canvas, and task tracking into a local-first creative pipeline.
+**Sign-in page**: a dotted globe showing the built-in image and video models.
 
-![FlowMuse Home](image/index.jpg)
+![Sign-in page](image/login.jpg)
+
+**Home**: one sentence to an image or a video, with sample prompts to try.
+
+![Home](image/home.jpg)
 
 ## ✨ Features
 
-| Capability | Description |
+Side nav, top to bottom: Library, Create (image / video / chat), Canvas, Task queue, Tutorial. On phones it becomes a bottom tab bar.
+
+| Area | What it does |
 | --- | --- |
-| Local-first | SQLite stores data, local `uploads/` stores generated outputs and uploaded assets, and the desktop app writes into the system user data directory. |
-| Browser and desktop | The same codebase runs as a browser service or as a packaged Electron app for macOS / Windows. |
-| Unified creation entry | Image creation, video creation, references, project context, and prompt optimization live in one workspace. |
-| Conversational workflows | Supports chat models, file uploads, project imports, image agents, video storyboard planning, and automated creation flows. |
-| Project asset memory | Projects can store descriptions, assets, documents, inspirations, project-level prompts, and historical outputs. |
-| Trackable tasks | Image / video tasks are managed together with status, results, failure reasons, retry, delete, and download actions. |
-| Built-in prompt library | Image and video prompts are loaded from local JSON files, with search, filtering, and one-click application. |
-| Optional COS storage | Local storage is the default; Tencent Cloud COS can be configured when public asset URLs are needed. |
+| Home | Quick image or video from one sentence |
+| Create | Video only, in two modes: first/last frame, and reference |
+| Canvas | Chain text, image and video nodes into a flow and run it in order |
+| Chat | Generate images and scripts by chatting, or run a full character → storyboard → video flow |
+| Task queue | Progress, failure reasons, download, retry, "make similar" for every job |
+| Library | All works and uploaded materials, organised by project |
+| Tutorial | How to write prompts and what to change when a result is off |
 
-## 🧭 App Navigation
+The UI follows the system light / dark setting and supports Chinese and English.
 
-| Page | Purpose |
-| --- | --- |
-| Home | Shows FlowMuse entry points and a local artwork hero carousel. |
-| Gallery | Browse completed local image and video works in a masonry layout. |
-| Quick Mode | Start image or video generation tasks directly. |
-| Workflow Mode | Use conversation to drive image agents, video storyboards, and automated creation. |
-| Online Canvas | Sketch, annotate, compose layouts, export PNGs, or save results to a project. |
-| Projects | Manage project descriptions, assets, documents, inspirations, and project-level prompts. |
-| Task Center | Review task status, failure reasons, results, and follow-up actions. |
-| Settings | Configure chat models, media providers, and optional COS storage. |
+### Create page (video)
 
-## 🧩 Core Modules
+| Mode | Use it when | You provide |
+| --- | --- | --- |
+| First / last frame | The opening and closing shots must look a certain way | First frame + last frame + prompt |
+| Reference | A person, animal, product or scene must stay consistent | Reference image / video / audio + prompt |
 
-### Quick Mode
+- Generate a frame straight into a first/last-frame slot.
+- Director assistant turns a rough idea into a detailed prompt.
+- Each mode shows 4 real 30-second sample clips; clicking one fills in its prompt and ratio.
+- Switching models never drops uploaded materials; unsupported materials are reported when you press generate.
 
-![Quick Mode](image/fasemode.jpg)
+### Canvas
 
-- Image creation: text-to-image, image-to-image, reference images, multiple models, aspect ratio, and size parameters.
-- Video creation: text-to-video, image-to-video, reference image / video / audio inputs, and model-specific parameters.
-- Project context: reuse assets from projects to keep creations consistent within the same theme.
-- Prompt optimization: expand short descriptions into richer visual prompts.
-- Prompt library: search, filter, and apply prompts from local JSON data.
+- Left panel tabs: Build (nodes and workflow presets), Assistant (chat to create, connect and edit nodes), Assets (workflow templates, past works, generation log), Versions (snapshots, diff, restore).
+- Cascade run: runs every generator in dependency order, batch by batch, after a preflight check and a confirmation showing the task count and estimated cost; stops if a batch fails.
+- Tidy layout, groups (⌘G), collapse / expand, snap to grid, alignment guides, minimap, ⌘K search.
+- JSON import / export / merge, PNG export of the whole canvas. Autosaved to the backend.
+- The assistant only builds the canvas. It never starts a paid generation; a person always presses that button.
 
-### Creative Workflow
+## 🔑 First run: add your keys
 
-![Chat Creation](image/chat.jpg)
+Sign up (email + password of at least 8 characters). The first account is the admin; every later account has its own data. Then open **System settings → Image/Video** and fill in the API key for:
 
-- Multi-turn chat and conversation history.
-- Chat model selection and ordering.
-- Project context import.
-- Image uploads as visual references.
-- Document uploads as contextual material.
-- Create image tasks directly inside chat.
-- Plan video storyboards and submit video tasks inside chat.
-- Automated video flows organize task parameters based on storyboard planning, previous shots, tail-frame images, and model capabilities.
+| Channel | Used for | Base URL (pre-filled) |
+| --- | --- | --- |
+| GPT Image | Images | `https://api.opusapi.xyz` |
+| Molagg Video | Videos | `https://molagg.com` |
 
-![Automated Workflow](image/automode.jpg)
+Keys are stored encrypted under your own account. Other built-in channels (Doubao, Wanx, Kling, Sora, Veo, Hailuo, Vidu, NanoBanana, Midjourney, Qwen) work once you add your own base URL and key.
 
-### Projects
+## 💰 Pricing
 
-- Create, edit, and delete projects.
-- Upload image, video, and document assets.
-- Import historical generated works.
-- Search and filter project assets.
-- Generate project descriptions with AI.
-- Manage project inspirations and video storyboard prompts.
-- Maintain project-level image / video prompts for more stable style consistency.
+Prices are shown before generating, only when you are connected to these relays:
 
-### Online Canvas
+| Item | Relay | Price |
+| --- | --- | --- |
+| Image · standard | opusapi.xyz | ¥0.4 each |
+| Image · realistic+ | opusapi.xyz | ¥0.8 each |
+| Video · Seedance 2.5 (30 s) | molagg.com | ¥6 per clip |
 
-![Online Canvas](image/canvas.jpg)
-
-- Freehand brush, eraser, rectangle, circle, line, text, and image import.
-- Select, drag, scale, rotate, undo, and redo.
-- Export PNG.
-- Import / export canvas JSON.
-- Save canvas results as project image assets.
-
-### Task Center
-
-![Task Center](image/task.jpg)
-
-- Unified image and video task list.
-- Filter by all, pending, generating, completed, and failed.
-- Failed tasks show clear failure reasons.
-- Cancel, retry, delete, and download actions.
-- Midjourney tasks support upscale, variation, reroll, inpainting, and other follow-up actions.
-
-## 🤖 Models and Providers
-
-FlowMuse has fixed built-in media providers. Users only need to enter each provider's `Base URL` and `API Key` in settings.
-
-| Provider | Purpose |
-| --- | --- |
-| NanoBanana | Image generation and editing |
-| Midjourney | Image generation and follow-up actions |
-| GPT Image | Image generation |
-| Volcengine Doubao | Image / video generation |
-| Tongyi Qianwen | Image generation |
-| Tongyi Wanxiang | Video generation |
-
-Built-in media models:
-
-| Type | Models |
-| --- | --- |
-| Image | NanoBanana, Nano Banana Pro, NanoBanana 2, GPT Image 2, Midjourney, Seedream 4.5, Seedream 5.0 Lite, Qwen Image 2.0 Pro, Wanxiang 2.7 Image |
-| Video | HappyHorse 1.0, Seedance 2.0, Seedance 2.0 Fast, Wanxiang 2.7 Video, Wanxiang 2.7 Text-to-Video, Wanxiang 2.7 Image-to-Video |
-
-## 💬 Chat File Uploads
-
-| Limit | Value |
-| --- | --- |
-| Max files per message | `5` |
-| Max file size | `20MB` |
-| Supported extensions | `txt`, `md`, `csv`, `json`, `html`, `pdf`, `docx`, `pptx`, `xlsx` |
-
-Uploaded documents are parsed into text and used as chat context.
-
-## 🏗️ Tech Stack
-
-| Layer | Technology |
-| --- | --- |
-| Frontend | React 19, Vite 6, TypeScript, Tailwind CSS |
-| Backend | NestJS 10, TypeScript |
-| Database | SQLite, Prisma |
-| Desktop | Electron, electron-builder |
-| File processing | Sharp, Multer, PDF / DOCX / PPTX / XLSX parsing |
-| Video composition | FFmpeg, FFprobe (required when merging storyboard videos) |
-| Task execution | Backend in-process local task runner |
-
-## 🚀 Quick Start
-
-### 1. Install dependencies
+## 🚀 Quick start
 
 ```bash
 npm install
-cd frontend && npm install
-cd ..
-```
-
-### 2. Install FFmpeg (required for composition)
-
-If you only use image generation, video generation, and regular task management, you can skip this step at first. If you need video composition features such as "Merge Storyboard", the runtime environment must be able to access the `ffmpeg` and `ffprobe` commands.
-
-macOS:
-
-```bash
-brew install ffmpeg
-```
-
-Ubuntu / Debian:
-
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
-
-Windows:
-
-```powershell
-winget install Gyan.FFmpeg
-```
-
-Verify the commands after installation:
-
-```bash
-ffmpeg -version
-ffprobe -version
-```
-
-### 3. Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Common configuration:
-
-```env
-DATABASE_URL="file:./data/flowmuse.sqlite"
-PORT=3000
-FRONTEND_PORT=3001
-BACKEND_URL="http://127.0.0.1:3000"
-APP_PUBLIC_URL="http://localhost:3000"
-FRONTEND_URL="http://localhost:5173"
-APP_ENCRYPTION_KEY="change-me-32-bytes-minimum-length"
-```
-
-> `APP_ENCRYPTION_KEY` encrypts stored API keys. Replace it with your own long random string before first launch.
-
-### 4. Initialize the database
-
-```bash
+cd frontend && npm install && cd ..
+cp .env.example .env          # set APP_ENCRYPTION_KEY to a long random string, and never change it afterwards
 npm run prisma:generate
 npm run prisma:init
+npm run dev:all               # frontend http://localhost:5173, API http://localhost:3000/api
 ```
 
-Initialization creates the SQLite schema and writes fixed providers, built-in models, and local user data.
+Production: `npm run build:all && npm run start:all` (frontend on `http://localhost:3001`). Docker: `docker compose up -d --build`.
 
-### 5. Start browser mode
+FFmpeg is only needed for merging storyboard clips.
 
-```bash
-npm run dev:all
-```
+Reference mode sends reference image URLs upstream, so they must be publicly reachable. When running locally, Molagg is not offered in reference mode; it becomes available once the site is deployed on a public domain.
 
-Default addresses:
+Offline checks: `cd frontend && npm run checks`.
 
-| Service | Address |
-| --- | --- |
-| Frontend | `http://localhost:5173` |
-| Backend API | `http://localhost:3000/api` |
-| Local assets | `http://localhost:3000/uploads/...` |
+## 🙏 Credits
 
-## 📦 Production
-
-Build:
-
-```bash
-npm run build:all
-```
-
-Start:
-
-```bash
-npm run start:all
-```
-
-Default production frontend address:
-
-```text
-http://localhost:3001
-```
-
-## 🖥️ Desktop App
-
-Run in development:
-
-```bash
-npm run desktop:dev
-```
-
-Generate an unpacked app directory:
-
-```bash
-npm run desktop:pack
-```
-
-Generate installers:
-
-```bash
-npm run desktop:dist
-```
-
-Output directory:
-
-```text
-release/
-```
-
-Current desktop packaging targets:
-
-| System | Artifact |
-| --- | --- |
-| macOS | `dmg` |
-| Windows | `nsis` installer |
-
-## 🐳 Docker
-
-```bash
-docker compose up -d --build
-```
-
-Default ports:
-
-| Service | Port |
-| --- | --- |
-| Backend | `3000` |
-| Frontend | `3001` |
-
-Persistent directories:
-
-| Directory | Contents |
-| --- | --- |
-| `./data/sqlite` | SQLite database |
-| `./data/uploads` | Generated outputs and uploaded assets |
-
-Override ports:
-
-```bash
-BACKEND_PORT=6000 FRONTEND_PORT=6001 docker compose up -d --build
-```
-
-## 💾 Data Directories
-
-### Browser Service Mode
-
-| Content | Default Location |
-| --- | --- |
-| SQLite | `prisma/data/flowmuse.sqlite` |
-| Local assets | `uploads/` |
-
-Relative paths in `DATABASE_URL` are resolved from the directory that contains `prisma/schema.prisma`.
-
-### Desktop App Mode
-
-| System | User Data Directory |
-| --- | --- |
-| macOS | `~/Library/Application Support/FlowMuse/` |
-| Windows | `%APPDATA%/FlowMuse/` |
-| Linux | `~/.config/FlowMuse/` |
-
-Desktop data directory contents:
-
-| Path | Contents |
-| --- | --- |
-| `data/flowmuse.sqlite` | SQLite database |
-| `uploads/` | Local generated outputs and uploaded assets |
-| `security/encryption-key` | API key encryption key |
-
-## 📁 Project Structure
-
-```text
-electron/                       Electron desktop entry
-frontend/                       React + Vite frontend
-frontend/public/json/           Local prompt data
-frontend/public/icons/          App icons
-frontend/public/model-icons/    Model icons
-image/                          README screenshots
-prisma/                         Prisma schema, SQLite init SQL, default model configuration
-scripts/                        Initialization scripts
-src/                            NestJS backend
-src/adapters/                   Model adapters
-src/chat/                       Chat, file parsing, automated workflows
-src/images/                     Image tasks
-src/videos/                     Video tasks
-src/projects/                   Projects and asset management
-src/storage/                    Local and COS storage
-src/local-runner/               Local task runner
-uploads/                        Local assets directory for browser service mode
-release/                        Desktop packaging output
-```
-
-## 🧠 Prompt Data
-
-| Type | Path |
-| --- | --- |
-| Image prompts | `frontend/public/json/prompts.json` |
-
-Image prompt source:
-
-```text
-https://github.com/glidea/banana-prompt-quicker
-```
-
-Prompt data is read directly from the local JSON file at runtime. No remote prompt fetch is required.
-
-## 🧰 Common Commands
-
-```bash
-npm run prisma:generate
-npm run prisma:init
-npm run dev:all
-npm run build:all
-npm run start:all
-npm run desktop:dev
-npm run desktop:pack
-npm run desktop:dist
-cd frontend && npm run type-check
-```
-
-## 🔗 Repository
-
-```text
-https://github.com/hjxwz123/FlowMuseGallery
-```
+Molagg is built on the open-source project [FlowMuseGallery](https://github.com/hjxwz123/FlowMuseGallery).
 
 ## 📄 License
 
-FlowMuse is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT, see [LICENSE](LICENSE).

@@ -3,172 +3,142 @@
 </p>
 
 <p align="center">
-  <img src="frontend/public/icons/icon-192x192.png" width="96" height="96" alt="FlowMuse logo" />
+  <img src="frontend/public/icons/opusapi.svg" width="96" height="96" alt="Molagg logo" />
 </p>
 
-<h1 align="center">FlowMuse</h1>
+<h1 align="center">Molagg</h1>
 
 <p align="center">
-  本地优先的 AI 图片与视频创作工作台。把提示词、生成任务、项目素材、聊天工作流和桌面应用整合到一个地方。
+  围绕视频的 AI 创作工作台：创作页一条一条出视频，画布把整套流程搭起来批量跑。
 </p>
 
 <p align="center">
-  <a href="https://github.com/hjxwz123/FlowMuseGallery">
-    <img alt="GitHub Repo" src="https://img.shields.io/badge/GitHub-FlowMuseGallery-181717?style=flat-square&logo=github" />
-  </a>
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=111" />
   <img alt="Vite" src="https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=fff" />
   <img alt="NestJS" src="https://img.shields.io/badge/NestJS-10-E0234E?style=flat-square&logo=nestjs" />
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-local-003B57?style=flat-square&logo=sqlite" />
-  <img alt="Electron" src="https://img.shields.io/badge/Electron-ready-47848F?style=flat-square&logo=electron&logoColor=fff" />
 </p>
 
 <p align="center">
-  <a href="#-快速开始">快速开始</a>
-  ·
   <a href="#-界面预览">界面预览</a>
   ·
-  <a href="#-功能亮点">功能亮点</a>
+  <a href="#-功能">功能</a>
   ·
-  <a href="#-核心模块">核心模块</a>
+  <a href="#-第一次使用填-key">第一次使用</a>
   ·
-  <a href="#-桌面应用">桌面应用</a>
+  <a href="#-价格">价格</a>
   ·
-  <a href="#-目录结构">目录结构</a>
+  <a href="#-快速开始">快速开始</a>
 </p>
 
 ---
 
 ## 🖼️ 界面预览
 
-FlowMuse 以创作工作台为核心，把首页入口、快速生成、对话式工作流、在线画板和任务追踪串成一条本地优先的创作链路。
+**登录页**：模型点阵地球，展示内置的图片和视频模型。
 
-![FlowMuse 首页](image/index.jpg)
+![登录页](image/login.jpg)
 
-## ✨ 功能亮点
+**首页**：一句话出图或出视频，没思路可以点下面的样本。
 
-| 能力 | 说明 |
+![首页](image/home.jpg)
+
+## ✨ 功能
+
+左侧导航从上到下：资产库、创作（创作图片 / 创作视频 / 对话创作）、画布、任务队列、教程。手机上变成底部标签栏。
+
+| 板块 | 一句话说明 |
 | --- | --- |
-| 本地优先 | SQLite 保存数据，本地 `uploads/` 保存生成结果和上传资源，桌面端写入系统用户数据目录。 |
-| 双端运行 | 同一套代码支持浏览器服务模式，也支持 Electron 打包为 macOS / Windows 桌面应用。 |
-| 统一创作入口 | 图片创作、视频创作、参考素材、项目上下文和提示词优化集中在一个工作台。 |
-| 对话式工作流 | 支持聊天模型、文件上传、项目导入、图片 Agent、视频分镜规划和自动创作流程。 |
-| 项目资产沉淀 | 项目可保存描述、素材、文档、灵感、项目级提示词和历史作品。 |
-| 任务可追踪 | 图片 / 视频任务统一管理，展示状态、结果、失败原因，并支持重试、删除和下载。 |
-| 内置提示词库 | 图片和视频提示词从本地 JSON 加载，支持搜索、筛选和一键套用。 |
-| 可选 COS | 默认本地保存；需要公网素材 URL 时可配置腾讯云 COS。 |
+| 首页 | 一句话快速出图或出视频，适合随手试试 |
+| 创作页 | 专门出视频，分「首尾帧创作」和「参考创作」 |
+| 画布 | 把文字、出图、出视频连成流程，一键按顺序跑完 |
+| 对话创作 | 跟 AI 聊着出图、写脚本，或全自动串联角色 / 分镜 / 视频 |
+| 任务队列 | 所有生成任务的进度、失败原因、下载、重试、做同款 |
+| 资产库 | 所有作品和上传的素材，按项目分文件夹 |
+| 教程 | 怎么写提示词、结果不对先改哪里 |
 
-## 🧭 应用导航
+界面默认跟随系统浅色 / 深色，支持中文 / English。
 
-| 页面 | 用途 |
+### 首页
+
+- 选「图片生成」或「视频生成」，写一句描述就能出。可以粘贴或上传参考图。
+- 图片可选 1–4 张；用 GPT Image 时可选比例（1:1 / 3:2 / 2:3），连 opusapi 时还能选「通用」或「写实增强」。
+- 视频选 Molagg 时固定 30 秒一条。
+- 价格直接写在生成框下面。结果出现在输入框下方。
+
+### 创作页（视频）
+
+| 模式 | 适合做什么 | 要准备什么 |
+| --- | --- | --- |
+| 首尾帧创作 | 开头和结尾画面必须是指定的样子 | 首帧图 + 尾帧图，再写提示词 |
+| 参考创作 | 让人物、动物、产品或场景在视频里保持一致 | 参考图片 / 视频 / 音频 + 提示词 |
+
+- 首尾帧槽位里可以直接「生成这一帧」，出好的图自动放进去。
+- 「导演助手」：填想法、主体、场景、动作，选风格、镜头、节奏，AI 帮你写成专业提示词。
+- 右侧每个模式有 4 条真实生成的 30 秒样片，点一下就把它的提示词和比例带到左边。
+- 换模型时已上传的素材不会被清掉；模型不支持某个素材时，点生成会直接提示。
+
+### 画布
+
+把「写脚本 → 出分镜图 → 每张图生成视频」这样的整套流程搭起来一次跑完。连线表示把前一个节点的内容交给后一个。
+
+- **左侧栏 4 个标签**：搭积木（新建节点、工作流预设）、助手（用对话让 AI 帮你建节点、连线、改参数）、素材（工作流模板、以前生成的作品、生成日志）、版本（存快照、对比、一键恢复）。
+- **级联执行**：按连线先后一批批跑完所有生成节点。开始前先检查，再弹窗写明要提交几个任务、预计花多少钱，确认后才跑；某一批失败，后面的自动停下。
+- **视图**：整理画布、按功能成组（⌘G）、折叠 / 展开、网格吸附、对齐参考线、小地图、⌘K 搜索节点。
+- **导入导出**：JSON 备份 / 合并、导出整张画布为 PNG。
+- 画布自动保存到后端，关掉页面再打开还在。
+- 助手只会搭画布，**不会替你点生成**。每一次真正花钱的生成都要人来按。
+
+### 任务队列
+
+- 顶部统计进行中 / 已完成 / 失败 / 全部，点一下就筛出这一类；可按提示词、图片 / 视频、项目筛选。
+- 每条任务显示状态、大概进度和剩余时间，失败会写明原因。
+- 详情里能复制提示词、打开原文件、下载、重试（图片可换模型）、删除；GPT Image 的图还能「编辑图片」。
+
+### 资产库和项目
+
+- 按项目分文件夹，切换「作品 / 素材」，按类型筛选、按提示词搜索、上传素材。
+- 每件作品都能「做同款」，把提示词、模型和参数带到创作页。
+- 项目里可以写描述、整理素材，在「灵感与分镜提示词」里写剧情让 AI 生成分镜提示词。
+
+### 对话创作
+
+需要先在「系统设置 → 对话模型」配好对话模型。
+
+| 模式 | 做什么 |
 | --- | --- |
-| 首页 | 展示 FlowMuse 入口和本地作品 Hero 轮播。 |
-| 画廊 | 以瀑布流查看本地完成的图片和视频作品。 |
-| 快速模式 | 直接发起图片或视频生成任务。 |
-| 工作流模式 | 通过对话推进图片 Agent、视频分镜和自动创作。 |
-| 在线画板 | 画草图、标注、排构图，并导出 PNG 或保存到项目。 |
-| 项目管理 | 管理项目描述、素材、文档、灵感和项目级提示词。 |
-| 任务中心 | 查看任务状态、失败原因、结果和后续操作。 |
-| 系统设置 | 配置对话模型、媒体渠道和可选 COS 存储。 |
+| Agent 模式 | 说一句话、带上参考图，AI 直接出图 |
+| 全自动模式 | 选好项目和模型，AI 按「角色 → 分镜 → 视频」一路做下来 |
+| 聊天模式 | 写脚本、写提示词、问问题 |
 
-## 🧩 核心模块
+对话里可以上传图片和文档（txt / md / csv / json / html / pdf / docx / pptx / xlsx，单条最多 5 个、每个 20MB 以内）。
 
-### 快速模式
+## 🔑 第一次使用：填 Key
 
-![快速模式](image/fasemode.jpg)
+1. 注册账号（邮箱 + 至少 8 位密码）。第一个注册的账号是管理员；之后每个人的数据互相独立。
+2. 左下角用户菜单 →「系统设置」→「图片/视频」标签。
+3. 在下面两个渠道里填 API Key，Base URL 已经默认填好：
 
-- 图片创作：文生图、图生图、参考图输入、多模型选择、比例和尺寸参数。
-- 视频创作：文生视频、图生视频、参考图片 / 视频 / 音频输入、模型参数适配。
-- 项目上下文：从项目中选择可复用素材，让同一主题的创作保持一致。
-- 提示词优化：把简短描述扩展为更完整、更具画面感的提示词版本。
-- 网络提示词：从本地 JSON 提示词库中搜索、筛选并套用提示词。
+| 渠道 | 用途 | Base URL |
+| --- | --- | --- |
+| GPT Image | 出图 | `https://api.opusapi.xyz` |
+| Molagg 视频 | 出视频 | `https://molagg.com` |
 
-### 创作工作流
+4. 点「测试连接」，再点「保存」，卡片显示「已接入」就好了。
 
-![对话创作](image/chat.jpg)
+Key 加密保存在你自己的账号下。其他渠道（豆包、万相、可灵、Sora、Veo、海螺、Vidu、NanoBanana、Midjourney、通义千问）也内置了，填上自己的 Base URL 和 Key 就能用。
 
-- 多轮聊天和会话历史。
-- 聊天模型选择与排序。
-- 项目上下文导入。
-- 图片上传作为视觉参考。
-- 文档上传作为上下文材料。
-- 在聊天中直接创建图片任务。
-- 在聊天中规划视频分镜并提交视频任务。
-- 自动视频流程会根据镜头规划、上一镜视频、尾帧图片和模型能力组织任务参数。
+## 💰 价格
 
-![自动工作流](image/automode.jpg)
+只有连的是下面两个中转站时，界面上才会在生成前显示价格。
 
-### 项目管理
+| 内容 | 中转站 | 价格 |
+| --- | --- | --- |
+| 图片 · 通用 | opusapi.xyz | ¥0.4 / 张 |
+| 图片 · 写实增强 | opusapi.xyz | ¥0.8 / 张 |
+| 视频 · Seedance 2.5（30 秒） | molagg.com | ¥6 / 条 |
 
-- 新建、编辑、删除项目。
-- 上传图片、视频和文档素材。
-- 导入历史生成作品。
-- 搜索和筛选项目素材。
-- 使用 AI 生成项目描述。
-- 管理项目灵感和视频分镜提示词。
-- 维护项目级图片 / 视频提示词，让同一项目的风格更稳定。
-
-### 在线画板
-
-![在线画板](image/canvas.jpg)
-
-- 自由画笔、橡皮擦、矩形、圆形、直线、文本和图片导入。
-- 支持选中、拖动、缩放、旋转、撤销和重做。
-- 支持导出 PNG。
-- 支持导入 / 导出画板 JSON。
-- 支持把画板结果保存为项目图片素材。
-
-### 任务中心
-
-![任务中心](image/task.jpg)
-
-- 图片和视频任务统一列表。
-- 按全部、等待中、生成中、已完成、失败筛选。
-- 失败任务展示明确失败原因。
-- 支持取消、重试、删除和下载。
-- Midjourney 任务支持放大、变体、重新生成、局部重绘等后续操作。
-
-## 🤖 模型与渠道
-
-FlowMuse 固定内置媒体渠道，用户只需要在设置里填写对应渠道的 `Base URL` 和 `API Key`。
-
-| 渠道 | 用途 |
-| --- | --- |
-| NanoBanana | 图片生成与编辑 |
-| Midjourney | 图片生成与后续操作 |
-| GPT Image | 图片生成 |
-| 火山豆包 | 图片 / 视频生成 |
-| 通义千问 | 图片生成 |
-| 通义万相 | 视频生成 |
-
-内置媒体模型：
-
-| 类型 | 模型 |
-| --- | --- |
-| 图片 | NanoBanana、Nano Banana Pro、NanoBanana 2、GPT Image 2、Midjourney、Seedream 4.5、Seedream 5.0 Lite、Qwen Image 2.0 Pro、万相 2.7 Image |
-| 视频 | HappyHorse 1.0、Seedance 2.0、Seedance 2.0 Fast、万相2.7 Video、万相2.7 文生视频、万相2.7-图生视频 |
-
-## 💬 聊天文件上传
-
-| 限制 | 值 |
-| --- | --- |
-| 单条消息最多文件数 | `5` |
-| 单文件大小上限 | `20MB` |
-| 支持扩展名 | `txt`、`md`、`csv`、`json`、`html`、`pdf`、`docx`、`pptx`、`xlsx` |
-
-上传后的文档会被解析为文本，并作为聊天上下文参与回答。
-
-## 🏗️ 技术栈
-
-| 层 | 技术 |
-| --- | --- |
-| 前端 | React 19、Vite 6、TypeScript、Tailwind CSS |
-| 后端 | NestJS 10、TypeScript |
-| 数据库 | SQLite、Prisma |
-| 桌面端 | Electron、electron-builder |
-| 文件处理 | Sharp、Multer、PDF / DOCX / PPTX / XLSX 解析 |
-| 视频合成 | FFmpeg、FFprobe（合并分镜视频时必须安装） |
-| 任务执行 | 后端进程内本地任务执行器 |
+一条 30 秒视频一般要 10–30 分钟。上游明确失败会自动退款。
 
 ## 🚀 快速开始
 
@@ -180,43 +150,13 @@ cd frontend && npm install
 cd ..
 ```
 
-### 2. 安装 FFmpeg（有合成需求时必须）
+需要合并分镜视频时，还要装 FFmpeg（macOS：`brew install ffmpeg`；Ubuntu：`sudo apt install ffmpeg`）。
 
-如果只使用图片生成、视频生成和普通任务管理，可以先跳过这一步；如果需要使用“合并全部分镜”等视频合成功能，运行环境必须能访问 `ffmpeg` 和 `ffprobe` 命令。
-
-macOS：
-
-```bash
-brew install ffmpeg
-```
-
-Ubuntu / Debian：
-
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
-
-Windows：
-
-```powershell
-winget install Gyan.FFmpeg
-```
-
-安装后确认命令可用：
-
-```bash
-ffmpeg -version
-ffprobe -version
-```
-
-### 3. 配置环境变量
+### 2. 配置环境变量
 
 ```bash
 cp .env.example .env
 ```
-
-常用配置：
 
 ```env
 DATABASE_URL="file:./data/flowmuse.sqlite"
@@ -228,196 +168,76 @@ FRONTEND_URL="http://localhost:5173"
 APP_ENCRYPTION_KEY="change-me-32-bytes-minimum-length"
 ```
 
-> `APP_ENCRYPTION_KEY` 用于加密保存 API Key，建议首次运行前替换成自己的长随机字符串。
+> `APP_ENCRYPTION_KEY` 用来加密保存 API Key。第一次运行前换成自己的长随机字符串，之后不要再改，否则已存的 Key 解不开。
 
-### 4. 初始化数据库
+### 3. 初始化数据库
 
 ```bash
 npm run prisma:generate
 npm run prisma:init
 ```
 
-初始化会创建 SQLite 表结构，并写入固定渠道、内置模型和本地用户数据。
+### 4. 启动
 
-### 5. 启动浏览器模式
+开发：
 
 ```bash
-npm run dev:all
+npm run dev:all        # 前端 http://localhost:5173，后端 http://localhost:3000/api
 ```
 
-默认地址：
-
-| 服务 | 地址 |
-| --- | --- |
-| 前端 | `http://localhost:5173` |
-| 后端 API | `http://localhost:3000/api` |
-| 本地资源 | `http://localhost:3000/uploads/...` |
-
-## 📦 生产运行
-
-构建：
+生产：
 
 ```bash
 npm run build:all
+npm run start:all      # 前端 http://localhost:3001
 ```
 
-启动：
-
-```bash
-npm run start:all
-```
-
-默认生产前端地址：
-
-```text
-http://localhost:3001
-```
-
-## 🖥️ 桌面应用
-
-开发运行：
-
-```bash
-npm run desktop:dev
-```
-
-生成未压缩应用目录：
-
-```bash
-npm run desktop:pack
-```
-
-生成安装包：
-
-```bash
-npm run desktop:dist
-```
-
-输出目录：
-
-```text
-release/
-```
-
-当前桌面打包目标：
-
-| 系统 | 产物 |
-| --- | --- |
-| macOS | `dmg` |
-| Windows | `nsis` 安装包 |
-
-## 🐳 Docker
+Docker：
 
 ```bash
 docker compose up -d --build
 ```
 
-默认端口：
+### 数据放在哪
 
-| 服务 | 端口 |
+| 内容 | 位置 |
 | --- | --- |
-| 后端 | `3000` |
-| 前端 | `3001` |
+| 数据库 | `prisma/data/flowmuse.sqlite`（Docker：`./data/sqlite`） |
+| 生成结果和上传文件 | `uploads/`（Docker：`./data/uploads`） |
 
-持久化目录：
-
-| 目录 | 内容 |
-| --- | --- |
-| `./data/sqlite` | SQLite 数据库 |
-| `./data/uploads` | 生成结果和上传资源 |
-
-覆盖端口：
-
-```bash
-BACKEND_PORT=6000 FRONTEND_PORT=6001 docker compose up -d --build
-```
-
-## 💾 数据目录
-
-### 浏览器服务模式
-
-| 内容 | 默认位置 |
-| --- | --- |
-| SQLite | `prisma/data/flowmuse.sqlite` |
-| 本地资源 | `uploads/` |
-
-`DATABASE_URL` 的相对路径以 `prisma/schema.prisma` 所在目录为基准。
-
-### 桌面应用模式
-
-| 系统 | 用户数据目录 |
-| --- | --- |
-| macOS | `~/Library/Application Support/FlowMuse/` |
-| Windows | `%APPDATA%/FlowMuse/` |
-| Linux | `~/.config/FlowMuse/` |
-
-桌面数据目录内容：
-
-| 路径 | 内容 |
-| --- | --- |
-| `data/flowmuse.sqlite` | SQLite 数据库 |
-| `uploads/` | 本地生成结果和上传资源 |
-| `security/encryption-key` | API Key 加密密钥 |
-
-## 📁 目录结构
-
-```text
-electron/                       Electron 桌面端入口
-frontend/                       React + Vite 前端
-frontend/public/json/           本地提示词数据
-frontend/public/icons/          应用图标
-frontend/public/model-icons/    模型图标
-image/                          README 项目截图
-prisma/                         Prisma schema、SQLite 初始化 SQL、默认模型配置
-scripts/                        初始化脚本
-src/                            NestJS 后端
-src/adapters/                   模型适配器
-src/chat/                       对话、文件解析、自动工作流
-src/images/                     图片任务
-src/videos/                     视频任务
-src/projects/                   项目与素材管理
-src/storage/                    本地与 COS 存储
-src/local-runner/               本地任务执行器
-uploads/                        浏览器服务模式下的本地资源目录
-release/                        桌面打包产物
-```
-
-## 🧠 提示词数据
-
-| 类型 | 路径 |
-| --- | --- |
-| 图片提示词 | `frontend/public/json/prompts.json` |
-
-图片提示词来源：
-
-```text
-https://github.com/glidea/banana-prompt-quicker
-```
-
-运行时直接读取本地 JSON 文件，不需要远程拉取提示词数据。
+参考创作需要把参考图地址发给上游，上游要能从公网打开。所以本机运行时，Molagg 暂时不在参考创作里；部署到有域名的服务器后再开放。
 
 ## 🧰 常用命令
 
 ```bash
-npm run prisma:generate
-npm run prisma:init
 npm run dev:all
 npm run build:all
 npm run start:all
-npm run desktop:dev
-npm run desktop:pack
-npm run desktop:dist
 cd frontend && npm run type-check
+cd frontend && npm run checks   # 离线自测，不需要浏览器和真实渠道
 ```
 
-## 🔗 仓库
+## 📁 目录结构
 
 ```text
-https://github.com/hjxwz123/FlowMuseGallery
+frontend/                          React + Vite 前端
+frontend/src/components/features/  各页面：home / create / canvas-v2 / tasks / chat ...
+frontend/public/showcase/          创作页展示样片
+prisma/                            数据库结构、默认渠道和模型
+src/                               NestJS 后端
+src/adapters/                      各家模型的接口适配
+src/canvas/                        画布保存、版本快照、模板
+src/chat/                          对话、文件解析、自动工作流
+src/images/  src/videos/           图片 / 视频任务
+src/projects/                      项目与素材
+src/local-runner/                  本地任务执行器
+docs/                              开发记录和交接文档
 ```
 
-友情链接：[LinuxDo](https://linux.do/)
+## 🙏 致谢
+
+Molagg 基于开源项目 [FlowMuseGallery](https://github.com/hjxwz123/FlowMuseGallery) 改造。
 
 ## 📄 License
 
-FlowMuse is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT，见 [LICENSE](LICENSE)。
