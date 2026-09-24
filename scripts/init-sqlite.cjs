@@ -43,6 +43,16 @@ async function main() {
     for (const statement of splitSqlStatements(migrationSql)) {
       await prisma.$executeRawUnsafe(statement);
     }
+
+    const userColumns = await prisma.$queryRawUnsafe('PRAGMA table_info("users")');
+    const hasPasswordHash = Array.isArray(userColumns)
+      && userColumns.some((column) => column && column.name === 'password_hash');
+    if (!hasPasswordHash) {
+      await prisma.$executeRawUnsafe('ALTER TABLE users ADD COLUMN password_hash TEXT');
+    }
+    await prisma.$executeRawUnsafe(
+      'CREATE UNIQUE INDEX IF NOT EXISTS "users_email_key" ON "users"("email")',
+    );
   } finally {
     await prisma.$disconnect();
   }

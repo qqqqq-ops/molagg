@@ -104,7 +104,7 @@ export function AspectRatioSelect({
         <div
           ref={menuRef}
           className={cn(
-            'overflow-y-auto rounded-xl border-2 border-stone-200 bg-white/95 shadow-canvas-lg backdrop-blur-md dark:border-stone-600 dark:bg-stone-800/95 dark:shadow-canvas-dark-lg',
+            'enhanced-select-menu overflow-y-auto rounded-xl border-2 border-stone-200 bg-white/95 shadow-canvas-lg backdrop-blur-md dark:border-stone-600 dark:bg-stone-800/95 dark:shadow-canvas-dark-lg',
             'animate-in fade-in duration-200',
             openUpwards ? 'slide-in-from-bottom-2' : 'slide-in-from-top-2'
           )}

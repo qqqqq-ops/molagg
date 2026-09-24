@@ -4,6 +4,7 @@ import { AiModelType, ApiChannelStatus, ChatMessageRole, ProjectAssetKind, TaskS
 import axios from 'axios';
 import { Response } from 'express';
 
+import { UserCredentialsService } from '../credentials/user-credentials.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { ImagesService } from '../images/images.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -167,6 +168,7 @@ export class ChatService {
     private readonly encryption: EncryptionService,
     private readonly settings: SystemSettingsService,
     private readonly aiSettings: AiSettingsService,
+    private readonly credentials: UserCredentialsService,
     private readonly chatFileParser: ChatFileParserService,
     private readonly imagesService: ImagesService,
     private readonly videosService: VideosService,
@@ -1051,8 +1053,8 @@ export class ChatService {
       if (!conversation.model.isActive) {
         throw new BadRequestException('Conversation model is inactive');
       }
-      if (conversation.model.channel.status !== ApiChannelStatus.active) {
-        throw new BadRequestException('Model channel is inactive');
+      if (conversation.model.channel.status !== ApiChannelStatus.active || !conversation.model.channel.apiKey) {
+        throw new BadRequestException('请先在设置中配置对话模型的 Base URL 和 API Key');
       }
 
       const content = (dto.content ?? '').trim();
@@ -4522,6 +4524,13 @@ export class ChatService {
     });
 
     if (!conversation) throw new NotFoundException('Conversation not found');
-    return conversation;
+    const channel = await this.credentials.mergeChannel(userId, conversation.model.channel);
+    return {
+      ...conversation,
+      model: {
+        ...conversation.model,
+        channel,
+      },
+    };
   }
 }

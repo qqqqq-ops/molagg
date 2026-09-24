@@ -39,14 +39,15 @@
   },
   "projectList": {
     "title": "My projects",
-    "empty": "No projects yet. Create one to get started.",
-    "emptyDescription": "Projects keep descriptions, assets, and imported works ready for reuse in future creations.",
+    "empty": "No projects yet",
+    "emptyDescription": "A project keeps its description, assets and imported works. Create one, and you can pull its assets and context straight into the create page.",
     "cardHint": "Open a card to manage that project like a folder",
     "openHint": "Open a project like a folder and continue organizing your assets",
     "noDescription": "No project description yet",
     "assetCount": "{count} assets",
     "updatedAt": "Updated {date}",
-    "open": "Open project"
+    "open": "Open project",
+    "emptyAltAction": "Go create first"
   },
   "detail": {
     "title": "Project details",

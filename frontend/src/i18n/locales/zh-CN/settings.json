@@ -27,6 +27,7 @@
     },
     "apiBaseUrl": "API 基地址",
     "apiKey": "API Key",
+    "chatHint": "这里只配对话和提示词优化。图片、视频模型请切换到「图片/视频」页，按渠道填写自己的 Key。",
     "promptOptimizeModel": "提示词优化模型",
     "storage": {
       "title": "腾讯云 COS",
@@ -39,6 +40,10 @@
     }
   },
   "media": {
+    "title": "图片 / 视频渠道",
+    "description": "每个渠道用你自己的中转站 Base URL 和 API Key。同一提供商下的图片、视频模型共用这一组密钥。",
+    "configured": "已接入",
+    "notConfigured": "未接入",
     "channels": {
       "fields": {
         "name": "渠道名称",

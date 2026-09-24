@@ -278,10 +278,15 @@ export function ProjectsContent() {
               title={t('projectList.empty')}
               description={t('projectList.emptyDescription')}
               action={
-                <Button onClick={() => setShowCreateProjectModal(true)} className="gap-2 px-5">
-                  <Plus className="h-4 w-4" />
-                  {t('createProject.action')}
-                </Button>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <Button onClick={() => setShowCreateProjectModal(true)} className="gap-2 px-5">
+                    <Plus className="h-4 w-4" />
+                    {t('createProject.action')}
+                  </Button>
+                  <Button variant="secondary" onClick={() => router.push(`/${locale}/create`)}>
+                    {t('projectList.emptyAltAction')}
+                  </Button>
+                </div>
               }
             />
           ) : (

@@ -5,8 +5,10 @@ import { AdapterFactory } from '../adapters/adapter.factory';
 import { BaseImageAdapter, ImageGenerateParams, TaskStatusResponse } from '../adapters/base/base-image.adapter';
 import { BaseVideoAdapter, VideoGenerateParams } from '../adapters/base/base-video.adapter';
 import { mergeTaskProviderData } from '../common/utils/task-provider-data.util';
+import { attachTaskProgress } from '../common/utils/task-progress.util';
 import { asSqliteJsonRecord, toSqliteJson } from '../common/utils/sqlite-json.util';
 import { AiModelType, ApiChannelStatus, TaskStatus } from '../common/prisma-enums';
+import { UserCredentialsService } from '../credentials/user-credentials.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProjectsService } from '../projects/projects.service';
@@ -92,6 +94,7 @@ export class LocalTaskRunnerService {
     private readonly encryption: EncryptionService,
     private readonly storage: StorageService,
     private readonly projects: ProjectsService,
+    private readonly credentials: UserCredentialsService,
   ) {}
 
   async enqueueImage(taskId: bigint | string, retryCount?: number) {
@@ -192,8 +195,7 @@ export class LocalTaskRunnerService {
 
     const model = await this.prisma.aiModel.findUnique({ where: { id: task.modelId } });
     if (!model) throw new Error('Model not found');
-    const channel = await this.prisma.apiChannel.findUnique({ where: { id: task.channelId } });
-    if (!channel) throw new Error('Channel not found');
+    const channel = await this.credentials.resolveChannel(task.userId, task.channelId);
     this.assertRunnableMediaModel(model, AiModelType.image);
     this.assertRunnableChannel(channel);
 
@@ -254,7 +256,8 @@ export class LocalTaskRunnerService {
 
     while (Date.now() < deadline) {
       await sleep(delayMs);
-      delayMs = Math.min(45_000, Math.ceil(delayMs * 1.8));
+      // 上限原为 45s；为了进度能跟得上，压到 15s（查状态接口一般不计费）
+      delayMs = Math.min(15_000, Math.ceil(delayMs * 1.8));
 
       const latestState = await this.getImageTaskState(taskId);
       if (!latestState) return;
@@ -283,7 +286,7 @@ export class LocalTaskRunnerService {
         return;
       }
 
-      await this.updateImageProviderData(taskId, providerData);
+      await this.updateImageProviderData(taskId, attachTaskProgress(providerData, status, providerTaskId));
     }
 
     await this.markImageFailed(taskId, 'Task timeout');
@@ -295,8 +298,7 @@ export class LocalTaskRunnerService {
 
     const model = await this.prisma.aiModel.findUnique({ where: { id: task.modelId } });
     if (!model) throw new Error('Model not found');
-    const channel = await this.prisma.apiChannel.findUnique({ where: { id: task.channelId } });
-    if (!channel) throw new Error('Channel not found');
+    const channel = await this.credentials.resolveChannel(task.userId, task.channelId);
     this.assertRunnableMediaModel(model, AiModelType.video);
     this.assertRunnableChannel(channel);
 
@@ -350,7 +352,8 @@ export class LocalTaskRunnerService {
 
     while (Date.now() < deadline) {
       await sleep(delayMs);
-      delayMs = Math.min(90_000, Math.ceil(delayMs * 1.8));
+      // 上限原为 90s；为了进度能跟得上，压到 20s（查状态接口一般不计费）
+      delayMs = Math.min(20_000, Math.ceil(delayMs * 1.8));
 
       const latestState = await this.getVideoTaskState(taskId);
       if (!latestState) return;
@@ -383,7 +386,7 @@ export class LocalTaskRunnerService {
         return;
       }
 
-      await this.updateVideoNonTerminalState(taskId, status.status, providerData);
+      await this.updateVideoNonTerminalState(taskId, status.status, attachTaskProgress(providerData, status, providerTaskId));
     }
 
     await this.markVideoFailed(taskId, 'Task timeout');
@@ -452,7 +455,11 @@ export class LocalTaskRunnerService {
         status: initialStatus?.status === TaskStatus.pending ? TaskStatus.pending : TaskStatus.processing,
         startedAt: task.startedAt ?? new Date(),
         errorMessage: null,
-        providerData: initialStatus?.providerData ? toSqliteJson(mergeTaskProviderData(task.providerData, initialStatus.providerData)) : undefined,
+        providerData: initialStatus?.providerData
+          ? toSqliteJson(
+              attachTaskProgress(mergeTaskProviderData(task.providerData, initialStatus.providerData), initialStatus, providerTaskId),
+            )
+          : undefined,
       },
     });
   }

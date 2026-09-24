@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "created_at": "2026-09-16",
+    "format": "seedance",
+    "note": "Video quick-start templates. Each card uses a Seedance-style prompt and should bind to a Seedance / matching video model."
+  },
+  "templates": [
+    {
+      "title": "海边故事",
+      "category": "Seedance 2.5",
+      "tags": ["seedance-2-5", "story"],
+      "seedance": {
+        "prompt": "黄昏海边，一位穿亚麻衬衫的女孩赤脚走过湿沙滩，镜头从远景缓缓推近到侧脸特写。风吹起头发，远处有渔船灯火。电影感暖色调，镜头稳定，10秒内完成远到近的叙事。"
+      },
+      "source": { "inspired_by": "Seedance 2.5", "url": "" },
+      "preview": { "thumbnail_url": "" }
+    },
+    {
+      "title": "产品广告",
+      "category": "Seedance 2.0",
+      "tags": ["seedance-2-0-260128", "product"],
+      "seedance": {
+        "prompt": "黑色大理石台面上的玻璃香水瓶，一束光从左侧扫过瓶身，液体里有细小气泡缓缓上升。镜头环绕半圈，高端广告质感，浅景深，8秒。"
+      },
+      "source": { "inspired_by": "Seedance 2.0", "url": "" },
+      "preview": { "thumbnail_url": "" }
+    },
+    {
+      "title": "雨夜赛博朋克街头",
+      "category": "Seedance 2.5",
+      "tags": ["seedance-2-5", "cinematic"],
+      "seedance": {
+        "prompt": "8秒，16:9。雨夜赛博朋克街头，霓虹招牌倒映在湿漉漉的柏油路上，一名穿黑色长风衣的人撑伞缓慢前行。镜头从远景缓慢推入中景，雨滴与地面积水产生真实反射，背景有轻微车流光轨。电影级构图，青紫色霓虹，高对比，轻微胶片颗粒。无文字，无水印，人物比例稳定。"
+      },
+      "source": { "inspired_by": "Seedance 2.5", "url": "" },
+      "preview": { "thumbnail_url": "" }
+    },
+    {
+      "title": "香水 360° 产品广告",
+      "category": "Seedance 2.0",
+      "tags": ["seedance-2-0-260128", "product_ad"],
+      "seedance": {
+        "prompt": "使用参考图中的香水瓶作为唯一产品主体，6秒高端产品广告。香水瓶放置在黑色镜面亚克力台面上，瓶身缓慢 360 度旋转，周围有轻薄雾气和金色轮廓光。镜头固定在产品正前方，轻微推近，强调玻璃折射、液体质感和瓶盖金属高光。奢侈品广告质感，干净背景，无文字，无水印，产品外形保持一致。"
+      },
+      "source": { "inspired_by": "Seedance 2.0", "url": "" },
+      "preview": { "thumbnail_url": "" }
+    },
+    {
+      "title": "人物动作",
+      "category": "可灵 3.0",
+      "tags": ["kling-v3", "motion"],
+      "seedance": {
+        "prompt": "年轻舞者在雨后霓虹巷子里转身起跳，水花溅起，镜头低角度跟随。竖屏短视频，动作利落，光影鲜明，5秒。"
+      },
+      "source": { "inspired_by": "可灵 3.0", "url": "" },
+      "preview": { "thumbnail_url": "" }
+    },
+    {
+      "title": "山水空镜",
+      "category": "万相 3.0",
+      "tags": ["wan3.0", "landscape"],
+      "seedance": {
+        "prompt": "云海之上的雪山日出，金色阳光从云层缝隙洒下，镜头缓慢横移。写实风光，空气通透，适合空镜，8秒。"
+      },
+      "source": { "inspired_by": "万相 3.0", "url": "" },
+      "preview": { "thumbnail_url": "" }
+    }
+  ]
+}

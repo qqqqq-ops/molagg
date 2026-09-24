@@ -160,7 +160,8 @@
 
 .carouselImageActive {
   opacity: 1;
-  transform: scale(1.045);
+  /* 原版 1.045，用户要求放大更明显 */
+  transform: scale(1.1);
 }
 
 .noiseOverlay {
@@ -201,6 +202,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 28px 40px;
   animation: fadeSlideDown 1s var(--ease-out-expo) 0.3s both;
 }
@@ -209,6 +211,27 @@
   justify-content: center;
   padding-top: 24px;
   padding-bottom: 0;
+}
+
+.topBarSpacer,
+.topBarAuth {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.topBarAuth {
+  justify-content: flex-end;
+}
+
+.homeButton {
+  gap: 8px;
+}
+
+.homeButton svg {
+  width: 18px;
+  height: 18px;
 }
 
 .brand {
@@ -332,6 +355,21 @@
   width: 18px;
   height: 18px;
   stroke-width: 2;
+}
+
+/* 中转站按钮用的是位图化的品牌方标（带底色的圆角方块），
+   比线性图标需要多一点尺寸才压得住视觉重量 */
+.capsuleMenuIconItem img {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.capsuleMenuIconItem:hover img,
+.capsuleMenuIconItem:focus-visible img {
+  transform: scale(1.08);
 }
 
 .enterButton {
@@ -523,12 +561,13 @@
 .heroSection {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 24px;
+  /* 上下对称留白：内容不满一屏时仍居中；出了结果变高后不会顶到固定顶栏下面 */
+  padding: 96px 24px;
 }
 
 .heroSection::after {
@@ -924,6 +963,532 @@
 .submitButton svg {
   width: 22px;
   height: 22px;
+}
+
+.submitButton:disabled {
+  cursor: progress;
+  transform: none;
+}
+
+.heroForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── 就地生成：参考图 / 参数 / 高级版 ───────────────────────── */
+
+.attachButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 10px 0 -14px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+
+.attachButton:hover:not(:disabled),
+.attachButton:focus-visible {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.attachButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+:global(.light) .attachButton {
+  color: rgba(17, 17, 17, 0.5);
+}
+
+:global(.light) .attachButton:hover:not(:disabled),
+:global(.light) .attachButton:focus-visible {
+  color: rgba(17, 17, 17, 0.9);
+  background: rgba(17, 17, 17, 0.06);
+}
+
+.attachButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.referenceRow {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 0 20px;
+}
+
+.referenceThumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+:global(.light) .referenceThumb {
+  border-color: rgba(17, 17, 17, 0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.referenceThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.referenceThumb button {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.optionRow {
+  width: 100%;
+  margin-top: 16px;
+  padding: 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+}
+
+.optionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.optionLabel,
+.optionHint {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.optionHint {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:global(.light) .optionLabel {
+  color: rgba(17, 17, 17, 0.5);
+}
+
+:global(.light) .optionHint {
+  color: rgba(17, 17, 17, 0.7);
+}
+
+.modelSelect,
+.optionChip,
+.advancedButton {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+:global(.light) .modelSelect,
+:global(.light) .optionChip,
+:global(.light) .advancedButton {
+  border-color: rgba(17, 17, 17, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(17, 17, 17, 0.82);
+}
+
+.modelSelect {
+  max-width: 220px;
+  padding: 7px 30px 7px 12px;
+  text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+.modelSelect option {
+  color: #111111;
+}
+
+.optionChip {
+  min-width: 36px;
+  padding: 6px 10px;
+}
+
+.modelSelect:hover,
+.optionChip:hover,
+.advancedButton:hover,
+.advancedButton:focus-visible {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+:global(.light) .modelSelect:hover,
+:global(.light) .optionChip:hover,
+:global(.light) .advancedButton:hover,
+:global(.light) .advancedButton:focus-visible {
+  background-color: rgba(17, 17, 17, 0.06);
+  border-color: rgba(17, 17, 17, 0.16);
+}
+
+.optionChipActive,
+.optionChipActive:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+:global(.light) .optionChipActive,
+:global(.light) .optionChipActive:hover {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+}
+
+.advancedButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px 7px 14px;
+}
+
+.advancedButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+.advancedButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.advancedRow {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 12px 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+:global(.light) .advancedRow {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(17, 17, 17, 0.08);
+}
+
+.ratioNote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.ratioNote strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ratioNoteHint {
+  flex-basis: 100%;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+}
+
+:global(.light) .ratioNote {
+  color: rgba(17, 17, 17, 0.65);
+}
+
+:global(.light) .ratioNote strong {
+  color: #111111;
+}
+
+:global(.light) .ratioNoteHint {
+  color: rgba(17, 17, 17, 0.5);
+}
+
+.advancedCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.18);
+  transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s ease;
+}
+
+.advancedCta:hover,
+.advancedCta:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.3);
+}
+
+.advancedCta:active {
+  transform: scale(0.97);
+}
+
+:global(.light) .advancedCta {
+  background: #111111;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.advancedCta svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── 就地生成：结果区 ─────────────────────────────────────── */
+
+.resultsPanel {
+  width: 100%;
+  margin-top: 28px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(20, 20, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(28px) saturate(1.1);
+  -webkit-backdrop-filter: blur(28px) saturate(1.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+:global(.light) .resultsPanel {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.resultCard {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resultCard[data-mode='video'] {
+  grid-column: span 2;
+  aspect-ratio: 16 / 9;
+}
+
+:global(.light) .resultCard {
+  background: rgba(17, 17, 17, 0.04);
+  border-color: rgba(17, 17, 17, 0.06);
+}
+
+.resultMedia {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+}
+
+.resultMedia img,
+.resultMedia video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.resultPending,
+.resultFailed {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+}
+
+:global(.light) .resultPending,
+:global(.light) .resultFailed {
+  color: rgba(17, 17, 17, 0.65);
+}
+
+.resultFailed {
+  justify-content: flex-start;
+  overflow-y: auto;
+  gap: 6px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.resultFailed strong {
+  color: #f87171;
+  font-size: 0.82rem;
+}
+
+.resultFailed p {
+  margin: 0;
+}
+
+.resultFailedDetail {
+  opacity: 0.7;
+  word-break: break-all;
+}
+
+.resultSpinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: landingSpin 0.8s linear infinite;
+}
+
+@keyframes landingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.resultsFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+
+.resultsLink {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.resultsLink:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+:global(.light) .resultsLink {
+  color: rgba(17, 17, 17, 0.55);
+}
+
+:global(.light) .resultsLink:hover {
+  color: rgba(17, 17, 17, 0.9);
+}
+
+.sampleRow {
+  width: 100%;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.sampleHint {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+:global(.light) .sampleHint {
+  color: rgba(17, 17, 17, 0.48);
+}
+
+.sampleChips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sampleChip {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.25s var(--ease-out-expo), background 0.25s ease, border-color 0.25s ease;
+}
+
+:global(.light) .sampleChip {
+  border-color: rgba(17, 17, 17, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(17, 17, 17, 0.82);
+}
+
+.sampleChip:hover,
+.sampleChip:focus-visible {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+:global(.light) .sampleChip:hover,
+:global(.light) .sampleChip:focus-visible {
+  background: rgba(17, 17, 17, 0.06);
+  border-color: rgba(17, 17, 17, 0.16);
+}
+
+.sampleChip:active {
+  transform: scale(0.97);
 }
 
 .scrollIndicator {
@@ -2164,6 +2729,21 @@
 @media (max-width: 768px) {
   .topBar {
     padding: 20px 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* 窄屏时顶栏换行排布，首页按钮和登录按钮各占一行居中 */
+  .topBarSpacer {
+    flex: 0 0 auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .topBarAuth {
+    flex: 0 0 auto;
+    width: 100%;
+    justify-content: center;
   }
 
   .topBarMenuOnly {
@@ -2204,9 +2784,47 @@
     border-radius: 24px;
   }
 
+  .sampleRow {
+    margin-top: 14px;
+    padding: 0 8px;
+  }
+
+  .sampleChip {
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+
   .submitButton {
     width: 44px;
     height: 44px;
+  }
+
+  .attachButton {
+    margin-left: -12px;
+    margin-right: 6px;
+  }
+
+  .optionRow {
+    margin-top: 12px;
+    gap: 8px 12px;
+  }
+
+  .modelSelect {
+    max-width: 160px;
+  }
+
+  .resultsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .advancedRow {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .advancedCta {
+    justify-content: center;
   }
 
   .headline {
@@ -2458,4 +3076,10 @@
   /* 跑马灯左右两端渐变融入黑底 */
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+/* 进行中卡片里的进度条（组件是 shared/TaskProgress，颜色有兜底） */
+.resultProgress {
+  width: 100%;
+  max-width: 220px;
 }

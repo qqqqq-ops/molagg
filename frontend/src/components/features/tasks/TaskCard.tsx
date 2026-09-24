@@ -11,6 +11,8 @@ import { Button, Card } from '@/components/ui'
 import { imageService, videoService } from '@/lib/api/services'
 import type { ApiTask } from '@/lib/api/types/task'
 import { cn } from '@/lib/utils/cn'
+import { classifyFailureMessage } from '@/lib/utils/failure'
+import { downloadTaskResult } from '@/lib/utils/downloadTask'
 import { MaskEditor } from './MaskEditor'
 import { PromptEditModal } from './PromptEditModal'
 import { ImageRetryModal } from './ImageRetryModal'
@@ -20,10 +22,13 @@ interface TaskCardProps {
   task: ApiTask
   onUpdate: (nextTask?: ApiTask) => void
   onDelete?: () => void
+  /** 任务队列详情抽屉里用：预览、状态、提示词、失败原因由抽屉自己展示，这里只留操作区 */
+  hideSummary?: boolean
 }
 
-export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onUpdate, onDelete, hideSummary = false }: TaskCardProps) {
   const t = useTranslations('tasks')
+  const tFailure = useTranslations('errors.failure')
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [showMaskEditor, setShowMaskEditor] = useState(false)
@@ -43,13 +48,12 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
   const isOperationExpired =
     Number.isFinite(operationBaseMs) && Date.now() - operationBaseMs > 24 * 60 * 60 * 1000
   const isMjActionPending = pendingMjActionId !== null
+  // 上游那一行原始报错先归类，给出「是谁的问题 + 下一步」，原文作为细节保留在后面
   const failureReason = (() => {
-    const raw = task.errorMessage?.trim()
-    if (!raw) return t('failure.unknown')
-    if (raw === 'CANCELED') return t('failure.canceled')
-    if (raw === 'MODEL_REMOVED') return t('failure.modelRemoved')
-    if (raw === 'MODAL') return t('failure.modalRequired')
-    return raw
+    const failure = classifyFailureMessage(task.errorMessage)
+    const reason = tFailure(failure.kind)
+    if (!failure.detail) return reason
+    return `${reason} ${tFailure('detail', { detail: failure.detail })}`
   })()
 
   useEffect(() => {
@@ -300,46 +304,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
   }
 
   // 处理下载
-  const handleDownload = async () => {
-    if (!task.resultUrl) return
-
-    try {
-      // 获取文件扩展名
-      const fileExt = task.type === 'image' ? 'png' : 'mp4'
-      const fileName = `flowmuse_${task.taskNo}_${Date.now()}.${fileExt}`
-
-      // 尝试通过 fetch 下载（支持同源或配置了 CORS 的资源）
-      try {
-        const response = await fetch(task.resultUrl)
-        if (!response.ok) throw new Error('Failed to fetch')
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
-      } catch (fetchError) {
-        // 如果 fetch 失败（CORS 问题），使用直接链接方式
-        console.log('Fetch failed, trying direct link download:', fetchError)
-        const a = document.createElement('a')
-        a.href = task.resultUrl
-        a.download = fileName
-        a.target = '_blank'
-        a.rel = 'noopener noreferrer'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-      }
-    } catch (err) {
-      console.error('Failed to download:', err)
-      alert('下载失败，请在新标签页中打开并手动保存')
-      // 最后的备选方案：在新标签页中打开
-      window.open(task.resultUrl, '_blank', 'noopener,noreferrer')
-    }
-  }
+  const handleDownload = () => downloadTaskResult(task)
 
   // 解析 MJ 按钮
   const mjButtons = task.providerData?.buttons as Array<{
@@ -452,10 +417,10 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
 
   return (
     <>
-    <Card variant="glass" className="relative overflow-hidden">
+    <Card variant="glass" className={cn('relative overflow-hidden', hideSummary && 'task-card-actions-only')}>
       <div className="flex flex-col h-full">
         {/* 预览图 */}
-        {task.status === 'completed' && (task.thumbnailUrl || task.resultUrl) && (
+        {!hideSummary && task.status === 'completed' && (task.thumbnailUrl || task.resultUrl) && (
           <div className="relative w-full mb-4 rounded-lg overflow-hidden">
             {task.type === 'image' ? (
               <div className="aspect-video bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100">
@@ -502,7 +467,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
         )}
 
         {/* 调试信息：显示为什么没有预览图 */}
-        {task.status === 'completed' && !task.resultUrl && !task.thumbnailUrl && (
+        {!hideSummary && task.status === 'completed' && !task.resultUrl && !task.thumbnailUrl && (
           <div className="relative w-full aspect-video mb-4 rounded-lg overflow-hidden bg-yellow-50 border-2 border-yellow-200 flex items-center justify-center">
             <div className="text-center p-4">
               <p className="text-yellow-800 font-medium mb-2">⚠️ 任务已完成但无结果文件</p>
@@ -514,6 +479,8 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
 
         {/* 任务信息 */}
         <div className="flex-1">
+          {!hideSummary && (
+          <>
           {/* 状态标签 */}
           <div className="flex items-center justify-between mb-3">
             <span
@@ -560,6 +527,8 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
               {new Date(task.createdAt).toLocaleDateString()}
             </div>
           </div>
+          </>
+          )}
 
           {/* Midjourney U/V 按钮 */}
           {task.status === 'completed' &&
@@ -567,7 +536,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             mjButtons &&
             mjButtons.length > 0 && (
               <div className="mb-4">
-                <p className="font-ui text-xs font-medium text-stone-700 mb-2">
+                <p className="font-ui text-xs font-medium text-stone-700 dark:text-stone-300 mb-2">
                   {t('midjourney.actions')}:
                 </p>
                 {isOperationExpired ? (
@@ -600,7 +569,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             task.provider === 'gptimage' &&
             task.resultUrl && (
               <div className="mb-4">
-                <p className="font-ui text-xs font-medium text-stone-700 mb-2">
+                <p className="font-ui text-xs font-medium text-stone-700 dark:text-stone-300 mb-2">
                   GPT Image 操作:
                 </p>
                 <Button
@@ -634,7 +603,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             task.provider === 'nanobanana' &&
             task.resultUrl && (
               <div className="mb-4">
-                <p className="font-ui text-xs font-medium text-stone-700 mb-2">
+                <p className="font-ui text-xs font-medium text-stone-700 dark:text-stone-300 mb-2">
                   Nanobanana 操作:
                 </p>
                 <Button

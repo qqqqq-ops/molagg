@@ -485,3 +485,2824 @@
   border-color: rgb(68 64 60 / 0.85);
   background: rgb(28 25 23 / 0.7);
 }
+
+/* ==========================================================================
+   登录页视觉层
+   登录页是独立的一屏，固定深色，不跟随主题 —— 深底是这套观感的前提。
+   所有动效在 prefers-reduced-motion 下关闭（见本段末尾）。
+   ========================================================================== */
+
+.auth-void {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 42%, rgba(76, 44, 140, 0.34) 0%, transparent 62%),
+    radial-gradient(ellipse 60% 45% at 18% 78%, rgba(150, 60, 130, 0.16) 0%, transparent 60%),
+    #07070c;
+}
+
+/* 底层网格，给深色背景一点纵深参考 */
+.auth-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+}
+
+.auth-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.auth-aurora-band {
+  position: absolute;
+  filter: blur(72px);
+  animation: auth-aurora-drift 32s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.auth-aurora-band-1 {
+  top: -24%;
+  left: 12%;
+  width: 76%;
+  height: 58%;
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.3) 0%, transparent 68%);
+}
+
+.auth-aurora-band-2 {
+  top: 10%;
+  left: -16%;
+  width: 58%;
+  height: 52%;
+  animation-delay: -9s;
+  background: radial-gradient(ellipse at 30% 50%, rgba(99, 102, 241, 0.22) 0%, transparent 62%);
+}
+
+.auth-aurora-band-3 {
+  right: -12%;
+  bottom: -16%;
+  width: 56%;
+  height: 46%;
+  animation-delay: -17s;
+  background: radial-gradient(ellipse at 70% 30%, rgba(236, 72, 153, 0.16) 0%, transparent 62%);
+}
+
+@keyframes auth-aurora-drift {
+  0% { transform: translate3d(0, 0, 0) rotate(-2deg) scale(1); }
+  50% { transform: translate3d(8%, 2%, 0) rotate(1deg) scale(1.08); }
+  100% { transform: translate3d(-6%, -2%, 0) rotate(-1deg) scale(0.94); }
+}
+
+/* --- 模型球：5 条不同倾角的 3D 轨道不规则环绕（位置由 JS 逐帧计算） --- */
+
+.auth-globe {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+/* 球体本身的辉光与边缘 */
+.auth-globe-core {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.07) 0%, transparent 58%);
+  box-shadow: inset 0 0 90px rgba(139, 92, 246, 0.18);
+}
+
+/* WebGL 版模型球的画布：铺满球体容器。鼠标命中在脚本里按屏幕距离算，画布本身不接收事件 */
+.auth-globe-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* WebGL 版的悬停没有 DOM 元素可供 :has() 命中，改由脚本在 .auth-stage 上打标记 */
+.auth-stage[data-globe-hover='true'] {
+  cursor: pointer;
+}
+
+.auth-stage[data-globe-hover='true'] .auth-aurora {
+  opacity: 0.45;
+}
+
+.auth-stage[data-globe-hover='true'] .auth-center-copy {
+  opacity: 0.25;
+}
+
+/* 3D 轨道线：倾斜圆的正交投影就是椭圆，静态 SVG，不参与动画 */
+.auth-orbit3d-paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.auth-orbit3d-paths ellipse {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+}
+
+/* 每个图标的定位层：位置 / 大小 / 透明度 / 层级全部由 ModelGlobe 逐帧写入。
+   只动 transform 和 opacity，交给合成线程。 */
+.auth-orbit3d-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  will-change: transform, opacity;
+}
+
+/* 悬停的图标提到最上层并恢复全亮（它可能正转在后面或文案区里被压暗） */
+.auth-orbit3d-item:has(.auth-orbit-tile:hover) {
+  z-index: 40 !important;
+  opacity: 1 !important;
+}
+
+.auth-globe-glow {
+  animation: auth-core-pulse 6s ease-in-out infinite;
+}
+
+@keyframes auth-core-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.07); }
+}
+
+/* --- 轮换文案 / 轮播卡片 --- */
+
+.auth-fade-in {
+  animation: auth-fade-in 560ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes auth-fade-in {
+  0% { opacity: 0; transform: translateY(0.4em); filter: blur(5px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* --- 第一层虚化：弹出第二层时动画继续跑 --- */
+
+.auth-stage {
+  transition: filter 420ms ease, transform 420ms ease;
+}
+
+.auth-stage[data-dimmed='true'] {
+  filter: blur(16px) saturate(1.06);
+  transform: scale(1.035);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-aurora-band,
+  .auth-globe-glow,
+  .auth-fade-in {
+    animation: none !important;
+  }
+
+  .auth-stage {
+    transition: none;
+  }
+}
+
+/* --- 图标 hover：放大 + 虚化背景 --- */
+
+.auth-globe,
+.auth-orbit3d-paths,
+.auth-orbit3d-item,
+.auth-globe-core {
+  /* 球体区域里的容器和定位层一律不接收鼠标，否则会挡住图标 */
+  pointer-events: none;
+}
+
+.auth-orbit-tile {
+  /* 整个球体上只有图标块本身接收鼠标 */
+  pointer-events: auto;
+  cursor: pointer;
+  /* 放大做在这一层：父级 .auth-orbit3d-item 的 transform 每帧被脚本改写，
+     两个 transform 放同一个元素会互相覆盖 */
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.auth-orbit-tile:hover {
+  transform: scale(1.45);
+  z-index: 30;
+}
+
+/* :has() 让背景层能响应后代的 hover，不用把状态提到 React 里。
+   不支持 :has() 的浏览器只是没有这个效果，不影响可用性。 */
+.auth-stage:has(.auth-orbit-tile:hover) .auth-aurora {
+  /* 只改 opacity，不做 filter 过渡 —— 大面积 blur 每帧重算是 hover 卡顿的主因 */
+  opacity: 0.45;
+}
+
+.auth-stage:has(.auth-orbit-tile:hover) .auth-orbit3d-paths,
+.auth-stage:has(.auth-orbit-tile:hover) .auth-globe-core {
+  opacity: 0.35;
+}
+
+/* 悬停时中间文字退让，让被放大的图标成为焦点 */
+.auth-stage:has(.auth-orbit-tile:hover) .auth-center-copy {
+  opacity: 0.25;
+}
+
+/* 没被悬停的其他图标压暗 */
+.auth-stage:has(.auth-orbit-tile:hover) .auth-orbit-tile:not(:hover) {
+  opacity: 0.4;
+}
+
+.auth-aurora,
+.auth-orbit3d-paths,
+.auth-globe-core,
+.auth-center-copy {
+  transition: opacity 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-orbit-tile {
+    transition: none;
+  }
+}
+
+/* =====================================================================
+   创作页「工作台皮肤」—— 照 creative-studio：黑 / 灰 / 金三色、1px 细线、3–4px 直角、无投影。
+   只作用于 .studio-skin 内部。页面根节点同时带 .dark，所以内部组件原有的 dark: 样式全部生效，
+   这里再把它们统一收敛到参考站的色板（attribute 选择器覆盖，避免逐个改几千行里的类名）。
+   ===================================================================== */
+
+.studio-skin {
+  --studio-bg: #090b0c;
+  --studio-workspace: #101315;
+  --studio-panel: #0f1213;
+  --studio-field: #0b0d0e;
+  --studio-raised: #151819;
+  --studio-line: #2b3032;
+  --studio-line-strong: #41474a;
+  --studio-text: #eef0ed;
+  --studio-muted: #939997;
+  --studio-faint: #69716e;
+  --studio-gold: #d99b45;
+  --studio-gold-strong: #e5ad5a;
+  --studio-gold-soft: rgba(217, 155, 69, 0.12);
+  /* 创作页右侧预览舞台 / 配置卡的底色（浅色工作台里会换掉） */
+  --studio-stage: #07090a;
+  --studio-card: #0e1112;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+}
+
+.studio-kicker {
+  display: block;
+  color: var(--studio-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.studio-display {
+  font-family: 'Songti SC', 'STSong', 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  color: var(--studio-text);
+}
+
+.studio-outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid var(--studio-line);
+  border-radius: 4px;
+  background: #0d1012;
+  color: var(--studio-muted);
+  font-size: 12px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.studio-outline-button:hover {
+  color: var(--studio-text);
+  border-color: var(--studio-line-strong);
+}
+
+.studio-gold-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #e6b66b;
+  border-radius: 3px;
+  background: var(--studio-gold);
+  color: #17120a;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background 0.15s ease;
+}
+
+.studio-gold-button:hover:not(:disabled) {
+  background: var(--studio-gold-strong);
+}
+
+.studio-gold-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.studio-gold-link {
+  color: var(--studio-gold);
+  font-size: 11px;
+}
+
+.studio-gold-link:hover {
+  color: var(--studio-gold-strong);
+}
+
+.studio-workspace {
+  background: var(--studio-workspace);
+  border: 1px solid var(--studio-line);
+}
+
+.studio-left {
+  background: var(--studio-panel);
+}
+
+@media (min-width: 1024px) {
+  .studio-left {
+    border-right: 1px solid var(--studio-line);
+  }
+}
+
+/* 左栏顶部两张模式卡（图片 / 视频） */
+.studio-mode-tabs {
+  border: 1px solid var(--studio-line);
+  background: var(--studio-field);
+  border-radius: 0;
+}
+
+.studio-mode-tab {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 4px;
+  padding: 12px 14px !important;
+  border: 1px solid transparent;
+  border-radius: 2px !important;
+  background: transparent !important;
+  color: var(--studio-muted) !important;
+  text-align: left;
+  box-shadow: none !important;
+}
+
+.studio-mode-tab strong {
+  color: var(--studio-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.studio-mode-tab small {
+  color: var(--studio-faint);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.studio-mode-tab[data-state='active'] {
+  border-color: var(--studio-gold);
+  background: linear-gradient(180deg, rgba(217, 155, 69, 0.14), rgba(217, 155, 69, 0.04)) !important;
+}
+
+/* 字段小标题：白色粗体 + 右侧辅助信息 */
+.studio-field-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-width: 0;
+}
+
+.studio-field-heading > strong {
+  color: var(--studio-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.studio-optional {
+  padding: 1px 5px;
+  border: 1px solid var(--studio-line);
+  color: var(--studio-faint);
+  font-size: 10px;
+}
+
+/* ---- 左栏内部：把原有卡片 / 控件压成细线直角 ---- */
+
+.studio-left .studio-field {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.studio-left [class*='rounded-['],
+.studio-left [class*='rounded-xl'],
+.studio-left [class*='rounded-2xl'],
+.studio-left [class*='rounded-3xl'],
+.studio-left [class*='rounded-lg'] {
+  border-radius: 4px !important;
+}
+
+.studio-left [class*='shadow'],
+.studio-skin .studio-left button {
+  box-shadow: none !important;
+}
+
+.studio-left [class*='dark:border-stone-'],
+.studio-left [class*='dark:border-white'] {
+  border-color: var(--studio-line) !important;
+}
+
+.studio-left [class*='dark:bg-stone-9'],
+.studio-left [class*='dark:bg-[linear-gradient'] {
+  background: var(--studio-field) !important;
+}
+
+.studio-left [class*='dark:bg-stone-8'] {
+  background: var(--studio-raised) !important;
+}
+
+/* 选中态统一换成金色：原来的「黑底白字 / 白底黑字」选中 pill */
+.studio-left [class*='dark:bg-stone-100'] {
+  background: var(--studio-gold) !important;
+  border-color: var(--studio-gold) !important;
+  color: #17120a !important;
+}
+
+/* 原紫色强调 → 金色 */
+.studio-left [class^='text-aurora-purple'],
+.studio-left [class*=' text-aurora-purple'],
+.studio-left [class*='dark:text-aurora-pink'] {
+  color: var(--studio-gold) !important;
+}
+
+/* 只匹配常驻类（以空格或开头起始），不能把 hover:bg-aurora-purple/5 这类悬停态也变成常驻 */
+.studio-left [class^='bg-aurora-purple'],
+.studio-left [class*=' bg-aurora-purple'] {
+  background: var(--studio-gold-soft) !important;
+  color: var(--studio-gold) !important;
+}
+
+.studio-left [class^='border-aurora-purple'],
+.studio-left [class*=' border-aurora-purple'] {
+  border-color: rgba(217, 155, 69, 0.45) !important;
+}
+
+.studio-left input:focus,
+.studio-left textarea:focus,
+.studio-left [contenteditable]:focus,
+.studio-left select:focus {
+  border-color: var(--studio-gold) !important;
+  --tw-ring-color: rgba(217, 155, 69, 0.35) !important;
+}
+
+.studio-left input,
+.studio-left textarea,
+.studio-left select,
+.studio-left [contenteditable] {
+  background: var(--studio-field) !important;
+  color: var(--studio-text) !important;
+}
+
+.studio-left input[type='range'] {
+  accent-color: var(--studio-gold);
+  background: transparent !important;
+}
+
+/* 分隔线 */
+.studio-left [role='separator'],
+.studio-left hr {
+  background: var(--studio-line) !important;
+}
+
+/* ---- 创作页外壳：侧栏 / 底部标签栏跟着页面切到工作台配色（ConditionalLayout 在 /create 加 .studio-shell） ---- */
+
+.studio-shell [class*='dark:bg-canvas-dark'] {
+  background: var(--studio-bg) !important;
+}
+
+.studio-shell .studio-nav-rail {
+  border-color: var(--studio-line) !important;
+  border-radius: 4px !important;
+  background: var(--studio-panel) !important;
+}
+
+.studio-shell .studio-nav-link {
+  color: var(--studio-muted) !important;
+}
+
+.studio-shell .studio-nav-link:hover {
+  color: var(--studio-text) !important;
+}
+
+.studio-shell .studio-nav-link[data-active='true'] {
+  color: var(--studio-gold) !important;
+}
+
+.studio-shell .studio-nav-icon {
+  border: 1px solid transparent;
+  border-radius: 4px !important;
+}
+
+.studio-shell .studio-nav-link[data-active='true'] .studio-nav-icon {
+  border-color: rgba(217, 155, 69, 0.55);
+  background: var(--studio-gold-soft) !important;
+}
+
+.studio-shell .studio-nav-flyout {
+  border-color: var(--studio-line) !important;
+  border-radius: 4px !important;
+  background: var(--studio-raised) !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+.studio-shell .studio-nav-sublink {
+  border-radius: 3px !important;
+  color: var(--studio-muted) !important;
+}
+
+.studio-shell .studio-nav-sublink:hover {
+  color: var(--studio-text) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.studio-shell .studio-nav-sublink[data-active='true'] {
+  color: var(--studio-gold) !important;
+  background: var(--studio-gold-soft) !important;
+}
+
+.studio-shell .studio-tabbar {
+  background: var(--studio-panel) !important;
+  border-color: var(--studio-line) !important;
+}
+
+/* 底部标签栏选中项原为紫色（class 以 text-aurora-purple 开头的那一个），工作台里换成金色 */
+.studio-shell .studio-tabbar [class^='text-aurora-purple'],
+.studio-shell .studio-tabbar [class*=' text-aurora-purple'] {
+  color: var(--studio-gold) !important;
+}
+
+/* ---- 创作页的弹出层（portal 到 body）：body 在创作页带 .dark .studio-skin .studio-portal ---- */
+
+.studio-portal .enhanced-select-menu,
+.studio-portal [data-radix-popper-content-wrapper] > * {
+  border-color: var(--studio-line) !important;
+  border-radius: 4px !important;
+  background: var(--studio-raised) !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55) !important;
+  color: var(--studio-text);
+}
+
+.studio-portal .enhanced-select-menu [class*='rounded-'],
+.studio-portal [data-radix-popper-content-wrapper] [class*='rounded-['],
+.studio-portal [data-radix-popper-content-wrapper] [class*='rounded-xl'],
+.studio-portal [data-radix-popper-content-wrapper] [class*='rounded-2xl'] {
+  border-radius: 3px !important;
+}
+
+.studio-portal .enhanced-select-menu [class*='dark:border-stone-'],
+.studio-portal [data-radix-popper-content-wrapper] [class*='dark:border-stone-'] {
+  border-color: var(--studio-line) !important;
+}
+
+.studio-portal [data-radix-popper-content-wrapper] [class*='dark:bg-stone-9'] {
+  background: var(--studio-field) !important;
+}
+
+.studio-portal [data-radix-popper-content-wrapper] [class*='shadow'] {
+  box-shadow: none !important;
+}
+
+/* 选中态 / 紫色强调 → 金色（只匹配常驻类） */
+.studio-portal .enhanced-select-menu [class^='bg-aurora-purple'],
+.studio-portal .enhanced-select-menu [class*=' bg-aurora-purple'],
+.studio-portal [data-radix-popper-content-wrapper] [class^='bg-aurora-purple'],
+.studio-portal [data-radix-popper-content-wrapper] [class*=' bg-aurora-purple'] {
+  background: var(--studio-gold-soft) !important;
+  color: var(--studio-gold) !important;
+}
+
+.studio-portal .enhanced-select-menu [class^='text-aurora-purple'],
+.studio-portal .enhanced-select-menu [class*=' text-aurora-purple'],
+.studio-portal [data-radix-popper-content-wrapper] [class^='text-aurora-purple'],
+.studio-portal [data-radix-popper-content-wrapper] [class*=' text-aurora-purple'] {
+  color: var(--studio-gold) !important;
+}
+
+.studio-portal [data-radix-popper-content-wrapper] [class*='dark:bg-stone-100'] {
+  background: var(--studio-gold) !important;
+  color: #17120a !important;
+}
+
+/* =====================================================================
+   任务队列「我的创作空间」（/tasks）—— 同创作页的工作台皮肤，照 creative-studio/tasks。
+   颜色全部走 --studio-*；布局用普通 CSS，避免 Tailwind 任意值静默不编译。
+   ===================================================================== */
+
+.task-queue-muted {
+  color: var(--studio-muted);
+}
+
+.task-queue-faint {
+  color: var(--studio-faint);
+}
+
+/* ---- 统计卡 ---- */
+.task-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .task-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.task-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--studio-line);
+  border-radius: 4px;
+  background: var(--studio-panel);
+  text-align: left;
+  transition: border-color 0.15s ease;
+}
+
+.task-stat:hover {
+  border-color: var(--studio-line-strong);
+}
+
+.task-stat[data-active='true'] {
+  border-color: var(--studio-gold);
+  background: linear-gradient(180deg, rgba(217, 155, 69, 0.1), rgba(217, 155, 69, 0.02));
+}
+
+.task-stat > span {
+  color: var(--studio-muted);
+  font-size: 12px;
+}
+
+.task-stat > strong {
+  color: var(--studio-text);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-stat[data-kind='active'] > strong {
+  color: var(--studio-gold);
+}
+
+.task-stat[data-kind='failed'] > strong {
+  color: #e0786b;
+}
+
+/* ---- 标签 + 工具栏 ---- */
+.task-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--studio-line);
+}
+
+@media (min-width: 1024px) {
+  .task-toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.task-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.task-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 2px solid transparent;
+  color: var(--studio-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.task-tab:hover {
+  color: var(--studio-text);
+}
+
+.task-tab[data-active='true'] {
+  border-bottom-color: var(--studio-gold);
+  color: var(--studio-text);
+}
+
+.task-tab-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--studio-gold);
+  color: #17120a;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.task-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-search {
+  display: flex;
+  flex: 1 1 200px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--studio-line);
+  border-radius: 4px;
+  background: var(--studio-field);
+  color: var(--studio-faint);
+}
+
+.task-search:focus-within {
+  border-color: var(--studio-gold);
+}
+
+.task-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--studio-text);
+  font-size: 13px;
+}
+
+.task-search input::placeholder {
+  color: var(--studio-faint);
+}
+
+.task-select {
+  flex: 0 1 auto;
+  max-width: 180px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--studio-line);
+  border-radius: 4px;
+  background: var(--studio-field);
+  color: var(--studio-text);
+  font-size: 13px;
+  color-scheme: dark;
+}
+
+.task-select:focus {
+  border-color: var(--studio-gold);
+  outline: none;
+}
+
+.task-new-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid #e6b66b;
+  border-radius: 3px;
+  background: var(--studio-gold);
+  color: #17120a;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.task-new-button:hover {
+  background: var(--studio-gold-strong);
+}
+
+/* ---- 列表行：148px 缩略图 | 内容 | 操作 ---- */
+.task-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--studio-line);
+}
+
+.task-row:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+@media (min-width: 768px) {
+  .task-row {
+    grid-template-columns: 148px minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+  }
+}
+
+.task-row-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--studio-line);
+  border-radius: 3px;
+  background: #07090a;
+}
+
+.task-row-thumb img,
+.task-row-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.task-row-thumb-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  color: var(--studio-faint);
+}
+
+.task-row-thumb-placeholder small {
+  font-size: 11px;
+}
+
+.task-row[data-status='pending'] .task-row-thumb-placeholder,
+.task-row[data-status='processing'] .task-row-thumb-placeholder {
+  color: var(--studio-gold);
+}
+
+.task-row-type {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.65);
+  color: var(--studio-text);
+  font-size: 10px;
+}
+
+.task-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.task-row-prompt {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--studio-text);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.task-row-prompt:hover {
+  color: var(--studio-gold-strong);
+}
+
+.task-row-meta,
+.task-row-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--studio-muted);
+  font-size: 12px;
+}
+
+.task-row-info {
+  color: var(--studio-faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-status-badge {
+  padding: 1px 7px;
+  border: 1px solid var(--studio-line);
+  border-radius: 2px;
+  color: var(--studio-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.task-status-badge[data-status='pending'],
+.task-status-badge[data-status='processing'] {
+  border-color: rgba(217, 155, 69, 0.5);
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+.task-status-badge[data-status='completed'] {
+  border-color: rgba(122, 190, 140, 0.45);
+  color: #8fcf9f;
+}
+
+.task-status-badge[data-status='failed'] {
+  border-color: rgba(224, 120, 107, 0.45);
+  color: #e0786b;
+}
+
+.task-row-failure {
+  overflow: hidden;
+  color: #e0786b;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .task-row-actions {
+    grid-column: auto;
+    flex-wrap: nowrap;
+  }
+}
+
+.task-row-actions .studio-outline-button {
+  min-height: 32px;
+  padding: 6px 12px;
+}
+
+/* ---- 进度条（components/shared/TaskProgress）：真实进度实心金；估算进度半透明金 + 文字标「约」；
+   还没拿到任务时来回扫。颜色带兜底，落地页不在 .studio-skin 里也能用 ---- */
+.task-progress-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.task-progress {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--studio-line, rgba(127, 127, 127, 0.3));
+}
+
+.task-progress-value {
+  display: block;
+  height: 100%;
+  background: var(--studio-gold, #d99b45);
+  transition: width 0.9s linear;
+}
+
+.task-progress-value[data-kind='estimated'] {
+  opacity: 0.7;
+}
+
+.task-progress-label {
+  color: var(--studio-muted, currentColor);
+  font-size: 11px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-progress-indeterminate {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  background: var(--studio-gold, #d99b45);
+  animation: task-progress-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes task-progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-progress-indeterminate {
+    width: 100%;
+    opacity: 0.5;
+    animation: none;
+  }
+}
+
+.task-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 64px 24px;
+  color: var(--studio-faint);
+  text-align: center;
+}
+
+.task-empty strong {
+  color: var(--studio-text);
+  font-size: 15px;
+}
+
+.task-empty p {
+  max-width: 420px;
+  color: var(--studio-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---- 详情抽屉（portal 到 body；body 在任务页带 .studio-skin，变量可用） ---- */
+.task-drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.task-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  cursor: default;
+}
+
+.task-drawer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(560px, 100vw);
+  height: 100%;
+  border-left: 1px solid var(--studio-line);
+  background: var(--studio-panel);
+  color: var(--studio-text);
+  animation: task-drawer-in 0.18s ease-out;
+}
+
+@keyframes task-drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.task-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--studio-line);
+}
+
+.task-drawer-taskno {
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--studio-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--studio-line);
+  border-radius: 3px;
+  color: var(--studio-muted);
+}
+
+.task-drawer-close:hover {
+  color: var(--studio-text);
+  border-color: var(--studio-line-strong);
+}
+
+.task-drawer-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.task-drawer-preview {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--studio-line);
+  border-radius: 3px;
+  background: #07090a;
+}
+
+.task-drawer-preview img,
+.task-drawer-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.task-drawer .task-progress-block {
+  max-width: none;
+  margin-top: -8px;
+}
+
+.task-drawer-section {
+  padding-top: 16px;
+  border-top: 1px solid var(--studio-line);
+}
+
+.task-drawer-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.task-drawer-section-head strong {
+  color: var(--studio-text);
+  font-size: 13px;
+}
+
+.task-drawer-prompt {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--studio-line);
+  border-radius: 3px;
+  background: var(--studio-field);
+  color: var(--studio-text);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.task-drawer-info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.task-drawer-info dt {
+  color: var(--studio-faint);
+  font-size: 11px;
+}
+
+.task-drawer-info dd {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--studio-text);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-drawer-failure {
+  padding: 12px 14px;
+  border: 1px solid rgba(224, 120, 107, 0.4);
+  border-radius: 3px;
+  background: rgba(224, 120, 107, 0.08);
+}
+
+.task-drawer-failure strong {
+  color: #e0786b;
+  font-size: 12px;
+}
+
+.task-drawer-failure p {
+  margin-top: 4px;
+  color: #f0b3aa;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.task-drawer-failure .task-drawer-failure-detail {
+  max-height: 160px;
+  overflow-y: auto;
+  color: var(--studio-muted);
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 抽屉里复用的 TaskCard 操作区：去掉卡片外壳，按钮压成直角细线 */
+.task-drawer-actions .task-card-actions-only {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.task-drawer-actions button {
+  border-radius: 3px !important;
+  box-shadow: none !important;
+}
+
+.task-drawer-actions button[class*='dark:bg-stone-8'] {
+  border-color: var(--studio-line) !important;
+  background: var(--studio-field) !important;
+  color: var(--studio-text) !important;
+}
+
+.task-drawer-actions button[class*='dark:bg-stone-8']:hover:not(:disabled) {
+  border-color: var(--studio-gold) !important;
+  color: var(--studio-gold-strong) !important;
+}
+
+/* 下拉菜单（EnhancedSelect / AspectRatioSelect）滚到头时不把滚动传给页面：
+   否则页面跟着滚，fixed 定位的菜单又跟着触发按钮重新定位，看起来就是「菜单跟着一起跑」 */
+.enhanced-select-menu {
+  overscroll-behavior: contain;
+}
+
+/* ============================================================
+   无限画布 v2（features/canvas-v2）
+   节点式工作流画布，照参考站 canvas-v2 的形态。全部用 --studio-* 色板，
+   跟创作页 / 任务队列同一套黑灰金。React Flow 自带样式在组件里 import，
+   这里只覆盖它的几个变量 + 我们自己的节点外观。
+   ============================================================ */
+
+.cv2-root {
+  /* 画布这一块是「浅灰底 + 深色卡片」：底色近黑时卡片（--studio-panel）只差几档亮度，
+     节点整片糊在一起看不出边界。侧栏 / 工具栏不动，仍是工作台的黑灰金。 */
+  --cv2-canvas: #e9e9e6;
+  --cv2-canvas-dot: #c4c4be;
+  --cv2-canvas-line: #b4b4ad;
+  --cv2-card: #16191a;
+  --cv2-edge: #6f7674;
+  /* 圆角三档：卡片 / 控件 / 小标签。原来全是 3–4px，看着四四方方 */
+  --cv2-r-card: 14px;
+  --cv2-r-control: 9px;
+  --cv2-r-chip: 999px;
+
+  display: flex;
+  height: 100dvh;
+  min-height: 0;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+}
+
+/* ---- 左侧面板：新建节点 + 工作流预设 ---- */
+.cv2-sidebar {
+  display: flex;
+  width: 256px;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  border-right: 1px solid var(--studio-line);
+  background: var(--studio-panel);
+  padding: 18px 14px 32px;
+}
+
+.cv2-sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cv2-kicker {
+  color: var(--studio-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cv2-preset {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-field);
+  padding: 9px 11px;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cv2-preset:hover {
+  border-color: var(--studio-gold);
+  background: var(--studio-gold-soft);
+}
+
+.cv2-preset-name {
+  color: var(--studio-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cv2-preset-desc {
+  color: var(--studio-faint);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* ---- 画布区 ---- */
+.cv2-board {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.cv2-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--studio-line);
+  background: var(--studio-panel);
+  padding: 8px 14px;
+}
+
+.cv2-tool {
+  display: inline-flex;
+  height: 30px;
+  width: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  color: var(--studio-muted);
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.cv2-tool:hover {
+  border-color: var(--studio-gold);
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+.cv2-tool-danger:hover {
+  border-color: #c9524a;
+  background: rgba(201, 82, 74, 0.12);
+  color: #e0736b;
+}
+
+.cv2-toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--studio-line);
+}
+
+.cv2-toolbar-status {
+  margin-left: auto;
+  color: var(--studio-faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 画布底是浅灰，连线要选在浅底上看得见的深灰（原来的 --studio-line-strong 是给深底用的） */
+.cv2-board .react-flow {
+  --xy-background-color: var(--cv2-canvas);
+  --xy-edge-stroke: var(--cv2-edge);
+  --xy-edge-stroke-selected: #a8701f;
+  background: var(--cv2-canvas);
+}
+
+.cv2-board .react-flow__background {
+  color: var(--cv2-canvas-dot);
+}
+
+.cv2-board .react-flow__controls-button {
+  border-bottom: 1px solid var(--cv2-canvas-line);
+  background: var(--cv2-control-bg, #f4f4f1);
+  fill: var(--cv2-control-fg, #4a504e);
+}
+
+.cv2-board .react-flow__controls-button:hover {
+  background: var(--cv2-control-hover, #ffffff);
+  fill: var(--studio-gold, #a8701f);
+}
+
+.cv2-board .react-flow__minimap {
+  border: 1px solid var(--cv2-canvas-line);
+  background: var(--cv2-control-bg, #f4f4f1);
+}
+
+.cv2-board .react-flow__minimap-mask {
+  fill: rgba(150, 150, 143, 0.35);
+}
+
+.cv2-board .react-flow__minimap-node {
+  fill: var(--cv2-card);
+}
+
+/* ---- 节点外观 ---- */
+.cv2-node {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #000000;
+  border-radius: var(--cv2-r-card);
+  background: var(--cv2-card);
+  /* 浅底上不需要原来那么重的投影，18px/0.5 会糊成一团灰 */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+  color: var(--studio-text);
+  font-size: 12px;
+}
+
+.cv2-node-selected {
+  border-color: var(--studio-gold);
+  box-shadow: 0 0 0 2px var(--studio-gold), 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+
+.cv2-node-invalid {
+  border-color: #c9524a;
+}
+
+.cv2-node-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--studio-line);
+  background: var(--studio-raised);
+  padding: 7px 10px;
+}
+
+.cv2-node-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--studio-text);
+  cursor: grab;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv2-node-title:active {
+  cursor: grabbing;
+}
+
+.cv2-node-badge {
+  flex-shrink: 0;
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-gold-soft);
+  padding: 1px 6px;
+  color: var(--studio-gold);
+  font-size: 10px;
+}
+
+.cv2-node-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.cv2-node-body {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px;
+}
+
+/* 连接点：默认那个白圆点在深色底上太扎眼 */
+.cv2-handle {
+  height: 9px;
+  width: 9px;
+  border: 1px solid var(--cv2-card);
+  background: var(--cv2-edge);
+}
+
+.cv2-handle:hover {
+  border-color: var(--studio-gold);
+  background: var(--studio-gold);
+}
+
+/* ---- 节点内的控件 ---- */
+.cv2-textarea,
+.cv2-input,
+.cv2-select {
+  width: 100%;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-control);
+  background: var(--studio-field);
+  padding: 6px 8px;
+  color: var(--studio-text);
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.cv2-textarea:focus,
+.cv2-input:focus,
+.cv2-select:focus {
+  border-color: var(--studio-gold);
+  outline: none;
+}
+
+.cv2-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+.cv2-range {
+  width: 100%;
+  accent-color: var(--studio-gold);
+}
+
+.cv2-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cv2-field-label {
+  color: var(--studio-faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.cv2-hint {
+  color: var(--studio-faint);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.cv2-error {
+  border-left: 2px solid #c9524a;
+  background: rgba(201, 82, 74, 0.1);
+  padding: 5px 8px;
+  color: #e0736b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* 标签条：多角度、打光、素材都用它 */
+.cv2-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cv2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-field);
+  padding: 3px 7px;
+  color: var(--studio-muted);
+  font-size: 11px;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.cv2-chip:hover {
+  border-color: var(--studio-line-strong);
+  color: var(--studio-text);
+}
+
+.cv2-chip-active {
+  border-color: var(--studio-gold);
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+.cv2-chip-swatch {
+  height: 8px;
+  width: 8px;
+  border-radius: var(--cv2-r-chip);
+}
+
+.cv2-details > summary {
+  cursor: pointer;
+  color: var(--studio-muted);
+  font-size: 11px;
+  font-weight: 600;
+  list-style: none;
+  padding: 3px 0;
+  border-top: 1px solid var(--studio-line);
+}
+
+.cv2-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cv2-details > summary::before {
+  content: '▸ ';
+  color: var(--studio-faint);
+}
+
+.cv2-details[open] > summary::before {
+  content: '▾ ';
+}
+
+.cv2-details > summary:hover {
+  color: var(--studio-gold);
+}
+
+.cv2-details > * + * {
+  margin-top: 7px;
+}
+
+.cv2-count {
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-gold-soft);
+  padding: 0 5px;
+  color: var(--studio-gold);
+  font-size: 10px;
+}
+
+.cv2-icon-button {
+  display: inline-flex;
+  height: 22px;
+  width: 22px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  color: var(--studio-muted);
+}
+
+.cv2-icon-button:hover:not(:disabled) {
+  border-color: var(--studio-gold);
+  color: var(--studio-gold);
+}
+
+.cv2-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cv2-mini-button {
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  padding: 3px 9px;
+  color: var(--studio-muted);
+  font-size: 11px;
+}
+
+.cv2-mini-button:hover {
+  border-color: var(--studio-gold);
+  color: var(--studio-gold);
+}
+
+/* ---- 素材节点的预览 ---- */
+.cv2-media {
+  width: 100%;
+  border-radius: var(--cv2-r-control);
+  background: var(--studio-field);
+  object-fit: contain;
+  max-height: 220px;
+}
+
+.cv2-audio {
+  width: 100%;
+}
+
+.cv2-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  border: 1px dashed var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  padding: 20px 12px;
+  color: var(--studio-faint);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* ---- 便利贴 ---- */
+.cv2-sticky .cv2-node-head {
+  background: var(--studio-panel);
+}
+
+.cv2-sticky-text {
+  border-left-width: 3px;
+}
+
+.cv2-sticky-colors {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.cv2-swatch {
+  height: 11px;
+  width: 11px;
+  border: 1px solid transparent;
+  border-radius: var(--cv2-r-chip);
+}
+
+.cv2-swatch-active {
+  border-color: var(--studio-text);
+}
+
+/* ---- 右键菜单 ---- */
+.cv2-context-menu {
+  position: fixed;
+  z-index: 10020;
+  display: flex;
+  min-width: 132px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-raised);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  padding: 4px;
+}
+
+.cv2-context-menu button {
+  border-radius: var(--cv2-r-control);
+  padding: 5px 9px;
+  color: var(--studio-muted);
+  font-size: 12px;
+  text-align: left;
+}
+
+.cv2-context-menu button:hover {
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+/* 窄屏：左侧面板收成横向条 */
+@media (max-width: 900px) {
+  .cv2-root {
+    flex-direction: column;
+  }
+
+  .cv2-sidebar {
+    width: 100%;
+    max-height: 190px;
+    border-right: 0;
+    border-bottom: 1px solid var(--studio-line);
+  }
+}
+
+/* ---- 左侧栏标签：搭积木 / 助手 ---- */
+.cv2-sidebar-tabs {
+  display: flex;
+  gap: 4px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-field);
+  padding: 3px;
+}
+
+.cv2-sidebar-tab {
+  flex: 1;
+  border-radius: var(--cv2-r-chip);
+  padding: 5px 10px;
+  color: var(--studio-muted);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cv2-sidebar-tab:hover {
+  color: var(--studio-text);
+}
+
+.cv2-sidebar-tab-active {
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+/* ---- 助手面板 ---- */
+.cv2-assistant {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 对话区吃掉剩余高度，输入框永远贴在底下 */
+.cv2-assistant-chat {
+  min-height: 0;
+  flex: 1;
+}
+
+.cv2-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-field);
+  padding: 10px 11px;
+}
+
+.cv2-inspector-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cv2-inspector-title {
+  overflow: hidden;
+  color: var(--studio-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv2-inspector-kind {
+  flex-shrink: 0;
+  color: var(--studio-gold);
+  font-size: 10px;
+}
+
+.cv2-inspector-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cv2-inspector-row {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.cv2-inspector-row dt {
+  color: var(--studio-faint);
+}
+
+/* 提示词可能很长，一行截断，完整内容在 title 里 */
+.cv2-inspector-row dd {
+  overflow: hidden;
+  color: var(--studio-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv2-assistant-log {
+  display: flex;
+  min-height: 90px;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-field);
+  padding: 9px;
+}
+
+.cv2-bubble {
+  border-radius: var(--cv2-r-control);
+  background: var(--studio-raised);
+  padding: 7px 9px;
+  color: var(--studio-text);
+  font-size: 11.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cv2-bubble-user {
+  border-left: 2px solid var(--studio-gold);
+  background: var(--studio-gold-soft);
+}
+
+.cv2-bubble-failed {
+  border-left: 2px solid #c9524a;
+  color: #e0736b;
+}
+
+.cv2-bubble-meta {
+  margin-top: 4px;
+  color: var(--studio-faint);
+  font-size: 10px;
+}
+
+.cv2-bubble-warn {
+  color: #d99b45;
+}
+
+.cv2-assistant-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cv2-mini-primary {
+  border-color: var(--studio-gold);
+  color: var(--studio-gold);
+}
+
+/* 生成器节点上的「已连入 X 张图 · Y 段文字」——画布的卖点是关联一目了然 */
+.cv2-upstream {
+  border-left: 2px solid var(--studio-gold);
+  background: var(--studio-gold-soft);
+  padding: 4px 7px;
+  color: var(--studio-gold);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* ---- 工具栏：模式切换 / 级联 / 视图菜单 ---- */
+.cv2-tool-active {
+  border-color: var(--studio-gold);
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+/* 带字的工具按钮（级联执行 / 取消级联）：花钱的动作，要让人看清楚按的是什么 */
+.cv2-tool-wide {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  padding: 0 11px;
+  color: var(--studio-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.cv2-tool-wide:hover {
+  border-color: var(--studio-gold);
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+.cv2-tool-wide.cv2-tool-danger {
+  border-color: #c9524a;
+  color: #e0736b;
+}
+
+.cv2-menu-anchor {
+  position: relative;
+}
+
+.cv2-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10030;
+  display: flex;
+  min-width: 210px;
+  flex-direction: column;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-raised);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  padding: 4px;
+}
+
+.cv2-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: var(--cv2-r-control);
+  padding: 6px 9px;
+  color: var(--studio-muted);
+  font-size: 12px;
+  text-align: left;
+}
+
+.cv2-menu button:hover {
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+.cv2-menu-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--studio-line);
+}
+
+.cv2-kbd {
+  color: var(--studio-faint);
+  font-family: inherit;
+  font-size: 10px;
+}
+
+/* 视图开关的小勾 */
+.cv2-check {
+  height: 14px;
+  width: 26px;
+  flex-shrink: 0;
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-line);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.cv2-check::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  height: 10px;
+  width: 10px;
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.cv2-check-on {
+  background: var(--studio-gold-soft);
+}
+
+.cv2-check-on::after {
+  background: var(--studio-gold);
+  transform: translateX(12px);
+}
+
+/* ---- 搜索框（⌘K）---- */
+.cv2-search {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 0 1 300px;
+  align-items: center;
+  margin-left: 6px;
+}
+
+.cv2-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--studio-faint);
+  pointer-events: none;
+}
+
+.cv2-search-input {
+  width: 100%;
+  height: 30px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-field);
+  padding: 0 10px 0 28px;
+  color: var(--studio-text);
+  font-size: 12px;
+}
+
+.cv2-search-input:focus {
+  border-color: var(--studio-gold);
+  outline: none;
+}
+
+.cv2-search-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10030;
+  display: flex;
+  width: max(100%, 320px);
+  max-height: 60vh;
+  flex-direction: column;
+  overflow-y: auto;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-raised);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  padding: 4px;
+}
+
+.cv2-search-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 8px;
+  border-radius: var(--cv2-r-control);
+  padding: 6px 9px;
+  text-align: left;
+}
+
+.cv2-search-item-active {
+  background: var(--studio-gold-soft);
+}
+
+.cv2-search-tag {
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-field);
+  padding: 1px 6px;
+  color: var(--studio-gold);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.cv2-search-main {
+  overflow: hidden;
+  color: var(--studio-text);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv2-search-sub {
+  grid-column: 2;
+  overflow: hidden;
+  color: var(--studio-faint);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv2-search-empty,
+.cv2-search-hint {
+  padding: 6px 9px;
+  color: var(--studio-faint);
+  font-size: 11px;
+}
+
+.cv2-search-hint {
+  border-top: 1px solid var(--studio-line);
+  margin-top: 2px;
+  font-size: 10px;
+}
+
+/* ---- 对齐参考线 ---- */
+.cv2-guide {
+  position: absolute;
+  background: #d9480f;
+  pointer-events: none;
+}
+
+/* ---- 分组 ---- */
+/* React Flow 给 type=group 的节点自带一套白底细框样式，这里整个换掉 */
+.cv2-board .react-flow__node-group {
+  border: 0;
+  border-radius: var(--cv2-r-card);
+  background: transparent;
+  padding: 0;
+}
+
+.cv2-board .react-flow__node-group.selected,
+.cv2-board .react-flow__node-group:focus {
+  box-shadow: none;
+}
+
+.cv2-group {
+  height: 100%;
+  width: 100%;
+  border: 1.5px dashed var(--cv2-group-line, #8d948f);
+  border-radius: var(--cv2-r-card);
+  background: rgba(22, 25, 26, 0.05);
+}
+
+.cv2-group-selected {
+  border-color: var(--studio-gold);
+  background: rgba(217, 155, 69, 0.08);
+}
+
+.cv2-group-collapsed {
+  border-style: solid;
+  background: var(--cv2-card);
+}
+
+.cv2-group-head {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 0 6px;
+}
+
+.cv2-group:not(.cv2-group-collapsed) .cv2-group-head .cv2-node-title {
+  color: var(--cv2-group-title, #2d3230);
+}
+
+.cv2-group-toggle {
+  display: inline-flex;
+  height: 22px;
+  width: 22px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--cv2-r-chip);
+  color: var(--cv2-group-title, #5b625f);
+}
+
+.cv2-group-collapsed .cv2-group-toggle {
+  color: var(--studio-muted);
+}
+
+.cv2-group-toggle:hover {
+  background: var(--studio-gold-soft);
+  color: var(--studio-gold);
+}
+
+@media (max-width: 900px) {
+  .cv2-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .cv2-search {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+
+/* 组的空白处让鼠标穿过去：在组里空的地方拖，照样能平移画布 / 框选；只有组头和出口接得住鼠标 */
+.cv2-board .react-flow__node-group {
+  pointer-events: none;
+}
+
+.cv2-board .react-flow__node-group .cv2-group-head,
+.cv2-board .react-flow__node-group .cv2-handle {
+  pointer-events: all;
+}
+
+/* ---- 左侧四个标签挤一行：收窄内边距 ---- */
+.cv2-sidebar-tab {
+  padding: 5px 4px;
+  white-space: nowrap;
+}
+
+/* ---- 自动保存状态 ---- */
+.cv2-save {
+  margin-left: auto;
+  color: var(--studio-faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cv2-save-warn {
+  color: #d99b45;
+  cursor: help;
+}
+
+.cv2-save + .cv2-toolbar-status {
+  margin-left: 12px;
+}
+
+/* ---- 素材：资产库缩略图 ---- */
+.cv2-asset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.cv2-asset {
+  position: relative;
+  display: flex;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-control);
+  background: var(--studio-field);
+  color: var(--studio-faint);
+}
+
+.cv2-asset img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.cv2-asset-add {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--studio-gold);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.cv2-asset:hover {
+  border-color: var(--studio-gold);
+}
+
+.cv2-asset:hover .cv2-asset-add {
+  opacity: 1;
+}
+
+/* ---- 素材：生成日志 ---- */
+.cv2-log {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cv2-log-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.cv2-log-dot {
+  height: 7px;
+  width: 7px;
+  flex-shrink: 0;
+  margin-top: 5px;
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-faint);
+}
+
+.cv2-log-completed {
+  background: #7f9d6e;
+}
+
+.cv2-log-failed {
+  background: #c9524a;
+}
+
+.cv2-log-processing {
+  background: var(--studio-gold);
+}
+
+.cv2-log-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cv2-log-prompt {
+  overflow: hidden;
+  color: var(--studio-text);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv2-log-meta {
+  color: var(--studio-faint);
+  font-size: 10px;
+}
+
+.cv2-log-tag {
+  margin-left: 5px;
+  border-radius: var(--cv2-r-chip);
+  background: var(--studio-gold-soft);
+  padding: 0 5px;
+  color: var(--studio-gold);
+}
+
+.cv2-log-error {
+  overflow: hidden;
+  color: #e0736b;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 模板一行：左边点了铺开，右边删除 ---- */
+.cv2-row-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.cv2-row-card-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+/* ---- 版本快照 ---- */
+.cv2-snapshot {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--cv2-r-card);
+  background: var(--studio-field);
+  padding: 9px 11px;
+}
+
+.cv2-snapshot-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cv2-snapshot-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cv2-snapshot-actions .cv2-icon-button {
+  margin-left: auto;
+}
+
+.cv2-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-left: 2px solid var(--studio-gold);
+  background: var(--studio-gold-soft);
+  padding: 5px 8px;
+  color: var(--studio-text);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.cv2-diff-lead {
+  color: var(--studio-gold);
+}
+
+.cv2-diff-add {
+  color: #9fbf8c;
+}
+
+.cv2-diff-remove {
+  color: #e0736b;
+}
+
+button.cv2-mini-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* =====================================================================
+   工作台（画布 / 创作页 / 任务队列）的浅色版：跟随站点主题（默认跟随系统）。
+   html 上没有 .dark 时用这一套；有 .dark 时用 .studio-skin 默认的深色变量（画布的深色见下面 html.dark .cv2-root）。
+   选择器一律写成 html:not(.dark) …，比 .studio-skin 默认那套多一层，保证覆盖得上。
+   用户：深色框「好丑」、左侧栏也换 —— 选了「白底卡片」。
+   做法：沿用工作台的结构和 --studio-* 变量，只把变量换成浅色；画布专用的 --cv2-* 一起换。
+   任务队列不受影响（仍是 .dark .studio-skin）。创作页 2026-09-23 也改成浅色。
+   ===================================================================== */
+html:not(.dark) .studio-skin {
+  --studio-bg: #f3f2ee;
+  --studio-workspace: #efeee9;
+  --studio-panel: #fbfaf7;
+  --studio-field: #f4f3ef;
+  --studio-raised: #ffffff;
+  --studio-line: #e4e1d9;
+  --studio-line-strong: #cdc9bf;
+  --studio-text: #1f2321;
+  --studio-muted: #5c625f;
+  --studio-faint: #8b908d;
+  /* 浅底上原来的金色太淡，压深一档保证看得清 */
+  --studio-gold: #b5782a;
+  --studio-gold-strong: #9c6520;
+  --studio-gold-soft: rgba(181, 120, 42, 0.11);
+  --studio-stage: #e7e5df;
+  --studio-card: #ffffff;
+  color-scheme: light;
+}
+
+/* 下面几处在深色皮肤里写死了深色，浅色工作台单独换掉 */
+html:not(.dark) .studio-outline-button {
+  background: var(--studio-raised);
+}
+
+html:not(.dark) .studio-shell .studio-nav-sublink:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) .studio-shell .studio-nav-flyout {
+  box-shadow: 0 14px 32px rgba(40, 35, 25, 0.14) !important;
+}
+
+html:not(.dark) .studio-portal .enhanced-select-menu,
+html:not(.dark) .studio-portal [data-radix-popper-content-wrapper] > * {
+  box-shadow: 0 14px 36px rgba(40, 35, 25, 0.14) !important;
+}
+
+html:not(.dark) .cv2-root {
+  --cv2-canvas: #ecebe6;
+  --cv2-canvas-dot: #c9c6bd;
+  --cv2-canvas-line: #d6d3ca;
+  --cv2-card: #ffffff;
+  --cv2-card-head: #fbf8f2;
+  --cv2-edge: #9a8f7e;
+  --cv2-flow: #d08a2e;
+  --cv2-flow-glow: rgba(224, 150, 50, 0.55);
+}
+
+/* 全站导航在画布页：浅色胶囊 + 细边 + 轻阴影 */
+html:not(.dark) .studio-nav-rail {
+  box-shadow: 0 6px 20px rgba(60, 50, 30, 0.07);
+}
+
+/* 白卡片：浅灰细边 + 柔和两层阴影，标题栏淡淡的暖色 */
+html:not(.dark) .cv2-node {
+  border: 1px solid #e2ded5;
+  background: var(--cv2-card);
+  box-shadow:
+    0 1px 2px rgba(40, 35, 25, 0.06),
+    0 8px 24px rgba(40, 35, 25, 0.08);
+}
+
+html:not(.dark) .cv2-node:hover {
+  border-color: #d3cdc0;
+}
+
+html:not(.dark) .cv2-node-selected {
+  border-color: var(--studio-gold);
+  box-shadow:
+    0 0 0 3px rgba(181, 120, 42, 0.22),
+    0 10px 28px rgba(40, 35, 25, 0.12);
+}
+
+html:not(.dark) .cv2-node-head {
+  border-bottom-color: #eee9df;
+  background: var(--cv2-card-head);
+}
+
+html:not(.dark) .cv2-handle {
+  height: 11px;
+  width: 11px;
+  border: 2px solid #ffffff;
+  background: var(--cv2-edge);
+  box-shadow: 0 0 0 1px #d6d0c4;
+}
+
+html:not(.dark) .cv2-handle:hover {
+  background: var(--cv2-flow);
+}
+
+html:not(.dark) .cv2-board .react-flow__minimap-node {
+  fill: #cfc9bc;
+}
+
+/* 浅底上的弹层：阴影轻一点，不然一团黑 */
+html:not(.dark) .cv2-menu,
+html:not(.dark) .cv2-search-panel,
+html:not(.dark) .cv2-context-menu {
+  border-color: #e4e1d9;
+  box-shadow: 0 14px 36px rgba(40, 35, 25, 0.14);
+}
+
+/* 红 / 绿字在白底上压深，保证对比度 */
+html:not(.dark) .cv2-error {
+  background: #fdf0ee;
+  color: #b3261e;
+}
+
+html:not(.dark) .cv2-log-error,
+html:not(.dark) .cv2-diff-remove {
+  color: #b3261e;
+}
+
+html:not(.dark) .cv2-diff-add {
+  color: #3d7a2a;
+}
+
+html:not(.dark) .cv2-tool-danger:hover,
+html:not(.dark) .cv2-tool-wide.cv2-tool-danger {
+  color: #b3261e;
+}
+
+html:not(.dark) .cv2-group {
+  border-color: #b9b2a4;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+html:not(.dark) .cv2-group-collapsed {
+  border-color: #e2ded5;
+  background: var(--cv2-card);
+  box-shadow: 0 6px 18px rgba(40, 35, 25, 0.08);
+}
+
+html:not(.dark) .cv2-sticky .cv2-node-head {
+  background: var(--cv2-card-head);
+}
+
+/* =====================================================================
+   连线：底下一条浅色轨道 + 上面流动的金色光带 + 一颗沿线跑的光点（FlowEdge）
+   生成节点在跑的时候，从它连出去的线流得更快、更亮
+   ===================================================================== */
+.cv2-board .react-flow__edge.animated .react-flow__edge-path {
+  animation: none;
+  stroke-dasharray: none;
+}
+
+.cv2-edge-track {
+  fill: none;
+  stroke: var(--cv2-edge);
+  stroke-opacity: 0.35;
+  stroke-width: 3;
+}
+
+/* 光晕用一条更宽的半透明描边做，不用 filter / 渐变：
+   水平或竖直的直线外框高度为 0，filter 和 objectBoundingBox 渐变都会让整条线消失 */
+.cv2-edge-glow {
+  fill: none;
+  stroke: var(--cv2-flow-glow, rgba(224, 150, 50, 0.55));
+  stroke-opacity: 0.35;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 10 14;
+  animation: cv2-edge-flow 1.1s linear infinite;
+}
+
+.cv2-edge-flow {
+  fill: none;
+  stroke: var(--cv2-flow, #d08a2e);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 10 14;
+  animation: cv2-edge-flow 1.1s linear infinite;
+}
+
+.cv2-edge-dot {
+  fill: var(--cv2-flow, #d08a2e);
+  filter: drop-shadow(0 0 5px var(--cv2-flow-glow, rgba(224, 150, 50, 0.8)));
+}
+
+.cv2-edge-active .cv2-edge-flow,
+.cv2-edge-active .cv2-edge-glow {
+  animation-duration: 0.45s;
+}
+
+.cv2-edge-active .cv2-edge-flow {
+  stroke-width: 3;
+}
+
+.cv2-edge-selected .cv2-edge-track {
+  stroke: var(--cv2-flow, #d08a2e);
+  stroke-opacity: 0.5;
+  stroke-width: 5;
+}
+
+@keyframes cv2-edge-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv2-edge-flow,
+  .cv2-edge-glow {
+    animation: none;
+  }
+
+  .cv2-edge-dot {
+    display: none;
+  }
+}
+
+
+/* ---- 深色版画布（站点是深色 / 跟随系统且系统是深色）----
+   不回到最早那版「浅灰底 + 近黑卡片」（用户说看不清边界）：整块画布一起变深，卡片比底亮一档、描边再亮一档 */
+html.dark .cv2-root {
+  --cv2-canvas: #121517;
+  --cv2-canvas-dot: #2c3235;
+  --cv2-canvas-line: #333a3d;
+  --cv2-card: #1c2123;
+  --cv2-card-head: #23292b;
+  --cv2-card-border: #353c3f;
+  --cv2-edge: #6f7875;
+  --cv2-flow: #e2a553;
+  --cv2-flow-glow: rgba(226, 165, 83, 0.5);
+  --cv2-control-bg: #1c2123;
+  --cv2-control-fg: #a7aeab;
+  --cv2-control-hover: #262c2f;
+  --cv2-group-line: #4c5457;
+  --cv2-group-title: #c9cecb;
+}
+
+html.dark .cv2-node {
+  border: 1px solid var(--cv2-card-border);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .cv2-node:hover {
+  border-color: #454d50;
+}
+
+html.dark .cv2-node-selected {
+  border-color: var(--studio-gold);
+  box-shadow:
+    0 0 0 3px rgba(217, 155, 69, 0.28),
+    0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .cv2-node-head {
+  border-bottom-color: var(--cv2-card-border);
+  background: var(--cv2-card-head);
+}
+
+html.dark .cv2-handle {
+  height: 11px;
+  width: 11px;
+  border: 2px solid var(--cv2-card);
+  background: var(--cv2-edge);
+  box-shadow: 0 0 0 1px #454d50;
+}
+
+html.dark .cv2-handle:hover {
+  background: var(--cv2-flow);
+}
+
+html.dark .cv2-board .react-flow__minimap-node {
+  fill: #3a4245;
+}
+
+html.dark .cv2-board .react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.45);
+}
+
+html.dark .cv2-group {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+html.dark .cv2-group-collapsed {
+  border-color: var(--cv2-card-border);
+  background: var(--cv2-card);
+}
+
+/* ---- 任务队列的浅色版：深色皮肤里写死的几处颜色换掉 ---- */
+html:not(.dark) .task-row:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+html:not(.dark) .task-row-thumb,
+html:not(.dark) .task-drawer-preview {
+  background: var(--studio-stage);
+}
+
+html:not(.dark) .task-status-badge[data-status='completed'] {
+  border-color: rgba(47, 122, 61, 0.35);
+  color: #2f7a3d;
+}
+
+html:not(.dark) .task-status-badge[data-status='failed'],
+html:not(.dark) .task-row-failure,
+html:not(.dark) .task-drawer-failure strong,
+html:not(.dark) .task-stat[data-kind='failed'] > strong {
+  color: #b3261e;
+}
+
+html:not(.dark) .task-status-badge[data-status='failed'] {
+  border-color: rgba(179, 38, 30, 0.35);
+}
+
+html:not(.dark) .task-drawer-failure p {
+  color: #8c3a33;
+}
+
+html:not(.dark) .task-drawer-backdrop {
+  background: rgba(30, 28, 22, 0.35);
+}

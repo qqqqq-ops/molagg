@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-  id               BigInt    @id @default(autoincrement())
-  email            String    @unique
-  username         String?
-  avatar           String?
-  role             String    @default("user")
-  status           String    @default("active")
-  banReason        String?   @map("ban_reason")
-  banExpireAt      DateTime? @map("ban_expire_at")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id           BigInt    @id @default(autoincrement())
+  email        String    @unique
+  username     String?
+  passwordHash String?   @map("password_hash")
+  avatar       String?
+  role         String    @default("user")
+  status       String    @default("active")
+  banReason    String?   @map("ban_reason")
+  banExpireAt  DateTime? @map("ban_expire_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   imageTasks          ImageTask[]
   videoTasks          VideoTask[]
@@ -29,6 +30,11 @@ model User {
   chatConversations   ChatConversation[]
   chatMessages        ChatMessage[]
   chatFiles           ChatFile[]
+  channelCredentials  UserChannelCredential[]
+  aiSetting           UserAiSetting?
+  canvasBoards        CanvasBoard[]
+  canvasSnapshots     CanvasSnapshot[]
+  canvasTemplates     CanvasTemplate[]
 
   @@index([createdAt], name: "users_created_at_idx")
   @@map("users")
@@ -51,41 +57,76 @@ model ApiChannel {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  models        AiModel[]
-  imageTasks    ImageTask[]
-  videoTasks    VideoTask[]
+  models          AiModel[]
+  imageTasks      ImageTask[]
+  videoTasks      VideoTask[]
+  userCredentials UserChannelCredential[]
+
   @@index([provider, status, priority], name: "api_channel_idx_provider_status")
   @@map("api_channels")
 }
 
-model AiModel {
-  id                      BigInt   @id @default(autoincrement())
-  name                    String
-  modelKey                String   @map("model_key")
-  icon                    String?
-  type                    String
-  provider                String
-  channelId               BigInt   @map("channel_id")
-  defaultParams           String?  @map("default_params")
-  paramConstraints        String?  @map("param_constraints")
-  isActive                Boolean  @default(true) @map("is_active")
-  sortOrder               Int      @default(0) @map("sort_order")
-  description             String?
-  supportsImageInput      Boolean? @map("supports_image_input")
-  supportsResolutionSelect Boolean? @map("supports_resolution_select")
-  supportsSizeSelect      Boolean? @map("supports_size_select")
-  supportsQuickMode       Boolean? @map("supports_quick_mode")
-  supportsAgentMode       Boolean? @map("supports_agent_mode")
-  supportsAutoMode        Boolean? @map("supports_auto_mode")
-  maxContextRounds        Int?     @map("max_context_rounds")
-  systemPrompt            String?  @map("system_prompt")
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
+model UserChannelCredential {
+  id           BigInt   @id @default(autoincrement())
+  userId       BigInt   @map("user_id")
+  channelId    BigInt   @map("channel_id")
+  baseUrl      String?  @map("base_url")
+  apiKey       String?  @map("api_key")
+  apiSecret    String?  @map("api_secret")
+  extraHeaders String?  @map("extra_headers")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  channel             ApiChannel           @relation(fields: [channelId], references: [id])
-  imageTasks          ImageTask[]
-  videoTasks          VideoTask[]
-  chatConversations   ChatConversation[]
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel ApiChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channelId], name: "user_channel_credential_user_channel_unique")
+  @@index([userId], name: "user_channel_credential_idx_user")
+  @@map("user_channel_credentials")
+}
+
+model UserAiSetting {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @unique @map("user_id")
+  apiBaseUrl String?  @map("api_base_url")
+  apiKey     String?  @map("api_key")
+  modelName  String?  @map("model_name")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_ai_settings")
+}
+
+model AiModel {
+  id                       BigInt   @id @default(autoincrement())
+  name                     String
+  modelKey                 String   @map("model_key")
+  icon                     String?
+  type                     String
+  provider                 String
+  channelId                BigInt   @map("channel_id")
+  defaultParams            String?  @map("default_params")
+  paramConstraints         String?  @map("param_constraints")
+  isActive                 Boolean  @default(true) @map("is_active")
+  sortOrder                Int      @default(0) @map("sort_order")
+  description              String?
+  supportsImageInput       Boolean? @map("supports_image_input")
+  supportsResolutionSelect Boolean? @map("supports_resolution_select")
+  supportsSizeSelect       Boolean? @map("supports_size_select")
+  supportsQuickMode        Boolean? @map("supports_quick_mode")
+  supportsAgentMode        Boolean? @map("supports_agent_mode")
+  supportsAutoMode         Boolean? @map("supports_auto_mode")
+  maxContextRounds         Int?     @map("max_context_rounds")
+  systemPrompt             String?  @map("system_prompt")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  channel           ApiChannel         @relation(fields: [channelId], references: [id])
+  imageTasks        ImageTask[]
+  videoTasks        VideoTask[]
+  chatConversations ChatConversation[]
 
   @@index([type, isActive, sortOrder], name: "ai_model_idx_type_active")
   @@index([type, provider, isActive, sortOrder], name: "ai_model_idx_type_provider_active")
@@ -113,33 +154,33 @@ model ModelProvider {
 }
 
 model ImageTask {
-  id                   BigInt    @id @default(autoincrement())
-  userId               BigInt    @map("user_id")
-  modelId              BigInt    @map("model_id")
-  channelId            BigInt    @map("channel_id")
-  projectId            BigInt?   @map("project_id")
-  taskNo               String    @unique @map("task_no")
-  provider             String
-  providerTaskId       String?   @map("provider_task_id")
-  prompt               String
-  negativePrompt       String?   @map("negative_prompt")
-  parameters           String?
-  providerData         String?   @map("provider_data")
-  status               String
-  resultUrl            String?   @map("result_url")
-  thumbnailUrl         String?   @map("thumbnail_url")
-  storageKey           String?   @map("storage_key")
-  errorMessage         String?   @map("error_message")
-  retryCount           Int       @default(0) @map("retry_count")
-  startedAt            DateTime? @map("started_at")
-  completedAt          DateTime? @map("completed_at")
-  deletedAt            DateTime? @map("deleted_at")
-  createdAt            DateTime  @default(now()) @map("created_at")
+  id             BigInt    @id @default(autoincrement())
+  userId         BigInt    @map("user_id")
+  modelId        BigInt    @map("model_id")
+  channelId      BigInt    @map("channel_id")
+  projectId      BigInt?   @map("project_id")
+  taskNo         String    @unique @map("task_no")
+  provider       String
+  providerTaskId String?   @map("provider_task_id")
+  prompt         String
+  negativePrompt String?   @map("negative_prompt")
+  parameters     String?
+  providerData   String?   @map("provider_data")
+  status         String
+  resultUrl      String?   @map("result_url")
+  thumbnailUrl   String?   @map("thumbnail_url")
+  storageKey     String?   @map("storage_key")
+  errorMessage   String?   @map("error_message")
+  retryCount     Int       @default(0) @map("retry_count")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
-  user          User          @relation(fields: [userId], references: [id])
-  model         AiModel       @relation(fields: [modelId], references: [id])
-  channel       ApiChannel    @relation(fields: [channelId], references: [id])
-  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user          User           @relation(fields: [userId], references: [id])
+  model         AiModel        @relation(fields: [modelId], references: [id])
+  channel       ApiChannel     @relation(fields: [channelId], references: [id])
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   projectAssets ProjectAsset[]
 
   @@index([userId, createdAt], name: "image_task_idx_user_time")
@@ -155,34 +196,34 @@ model ImageTask {
 }
 
 model VideoTask {
-  id                          BigInt    @id @default(autoincrement())
-  userId                      BigInt    @map("user_id")
-  modelId                     BigInt    @map("model_id")
-  channelId                   BigInt    @map("channel_id")
-  projectId                   BigInt?   @map("project_id")
-  taskNo                      String    @unique @map("task_no")
-  provider                    String
-  providerTaskId              String?   @map("provider_task_id")
-  prompt                      String
-  parameters                  String?
-  providerData                String?   @map("provider_data")
-  autoProjectShotId           String?   @map("auto_project_shot_id")
-  autoProjectWorkflowStage    String?   @map("auto_project_workflow_stage")
-  autoProjectFinalStoryboard  Boolean?  @map("auto_project_final_storyboard")
-  status                      String
-  resultUrl                   String?   @map("result_url")
-  thumbnailUrl                String?   @map("thumbnail_url")
-  storageKey                  String?   @map("storage_key")
-  errorMessage                String?   @map("error_message")
-  retryCount                  Int       @default(0) @map("retry_count")
-  startedAt                   DateTime? @map("started_at")
-  completedAt                 DateTime? @map("completed_at")
-  createdAt                   DateTime  @default(now()) @map("created_at")
+  id                         BigInt    @id @default(autoincrement())
+  userId                     BigInt    @map("user_id")
+  modelId                    BigInt    @map("model_id")
+  channelId                  BigInt    @map("channel_id")
+  projectId                  BigInt?   @map("project_id")
+  taskNo                     String    @unique @map("task_no")
+  provider                   String
+  providerTaskId             String?   @map("provider_task_id")
+  prompt                     String
+  parameters                 String?
+  providerData               String?   @map("provider_data")
+  autoProjectShotId          String?   @map("auto_project_shot_id")
+  autoProjectWorkflowStage   String?   @map("auto_project_workflow_stage")
+  autoProjectFinalStoryboard Boolean?  @map("auto_project_final_storyboard")
+  status                     String
+  resultUrl                  String?   @map("result_url")
+  thumbnailUrl               String?   @map("thumbnail_url")
+  storageKey                 String?   @map("storage_key")
+  errorMessage               String?   @map("error_message")
+  retryCount                 Int       @default(0) @map("retry_count")
+  startedAt                  DateTime? @map("started_at")
+  completedAt                DateTime? @map("completed_at")
+  createdAt                  DateTime  @default(now()) @map("created_at")
 
-  user          User          @relation(fields: [userId], references: [id])
-  model         AiModel       @relation(fields: [modelId], references: [id])
-  channel       ApiChannel    @relation(fields: [channelId], references: [id])
-  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user          User           @relation(fields: [userId], references: [id])
+  model         AiModel        @relation(fields: [modelId], references: [id])
+  channel       ApiChannel     @relation(fields: [channelId], references: [id])
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   projectAssets ProjectAsset[]
 
   @@index([userId, createdAt], name: "video_task_idx_user_time")
@@ -239,10 +280,10 @@ model ProjectAsset {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  user      User       @relation(fields: [userId], references: [id])
-  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  imageTask ImageTask? @relation(fields: [imageTaskId], references: [id], onDelete: SetNull)
-  videoTask VideoTask? @relation(fields: [videoTaskId], references: [id], onDelete: SetNull)
+  user       User       @relation(fields: [userId], references: [id])
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  imageTask  ImageTask? @relation(fields: [imageTaskId], references: [id], onDelete: SetNull)
+  videoTask  VideoTask? @relation(fields: [videoTaskId], references: [id], onDelete: SetNull)
   parsedFile ChatFile?
 
   @@unique([projectId, imageTaskId], name: "project_asset_project_image_task_unique")
@@ -317,9 +358,9 @@ model ChatConversation {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  model          AiModel            @relation(fields: [modelId], references: [id])
-  projectContext Project?           @relation(fields: [projectContextId], references: [id], onDelete: SetNull)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  model          AiModel       @relation(fields: [modelId], references: [id])
+  projectContext Project?      @relation(fields: [projectContextId], references: [id], onDelete: SetNull)
   messages       ChatMessage[]
   files          ChatFile[]
 
@@ -377,4 +418,57 @@ model ChatFile {
   @@index([userId, status, createdAt], name: "chat_file_idx_user_status_time")
   @@index([projectAssetId, createdAt], name: "chat_file_idx_project_asset_time")
   @@map("chat_files")
+}
+
+/// 无限画布：自动保存的当前画布。graph 是 JSON 文本 { nodes, edges }（React Flow 原生结构）
+model CanvasBoard {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  name      String
+  graph     String
+  nodeCount Int      @default(0) @map("node_count")
+  edgeCount Int      @default(0) @map("edge_count")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots CanvasSnapshot[]
+
+  @@index([userId, updatedAt], name: "canvas_board_idx_user_time")
+  @@map("canvas_boards")
+}
+
+/// 画布版本快照：某一刻整张图的副本，可对比、可恢复
+model CanvasSnapshot {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  boardId   BigInt   @map("board_id")
+  label     String
+  graph     String
+  nodeCount Int      @default(0) @map("node_count")
+  edgeCount Int      @default(0) @map("edge_count")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board CanvasBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId, createdAt], name: "canvas_snapshot_idx_board_time")
+  @@map("canvas_snapshots")
+}
+
+/// 工作流模板：用户把一段节点 + 连线存下来，以后一键铺到画布上
+model CanvasTemplate {
+  id          BigInt   @id @default(autoincrement())
+  userId      BigInt   @map("user_id")
+  name        String
+  description String?
+  graph       String
+  nodeCount   Int      @default(0) @map("node_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt], name: "canvas_template_idx_user_time")
+  @@map("canvas_templates")
 }

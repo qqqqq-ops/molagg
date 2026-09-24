@@ -47,13 +47,20 @@ export function useDropdownDirection({
       })
     }
 
+    // 捕获阶段会收到菜单自己内部的滚动 —— 那不是页面在动，不用重新定位
+    const handleScroll = (event: Event) => {
+      const target = event.target
+      if (target instanceof Element && target.closest('.enhanced-select-menu')) return
+      updateDirection()
+    }
+
     updateDirection()
     window.addEventListener('resize', updateDirection)
-    window.addEventListener('scroll', updateDirection, true)
+    window.addEventListener('scroll', handleScroll, true)
 
     return () => {
       window.removeEventListener('resize', updateDirection)
-      window.removeEventListener('scroll', updateDirection, true)
+      window.removeEventListener('scroll', handleScroll, true)
     }
   }, [containerRef, isOpen, preferredMaxHeight])
 

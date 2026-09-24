@@ -1,15 +1,12 @@
 {
-  "brand": "FlowMuse",
+  "brand": "Molagg",
   "menu": {
     "home": "Home",
-    "gallery": "Gallery",
+    "gallery": "My Works",
     "create": "Create",
-    "creationCenter": "Creative Hub",
+    "creationCenter": "Create",
     "projects": "Projects",
-    "chat": "Chat",
-    "workflow": "Workflow",
-    "studio": "Studio",
-    "tasks": "Tasks",
+    "tasks": "Task Queue",
     "templates": "Network Prompts",
     "layoutTop": "Top menu",
     "layoutSide": "Side menu",
@@ -27,24 +24,24 @@
     },
     "creationMenu": {
       "badge": "Creation Hub",
-      "quickMode": "Quick Mode",
-      "workflowMode": "Workflow Mode",
-      "workflow": "Workflow",
-      "workflowDesc": "Use conversations and orchestration to drive the full creative flow",
-      "studio": "Studio",
-      "studioDesc": "Open the direct control workspace for image and video creation",
-      "workspace": "Create Studio",
-      "workspaceDesc": "Unified entry for text/image/video generation",
+      "imageMode": "Create Image",
+      "videoMode": "Create Video",
+      "chatMode": "Chat to Create",
       "tasks": "Task Center",
       "tasksDesc": "Track progress, status, and task history",
       "inspiration": "My Works",
       "inspirationDesc": "View locally generated image and video works",
       "templates": "Network Prompts",
       "templatesDesc": "Browse network prompts and apply them in one click"
-    }
+    },
+    "tutorial": "Tutorial",
+    "library": "Library"
   },
   "user": {
-    "profile": "Local User"
+    "profile": "Account",
+    "login": "Sign in",
+    "register": "Register",
+    "logout": "Sign out"
   },
   "language": {
     "title": "Select Language",
@@ -56,6 +53,6 @@
     }
   },
   "footer": {
-    "copyright": "© 2026 FlowMuse"
+    "copyright": "© 2026 Molagg"
   }
 }

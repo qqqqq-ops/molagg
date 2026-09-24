@@ -1,25 +1,11 @@
-/**
- * 个人版固定本地用户状态。
- * 后端已绕过 JWT 守卫，前端保持本地可用视图以复用现有页面。
- */
-
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { UserProfile } from '../api/types'
 
-const LOCAL_USER: UserProfile = {
-  id: '1',
-  email: 'local@flowmuse.personal',
-  username: 'Local User',
-  avatar: null,
-  role: 'admin',
-  status: 'active',
-  createdAt: new Date(0).toISOString(),
-}
-
 interface AuthState {
-  user: UserProfile
-  accessToken: string
-  refreshToken: string
+  user: UserProfile | null
+  accessToken: string | null
+  refreshToken: string | null
   isAuthenticated: boolean
   _hasHydrated: boolean
   login: (data: {
@@ -33,44 +19,64 @@ interface AuthState {
   setHasHydrated: (state: boolean) => void
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
-  user: LOCAL_USER,
-  accessToken: 'local-personal-token',
-  refreshToken: 'local-personal-token',
-  isAuthenticated: true,
-  _hasHydrated: true,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isAuthenticated: false,
+      _hasHydrated: false,
 
-  login: ({ user, accessToken, refreshToken }) => {
-    set({
-      user: { ...LOCAL_USER, ...user, role: 'admin', status: 'active' },
-      accessToken: accessToken || 'local-personal-token',
-      refreshToken: refreshToken || 'local-personal-token',
-      isAuthenticated: true,
-      _hasHydrated: true,
-    })
-  },
+      login: ({ user, accessToken, refreshToken }) => {
+        set({
+          user,
+          accessToken,
+          refreshToken,
+          isAuthenticated: true,
+          _hasHydrated: true,
+        })
+      },
 
-  logout: () => {
-    set({
-      user: LOCAL_USER,
-      accessToken: 'local-personal-token',
-      refreshToken: 'local-personal-token',
-      isAuthenticated: true,
-      _hasHydrated: true,
-    })
-  },
+      logout: () => {
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          _hasHydrated: true,
+        })
+      },
 
-  updateUser: (userData) => {
-    set((state) => ({
-      user: { ...state.user, ...userData, role: 'admin', status: 'active' },
-    }))
-  },
+      updateUser: (userData) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...userData } : state.user,
+        }))
+      },
 
-  updateToken: (accessToken) => {
-    set({ accessToken: accessToken || 'local-personal-token' })
-  },
+      updateToken: (accessToken) => {
+        set({ accessToken })
+      },
 
-  setHasHydrated: () => {
-    set({ _hasHydrated: true })
-  },
-}))
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state })
+      },
+    }),
+    {
+      name: 'flowmuse-auth',
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      // localStorage 是同步存储，这个回调会在 create() 返回之前触发 —— 那时 useAuthStore 还没赋值，
+      // 直接访问会抛 ReferenceError，并被 zustand 静默吞掉，_hasHydrated 永远是 false，
+      // 所有套了 RequireAuth 的页面（资产库 / 画布 / 任务队列）一直停在「正在进入...」。
+      // 推迟到微任务里执行，store 已经创建完成；存储读取出错时同样会置位，不会把人卡死。
+      onRehydrateStorage: () => () => {
+        queueMicrotask(() => useAuthStore.setState({ _hasHydrated: true }))
+      },
+    },
+  ),
+)

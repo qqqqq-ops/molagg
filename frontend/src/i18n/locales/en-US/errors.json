@@ -1,6 +1,6 @@
 {
   "auth": {
-    "unauthorized": "Local mode is not initialized. Refresh the page.",
+    "unauthorized": "Please sign in first.",
     "forbidden": "Access denied"
   },
   "tasks": {
@@ -35,5 +35,19 @@
     "tooShort": "Content is too short",
     "fileTooLarge": "File is too large, max {size}MB",
     "invalidFileType": "File type not supported"
+  },
+  "failure": {
+    "channelMissing": "The channel behind this model has no Base URL or API Key yet, so the request can't be sent.",
+    "channelMissingAction": "Configure channels",
+    "auth": "Your session expired. Sign in again and retry.",
+    "network": "Can't reach the local service. Make sure the backend is running, then retry.",
+    "rateLimited": "The upstream provider rate-limited this request — nothing to do with what you did. Wait a moment and retry, or switch channel/model.",
+    "upstream": "The upstream provider returned nothing this time — nothing to do with your settings. Retry, or switch to another model.",
+    "invalidParams": "The upstream provider rejected this combination of settings. Adjust them and retry.",
+    "modelRemoved": "This model was removed or disabled. Pick another model.",
+    "canceled": "Task canceled.",
+    "modalRequired": "Midjourney modal parameters still need to be submitted.",
+    "unknown": "No specific reason came back. Retry once; if it keeps failing, check the channel config or switch model.",
+    "detail": "Upstream said: {detail}"
   }
 }

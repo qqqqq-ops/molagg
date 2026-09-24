@@ -15,6 +15,9 @@ import {
 import { useRouter } from '@/lib/router'
 
 import { HOME_NAV_TRANSITION_MS, type LandingMode } from './landingHomePage.shared'
+
+/** 与 .carouselImage 的 opacity 过渡时长一致 */
+const HOME_BACKGROUND_FADE_MS = 2000
 import styles from './LandingHomePage.module.css'
 
 type LandingHomePageShellContextValue = {
@@ -22,6 +25,8 @@ type LandingHomePageShellContextValue = {
   mode: LandingMode
   navigateWithTransition: (href: string) => void
   setMode: Dispatch<SetStateAction<LandingMode>>
+  /** 落地页出了生成结果后要往下滚着看，这时首屏不能再随滚动淡出。 */
+  setHeroPinned: (pinned: boolean) => void
 }
 
 const LandingHomePageShellContext = createContext<LandingHomePageShellContextValue | null>(null)
@@ -41,6 +46,7 @@ export function LandingHomePageShellClient({
   const backgroundVideoRef = useRef<HTMLVideoElement | null>(null)
   const backgroundParallaxRef = useRef<HTMLDivElement | null>(null)
   const heroContentRef = useRef<HTMLElement | null>(null)
+  const heroPinnedRef = useRef(false)
   const [mode, setMode] = useState<LandingMode>('image')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [currentBackgroundIndex, setCurrentBackgroundIndex] = useState(0)
@@ -76,13 +82,19 @@ export function LandingHomePageShellClient({
     const preloadedImage = new Image()
     preloadedImage.src = nextBackgroundSrc
 
-    if (activeBackgroundLayer === 'primary') {
-      if (secondaryBackgroundSrc !== nextBackgroundSrc) {
-        setSecondaryBackgroundSrc(nextBackgroundSrc)
+    // 刚失去 active 的那一层还在淡出，必须等淡出结束再换图，
+    // 否则淡出过程中会闪出下一张图（或加载中的空白），交叉淡化就变成了硬切
+    const timer = window.setTimeout(() => {
+      if (activeBackgroundLayer === 'primary') {
+        if (secondaryBackgroundSrc !== nextBackgroundSrc) {
+          setSecondaryBackgroundSrc(nextBackgroundSrc)
+        }
+      } else if (primaryBackgroundSrc !== nextBackgroundSrc) {
+        setPrimaryBackgroundSrc(nextBackgroundSrc)
       }
-    } else if (primaryBackgroundSrc !== nextBackgroundSrc) {
-      setPrimaryBackgroundSrc(nextBackgroundSrc)
-    }
+    }, HOME_BACKGROUND_FADE_MS + 200)
+
+    return () => window.clearTimeout(timer)
   }, [
     activeBackgroundLayer,
     backgroundImages,
@@ -157,7 +169,10 @@ export function LandingHomePageShellClient({
             backgroundParallax.style.transform = `translate3d(0, ${backgroundShift.toFixed(2)}px, 0)`
           }
 
-          if (heroContent) {
+          if (heroContent && heroPinnedRef.current) {
+            heroContent.style.opacity = ''
+            heroContent.style.transform = ''
+          } else if (heroContent) {
             const opacity = Math.max(0, 1 - progress * 1.45)
             const translateY = clampedScrollY * 0.44
             const scale = 1 - progress * 0.065
@@ -207,12 +222,22 @@ export function LandingHomePageShellClient({
     }, HOME_NAV_TRANSITION_MS)
   }, [isTransitioning, router])
 
+  const setHeroPinned = useCallback((pinned: boolean) => {
+    heroPinnedRef.current = pinned
+    const heroContent = heroContentRef.current
+    if (pinned && heroContent) {
+      heroContent.style.opacity = ''
+      heroContent.style.transform = ''
+    }
+  }, [])
+
   const contextValue = useMemo<LandingHomePageShellContextValue>(() => ({
     isTransitioning,
     mode,
     navigateWithTransition,
+    setHeroPinned,
     setMode,
-  }), [isTransitioning, mode, navigateWithTransition])
+  }), [isTransitioning, mode, navigateWithTransition, setHeroPinned])
 
   return (
     <LandingHomePageShellContext.Provider value={contextValue}>

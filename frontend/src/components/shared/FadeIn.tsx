@@ -35,7 +35,8 @@ export function FadeIn({
       initial="initial"
       animate="animate"
       variants={selectedVariant}
-      transition={{ delay }}
+      // 各页面写死了 0.1–0.4s 的错峰延迟，叠起来要等近 1 秒；统一按 1/4 生效，保留错峰感但不拖沓
+      transition={{ delay: delay * 0.25 }}
       className={className}
     >
       {children}

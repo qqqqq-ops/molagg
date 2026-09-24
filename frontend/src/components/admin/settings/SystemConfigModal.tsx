@@ -11,6 +11,8 @@ import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { adminAiService, type AiSettings, type StorageSettings } from '@/lib/api/services/admin/ai'
+import { userSettingsService } from '@/lib/api/services/userSettings'
+import { useAuth } from '@/lib/hooks/useAuth'
 
 const labelCls = 'mb-2 block text-sm font-medium text-stone-700 dark:text-stone-200'
 const inputCls =
@@ -41,6 +43,7 @@ interface SystemConfigModalProps {
 export function SystemConfigModal({ isOpen, onClose }: SystemConfigModalProps) {
   const t = useTranslations('settings.system')
   const tCommon = useTranslations('settings.common')
+  const { isAdmin } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isStorageSaving, setIsStorageSaving] = useState(false)
@@ -57,22 +60,24 @@ export function SystemConfigModal({ isOpen, onClose }: SystemConfigModalProps) {
     try {
       setIsLoading(true)
       const [data, storageData] = await Promise.all([
-        adminAiService.getSettings(),
-        adminAiService.getStorageSettings(),
+        userSettingsService.getAiSettings(),
+        isAdmin ? adminAiService.getStorageSettings() : Promise.resolve(null),
       ])
       setFormData({
         apiBaseUrl: data.apiBaseUrl || '',
         apiKey: data.apiKey || '',
         modelName: data.modelName || '',
       })
-      setStorageFormData({
-        cosSecretId: storageData.cosSecretId || '',
-        cosSecretKey: storageData.cosSecretKey || '',
-        cosBucket: storageData.cosBucket || '',
-        cosRegion: storageData.cosRegion || '',
-        cosPublicBaseUrl: storageData.cosPublicBaseUrl || '',
-        cosPrefix: storageData.cosPrefix || '',
-      })
+      if (storageData) {
+        setStorageFormData({
+          cosSecretId: storageData.cosSecretId || '',
+          cosSecretKey: storageData.cosSecretKey || '',
+          cosBucket: storageData.cosBucket || '',
+          cosRegion: storageData.cosRegion || '',
+          cosPublicBaseUrl: storageData.cosPublicBaseUrl || '',
+          cosPrefix: storageData.cosPrefix || '',
+        })
+      }
     } catch (error) {
       toast.error(tCommon('failedToLoad'))
     } finally {
@@ -91,7 +96,7 @@ export function SystemConfigModal({ isOpen, onClose }: SystemConfigModalProps) {
       if (formData.apiKey && !formData.apiKey.includes('****')) {
         payload.apiKey = formData.apiKey
       }
-      const updated = await adminAiService.updateSettings(payload)
+      const updated = await userSettingsService.updateAiSettings(payload)
       setFormData({
         apiBaseUrl: updated.apiBaseUrl || '',
         apiKey: updated.apiKey || '',
@@ -153,15 +158,16 @@ export function SystemConfigModal({ isOpen, onClose }: SystemConfigModalProps) {
           </div>
         </Card>
       ) : (
-        <Tabs defaultValue="chat" className="w-full">
+        <Tabs defaultValue="media" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="chat">{t('tabs.chat')}</TabsTrigger>
             <TabsTrigger value="media">{t('tabs.media')}</TabsTrigger>
+            <TabsTrigger value="chat">{t('tabs.chat')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chat" className="space-y-5">
             <form onSubmit={handleSubmit}>
               <Card className={`${panelCardCls} space-y-5 p-6`}>
+                <p className="text-sm text-stone-500 dark:text-stone-400">{t('chatHint')}</p>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
                     <label className={labelCls}>{t('apiBaseUrl')}</label>
@@ -203,12 +209,13 @@ export function SystemConfigModal({ isOpen, onClose }: SystemConfigModalProps) {
               </Card>
             </form>
 
-            <ChatModelManagerSection apiConfigured={apiConfigured} />
+            {isAdmin && <ChatModelManagerSection apiConfigured={apiConfigured} />}
           </TabsContent>
 
           <TabsContent value="media">
             <div className="space-y-5">
-              <form onSubmit={handleStorageSubmit}>
+              <ModelChannelManagerSection />
+              {isAdmin && <form onSubmit={handleStorageSubmit}>
                 <Card className={`${panelCardCls} space-y-5 p-6`}>
                   <div className="text-sm font-medium text-stone-900 dark:text-stone-100">
                     {t('storage.title')}
@@ -279,9 +286,7 @@ export function SystemConfigModal({ isOpen, onClose }: SystemConfigModalProps) {
                     </Button>
                   </div>
                 </Card>
-              </form>
-
-              <ModelChannelManagerSection />
+              </form>}
             </div>
           </TabsContent>
         </Tabs>

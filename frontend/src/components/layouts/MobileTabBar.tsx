@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from '@/i18n/client'
 import Link from '@/lib/compat/link'
 import { SystemConfigModal } from '@/components/admin/settings/SystemConfigModal'
 import { cn } from '@/lib/utils/cn'
-import { Compass, Sparkles, MessageSquare, ClipboardList, Settings } from 'lucide-react'
+import { Images, Sparkles, MessageSquare, ClipboardList, Settings } from 'lucide-react'
 
 export function MobileTabBar() {
   const pathname = usePathname()
@@ -22,11 +22,11 @@ export function MobileTabBar() {
 
   const tabs = [
     {
-      label: tMenu('gallery'),
-      icon: Compass,
+      label: tMenu('library'),
+      icon: Images,
       href: `/${locale}/gallery`,
       matcher: (path: string) =>
-        path.startsWith(`/${locale}/gallery`),
+        path.startsWith(`/${locale}/gallery`) || path.startsWith(`/${locale}/projects`),
     },
     {
       label: tMenu('create'),
@@ -38,7 +38,8 @@ export function MobileTabBar() {
         path.startsWith(`/${locale}/templates`),
     },
     {
-      label: tMenu('chat'),
+      // 和侧栏、落地页共用同一个键，避免同一个页面在三处叫三个名字
+      label: tMenu('creationMenu.chatMode'),
       icon: MessageSquare,
       href: `/${locale}/chat`,
       matcher: (path: string) => path.startsWith(`/${locale}/chat`),
@@ -53,7 +54,7 @@ export function MobileTabBar() {
 
   return (
     <>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-stone-200 safe-area-bottom dark:bg-stone-900/95 dark:border-stone-700/50">
+      <div className="studio-tabbar md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-stone-200 safe-area-bottom dark:bg-stone-900/95 dark:border-stone-700/50">
         <div className="flex items-center justify-around px-1 py-1.5">
           {tabs.map((tab) => {
             const isActive = tab.matcher(pathname)

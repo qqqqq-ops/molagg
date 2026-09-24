@@ -1,6 +1,13 @@
 {
-  "title": "快速模式",
-  "subtitle": "让AI帮你创作精美的图片和视频",
+  "title": "开始创作",
+  "subtitle": "选一个模型，写一句话或点一条样本，就能生成。",
+  "beginnerHint": "三步就够：选模型 → 点样本或写描述 → 点生成。参考图、项目素材等进阶选项可以先不用。",
+  "videoSamples": {
+    "title": "视频模型试玩样本",
+    "subtitle": "每条样本都配好了模型和提示词。点一下会自动填入，方便对比不同模型。",
+    "apply": "套用并试玩",
+    "switchHint": "视频模型样本在「视频创作」页。点上面的视频创作即可看到。"
+  },
   "hub": {
     "badge": "创作中心",
     "title": "统一创作入口",
@@ -35,7 +42,9 @@
   },
   "tabs": {
     "image": "图片创作",
-    "video": "视频创作"
+    "video": "视频创作",
+    "frames": "首尾帧创作",
+    "references": "参考创作"
   },
   "modes": {
     "template": "使用网络提示词",
@@ -63,6 +72,9 @@
     "backToTemplates": "返回提示词选择",
     "currentTemplate": "当前提示词：{name}"
   },
+  "advancedToggle": "进阶：参考素材、项目和首尾帧",
+  "advancedShow": "展开",
+  "advancedHide": "收起",
   "steps": {
     "step1": "选择AI模型",
     "step2": "描述你想要创作的内容",
@@ -106,7 +118,11 @@
       "async": "异步生成",
       "imageToImage": "图生图",
       "highRes": "高清"
-    }
+    },
+    "emptyHint": "先填好任意一个渠道的 Base URL 和 API Key，可用模型会自动出现在这里。",
+    "configureChannels": "去配置模型渠道",
+    "typeImage": "图片",
+    "typeVideo": "视频"
   },
   "form": {
     "model": {
@@ -227,6 +243,12 @@
       },
       "seed": "随机种子",
       "style": "风格"
+    },
+    "assetKind": {
+      "image": "参考图",
+      "video": "参考视频",
+      "audio": "参考音频",
+      "frame": "首尾帧"
     }
   },
   "videoAssistant": {
@@ -394,7 +416,9 @@
     "referenceLimitReached": "当前模型最多支持 {max} 个参考素材",
     "referenceAssetsMutuallyExclusive": "已启用首尾帧输入时，不能再选择项目参考素材",
     "promptTooShort": "提示词至少需要 1 个字符",
-    "promptTooLong": "提示词过长，请精简后重试"
+    "promptTooLong": "提示词过长，请精简后重试",
+    "assetUnsupported": "当前模型不支持{kind}。换一个模型，或先移除已上传的{kind}。",
+    "assetOverLimit": "当前模型最多支持 {max} 个{kind}，现在有 {count} 个。移除多余的再生成。"
   },
   "featuredTemplates": {
     "quickStart": "快速开始",
@@ -418,8 +442,107 @@
     "scrollPrev": "查看上一个创意",
     "scrollNext": "查看下一个创意",
     "sources": {
-      "system": "提示词来源：https://github.com/glidea/banana-prompt-quicker",
+      "system": "内置提示词库，点卡片直接套用",
+      "systemVideo": "视频模板按 Seedance 格式编写。点卡片会自动选中 Seedance 或其他对应视频模型。",
       "presets": "我的预设"
-    }
+    },
+    "presetsTitle": "灵感预设",
+    "gridHint": "点一张卡片，提示词会填进左侧，再按需改几个字。",
+    "showMore": "展开更多（共 {count} 个）",
+    "showLess": "收起"
+  },
+  "remix": {
+    "applied": "已套用这条作品的提示词和参数",
+    "modelMissing": "原模型已不可用，已改用当前默认模型；画面参数请重新确认"
+  },
+  "simple": {
+    "simpleLabel": "简洁模式",
+    "advancedLabel": "高级模式",
+    "toAdvanced": "切到高级模式",
+    "toSimple": "切回简洁模式",
+    "hint": "写一句话，点「确认并生成」就行。要用参考图、首尾帧或调更多参数，切到高级模式。",
+    "generate": "确认并生成",
+    "modelSwitchHint": "已自动选好一个可用模型，也可以自己换。",
+    "summaryTitle": "当前生成配置",
+    "ready": "参数已就绪",
+    "missingPrompt": "还差一句描述",
+    "missingModel": "还没有可用模型",
+    "rowModel": "模型",
+    "rowOutput": "输出",
+    "rowOthers": "其余参数",
+    "othersDefault": "取当前模型的默认档",
+    "rowResult": "结果",
+    "resultValue": "显示在右侧，同时存进任务队列和「我的作品」",
+    "secondsUnit": "秒",
+    "promptHelp": "不会写？看新手教程 →",
+    "countLabel": "张数",
+    "countUnit": "张"
+  },
+  "results": {
+    "title": "本次生成 · {count} 个",
+    "viewAll": "在任务队列查看全部",
+    "clear": "清空已结束",
+    "download": "下载",
+    "open": "查看原文件",
+    "failed": "生成失败",
+    "statusSubmitting": "提交中…",
+    "statusQueued": "排队中",
+    "statusRunning": "生成中",
+    "emptyTitle": "生成结果会出现在这里",
+    "emptyHint": "在左边写好描述、选好参数，点「生成」。结果就在这一栏出现，同时存进任务队列。",
+    "samplesTitle": "不知道写什么？点一个样例带入左栏"
+  },
+  "studio": {
+    "showcase": "展示案例",
+    "modeImage": "图片",
+    "modeVideo": "视频",
+    "playSample": "播放样片",
+    "applyCase": "应用案例",
+    "applied": "已带入案例：{title}",
+    "moreCases": "更多案例",
+    "currentConfig": "当前生成配置",
+    "cellOutput": "输出",
+    "cellReference": "参考",
+    "cellDuration": "时长",
+    "cellCount": "生成数量",
+    "cellModel": "模型",
+    "defaultRatio": "模型默认",
+    "secondsValue": "{value} 秒",
+    "countImages": "{count} 张",
+    "countVideos": "{count} 个",
+    "parallel": "并发生成",
+    "noReference": "未加参考图",
+    "referenceCount": "{count} 张参考图",
+    "noModel": "未选择",
+    "noteImageTitle": "{mode}",
+    "noteTextToImage": "只按描述生成。想锁定构图、人物或风格，在左栏加参考图。",
+    "noteImageToImage": "参考图会影响构图与风格，描述里写清楚要保留什么、改什么。",
+    "noteVideoTitle": "视频生成",
+    "noteVideoText": "按描述生成 {duration} 秒视频。参考图、首尾帧在左栏素材区添加，生成后结果会出现在上方预览。",
+    "kickerImage": "NEW IMAGE",
+    "kickerVideo": "NEW SHOT",
+    "headingImage": "制作新画面",
+    "headingVideo": "制作新镜头",
+    "subheadingImage": "从一句描述到可追踪的图片任务。",
+    "subheadingVideo": "从叙事意图到可追踪的视频任务。",
+    "browsePresets": "浏览预设",
+    "viewTasks": "查看任务",
+    "modeImageDesc": "文生图、参考图生图，多张并发",
+    "modeVideoDesc": "文生视频、首尾帧与参考素材",
+    "fieldModel": "模型",
+    "fieldContent": "描述与素材",
+    "fieldParams": "参数",
+    "optional": "选填",
+    "promptHelp": "不会写？看新手教程",
+    "presetsKicker": "从提示词到作品",
+    "presetsTitleLine1": "从一句话开始，",
+    "presetsTitleLine2": "做出你的下一张作品。",
+    "presetsSub": "点一张预设，提示词会自动带入左侧；再按需改几个字就能生成。",
+    "presetsCount": "{count} 组内置预设",
+    "applyPreset": "带入提示词",
+    "createVideo": "创建视频",
+    "createImage": "生成图片",
+    "modeFramesDesc": "支持纯提示词、首帧或首尾帧控制",
+    "modeReferencesDesc": "参考图片、视频与音频可组合使用"
   }
 }

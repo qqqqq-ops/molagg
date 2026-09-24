@@ -1,8 +1,3 @@
-/**
- * 认证 Hook
- * 简化认证状态访问
- */
-
 'use client'
 
 import { useAuthStore } from '@/lib/store/authStore'
@@ -15,16 +10,14 @@ export const useAuth = () => {
     _hasHydrated,
     logout: storeLogout,
   } = useAuthStore()
-  // 检查是否为管理员
-  const isAdmin = useMemo(() => {
-    return user?.role === 'admin'
-  }, [user])
+
+  const isAdmin = useMemo(() => user?.role === 'admin', [user])
 
   const logout = useCallback(() => {
     storeLogout()
   }, [storeLogout])
 
-  const requireAuth = useCallback(() => true, [])
+  const requireAuth = useCallback(() => Boolean(user && isAuthenticated), [user, isAuthenticated])
 
   return {
     user,

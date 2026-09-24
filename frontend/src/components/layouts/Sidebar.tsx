@@ -8,19 +8,19 @@
 import { useMemo, type ReactNode } from 'react'
 import { useLocale, useTranslations } from '@/i18n/client'
 import Link from '@/lib/compat/link'
-import { usePathname } from '@/lib/router'
+import { usePathname, useSearchParams } from '@/lib/router'
 import {
   ClipboardList,
-  Compass,
-  FolderKanban,
-  Github,
+  ExternalLink,
+  BookOpen,
+  Images,
   PenTool,
   Sparkles,
 } from 'lucide-react'
 
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { cn } from '@/lib/utils/cn'
-import { PERSONAL_GITHUB_URL } from '@/lib/utils/siteSettings'
+import { MOLAGG_RELAY_URL } from '@/lib/utils/siteSettings'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { UserMenu } from './UserMenu'
 
@@ -76,8 +76,9 @@ function DockNavItem({
     <Link
       href={href}
       prefetch={true}
+      data-active={active}
       className={cn(
-        'group/item relative z-[2] flex h-[64px] w-full flex-col items-center justify-start gap-1.5 px-0 text-center transition-colors duration-200',
+        'studio-nav-link group/item relative z-[2] flex h-[64px] w-full flex-col items-center justify-start gap-1.5 px-0 text-center transition-colors duration-200',
         active
           ? 'text-stone-950 dark:text-white'
           : 'text-stone-500 hover:text-stone-950 dark:text-[#777] dark:hover:text-white'
@@ -85,7 +86,7 @@ function DockNavItem({
     >
       <span
         className={cn(
-          'flex h-12 w-12 items-center justify-center rounded-[24px] transition-colors duration-200',
+          'studio-nav-icon flex h-12 w-12 items-center justify-center rounded-[24px] transition-colors duration-200',
           active
             ? 'bg-black/[0.055] dark:bg-white/[0.07]'
             : 'bg-transparent group-hover/item:bg-black/[0.035] dark:group-hover/item:bg-white/[0.045]'
@@ -117,7 +118,7 @@ function DockNavItem({
         <div className="absolute inset-y-0 -left-3 w-3" aria-hidden="true" />
         <div
           className={cn(
-            'min-w-[152px] rounded-[22px] border border-black/[0.045] bg-white/86 p-2 shadow-[0_20px_40px_rgba(0,0,0,0.12)] backdrop-blur-[30px]',
+            'studio-nav-flyout min-w-[152px] rounded-[22px] border border-black/[0.045] bg-white/86 p-2 shadow-[0_20px_40px_rgba(0,0,0,0.12)] backdrop-blur-[30px]',
             'dark:border-white/[0.055] dark:bg-[#111111]/86'
           )}
         >
@@ -127,8 +128,9 @@ function DockNavItem({
                 key={item.href}
                 href={item.href}
                 prefetch={true}
+                data-active={item.active}
                 className={cn(
-                  'flex min-h-[38px] items-center rounded-[16px] px-3 text-[11px] font-medium transition-colors duration-200',
+                  'studio-nav-sublink flex min-h-[38px] items-center rounded-[16px] px-3 text-[11px] font-medium transition-colors duration-200',
                   item.active
                     ? 'bg-black/[0.055] text-stone-950 dark:bg-white/[0.07] dark:text-white'
                     : 'text-stone-500 hover:bg-black/[0.04] hover:text-stone-950 dark:text-[#999] dark:hover:bg-white/[0.05] dark:hover:text-white'
@@ -148,16 +150,22 @@ export function Sidebar({ forceCollapsed: _forceCollapsed = false }: SidebarProp
   const t = useTranslations('nav.menu')
   const locale = useLocale()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-  const SITE_TITLE = 'FlowMuse'
+  const SITE_TITLE = 'Molagg'
+  const RELAY_LABEL = locale.toLowerCase().startsWith('zh') ? 'Molagg 中转站' : 'Molagg relay'
+  const isCreateRoute = pathname.startsWith(`/${locale}/create`)
+  // 创作页缺省就是图片模式，所以非 video 即 image
+  const isVideoCreateMode = searchParams.get('mode') === 'video'
 
   const navItems = useMemo(
     () => [
       {
+        // 「我的作品」+「项目」+ 素材合并为资产库；项目详情页 /projects/:id 也算在这一项下
         href: `/${locale}/gallery`,
-        label: t('gallery'),
-        active: pathname.startsWith(`/${locale}/gallery`),
-        icon: <Compass className="h-5 w-5 stroke-[2]" />,
+        label: t('library'),
+        active: pathname.startsWith(`/${locale}/gallery`) || pathname.startsWith(`/${locale}/projects`),
+        icon: <Images className="h-5 w-5 stroke-[2]" />,
       },
       {
         href: `/${locale}/create`,
@@ -169,13 +177,18 @@ export function Sidebar({ forceCollapsed: _forceCollapsed = false }: SidebarProp
         icon: <Sparkles className="h-5 w-5 stroke-[2]" />,
         submenuItems: [
           {
-            href: `/${locale}/create`,
-            label: t('creationMenu.quickMode'),
-            active: pathname.startsWith(`/${locale}/create`),
+            href: `/${locale}/create?mode=image`,
+            label: t('creationMenu.imageMode'),
+            active: isCreateRoute && !isVideoCreateMode,
+          },
+          {
+            href: `/${locale}/create?mode=video`,
+            label: t('creationMenu.videoMode'),
+            active: isCreateRoute && isVideoCreateMode,
           },
           {
             href: `/${locale}/chat`,
-            label: t('creationMenu.workflowMode'),
+            label: t('creationMenu.chatMode'),
             active: pathname.startsWith(`/${locale}/chat`),
           },
         ],
@@ -187,43 +200,45 @@ export function Sidebar({ forceCollapsed: _forceCollapsed = false }: SidebarProp
         icon: <PenTool className="h-5 w-5 stroke-[2]" />,
       },
       {
-        href: `/${locale}/projects`,
-        label: t('projects'),
-        active: pathname.startsWith(`/${locale}/projects`),
-        icon: <FolderKanban className="h-5 w-5 stroke-[2]" />,
-      },
-      {
         href: `/${locale}/tasks`,
         label: t('tasks'),
         active: pathname.startsWith(`/${locale}/tasks`),
         icon: <ClipboardList className="h-5 w-5 stroke-[2]" />,
       },
+      {
+        href: `/${locale}/tutorial`,
+        label: t('tutorial'),
+        active: pathname.startsWith(`/${locale}/tutorial`),
+        icon: <BookOpen className="h-5 w-5 stroke-[2]" />,
+      },
     ],
-    [locale, pathname, t],
+    [isCreateRoute, isVideoCreateMode, locale, pathname, t],
   )
 
   return (
     <aside className="relative z-40 hidden w-[96px] shrink-0 md:block">
       <div
         className={cn(
-          'fixed left-5 top-6 bottom-6 z-40 flex w-[68px] flex-col items-center justify-between px-0 py-4',
+          'studio-nav-rail fixed left-5 top-6 bottom-6 z-40 flex w-[68px] flex-col items-center justify-between px-0 py-4',
           'rounded-[34px] border border-black/[0.045] bg-transparent',
           'dark:border-white/[0.055]'
         )}
       >
-        <TooltipShell label={SITE_TITLE}>
+        <TooltipShell label={`${SITE_TITLE} · ${t('home')}`}>
           <Link
-            href={`/${locale}`}
+            href={`/${locale}/auth/login`}
             className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-110"
             aria-label={SITE_TITLE}
           >
-            <img src="/icons/icon-192x192.png" alt="" className="h-full w-full object-cover" aria-hidden="true" />
+            <img src="/icons/molagg.svg" alt="" className="h-full w-full object-cover" aria-hidden="true" />
           </Link>
         </TooltipShell>
 
-        <TooltipShell label="GitHub">
+        {/* 中转站外链。顶部那枚 molagg 方标是站内首页，这里不能再用同一个图标，
+            否则两个一样的方块贴在一起分不清哪个是站内、哪个是外跳。 */}
+        <TooltipShell label={RELAY_LABEL}>
           <a
-            href={PERSONAL_GITHUB_URL}
+            href={MOLAGG_RELAY_URL}
             target="_blank"
             rel="noreferrer"
             className={cn(
@@ -231,9 +246,9 @@ export function Sidebar({ forceCollapsed: _forceCollapsed = false }: SidebarProp
               'hover:-translate-y-0.5 hover:border-black/10 hover:bg-black/[0.05] hover:text-stone-950',
               'dark:border-white/[0.07] dark:text-[#888] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.07] dark:hover:text-white'
             )}
-            aria-label="GitHub"
+            aria-label={RELAY_LABEL}
           >
-            <Github className="h-5 w-5 stroke-[2]" />
+            <ExternalLink className="h-5 w-5 stroke-[2]" />
           </a>
         </TooltipShell>
 

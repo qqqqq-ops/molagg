@@ -15,6 +15,7 @@
     "src/main.ts",
     "src/app.module.ts",
     "src/app.controller.ts",
+    "src/canvas/**/*.ts",
     "src/adapters/**/*.ts",
     "src/admin/admin.module.ts",
     "src/admin/ai-settings/**/*.ts",

@@ -1,6 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+
+import type { CreateMode } from './createModes'
+import { FrameGeneratorDialog } from './FrameGeneratorDialog'
 import type {
   Dispatch,
   KeyboardEvent as ReactKeyboardEvent,
@@ -18,7 +21,7 @@ import {
   Lightbulb,
   Sparkles,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { EnhancedSelect, type EnhancedSelectOption } from '@/components/ui/EnhancedSelect'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -27,7 +30,6 @@ import { ImageDropzone } from '@/components/ui/ImageDropzone'
 import { FileDropzone } from '@/components/ui/FileDropzone'
 import { Switch } from '@/components/ui/switch'
 import { AspectRatioSelect } from '@/components/ui/AspectRatioSelect'
-import { FadeIn } from '@/components/shared/FadeIn'
 import { cn } from '@/lib/utils/cn'
 import type { ProjectAsset, ProjectSummary } from '@/lib/api/types/projects'
 import { promptOptimizeService } from '@/lib/api/services'
@@ -104,6 +106,8 @@ export interface VideoCreateWorkspaceProps {
   hasDoubaoSeedance20FrameInputs: boolean
   videoInputImages: File[]
   setVideoInputImages: Dispatch<SetStateAction<File[]>>
+  /** 顶层模式：首尾帧创作 / 参考创作。Seedance 2.x 两种都支持，靠它决定显示哪一块 */
+  createMode: CreateMode
   doubaoReferenceImages: File[]
   setDoubaoReferenceImages: Dispatch<SetStateAction<File[]>>
   doubaoReferenceVideos: File[]
@@ -229,6 +233,7 @@ export function VideoCreateWorkspace({
   hasDoubaoSeedance20FrameInputs,
   videoInputImages,
   setVideoInputImages,
+  createMode,
   doubaoReferenceImages,
   setDoubaoReferenceImages,
   doubaoReferenceVideos,
@@ -270,6 +275,23 @@ export function VideoCreateWorkspace({
   seedanceReferenceImageUploadMaxFiles,
   seedanceReferenceVideoUploadMaxFiles,
 }: VideoCreateWorkspaceProps) {
+
+  /** 「生成这一帧」弹窗：记住要填哪个槽位 */
+  const [frameGenSlot, setFrameGenSlot] = useState<
+    { label: string; apply: (file: File) => void } | null
+  >(null)
+
+  /** 关键帧槽位旁边的「生成这一帧」按钮 */
+  const renderFrameGenButton = (label: string, apply: (file: File) => void) => (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1 text-xs text-aurora-purple hover:underline"
+      onClick={() => setFrameGenSlot({ label, apply })}
+    >
+      <Sparkles className="h-3 w-3" />
+      生成这一帧
+    </button>
+  )
   const t = useTranslations('create')
   const isWanxI2v = wanxResolvedModelKind === 'i2v'
   const isWanxR2v = wanxResolvedModelKind === 'r2v'
@@ -303,6 +325,7 @@ export function VideoCreateWorkspace({
   const [assistantAudio, setAssistantAudio] = useState<VideoAssistantAudio>('immersive')
   const [professionalPrompts, setProfessionalPrompts] = useState<PromptVariant[]>([])
   const [isGeneratingProfessionalPrompt, setIsGeneratingProfessionalPrompt] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   const hasAssistantInput = Boolean(
     [prompt, briefIdea, briefSubject, briefScene, briefAction, briefMustKeep].some((value) => value.trim())
@@ -492,17 +515,12 @@ export function VideoCreateWorkspace({
 
   return (
     <div className="min-w-0 space-y-5">
-      <FadeIn variant="slide" delay={0.2}>
-        <Card className="relative min-w-0 overflow-x-hidden overflow-y-visible border border-stone-200/80 bg-white/92 p-0 shadow-canvas dark:border-stone-700 dark:bg-stone-900/92">
-          <CardHeader className="mb-0 border-b border-stone-100 px-5 pb-4 pt-5 dark:border-stone-800 sm:px-6">
-            <CardTitle className="flex items-center gap-3 text-xl sm:text-2xl">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-aurora-purple text-sm font-semibold text-white">
-                2
-              </span>
-              <span>{t('steps.step2')}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+      <>
+        <Card className="studio-field relative min-w-0">
+          <div className="studio-field-heading">
+                      <strong>{t('studio.fieldContent')}</strong>
+                    </div>
+          <CardContent className="space-y-5 p-0">
             <div className="space-y-2">
               <label className="flex flex-wrap items-center gap-2 text-sm font-medium">
                 {t('form.prompt.label')}
@@ -835,7 +853,7 @@ export function VideoCreateWorkspace({
                       type="button"
                       className="flex w-full items-center gap-3 rounded-2xl border border-stone-200 bg-white px-3 py-3 text-left shadow-[0_18px_42px_-32px_rgba(15,23,42,0.38)] transition-all hover:border-aurora-purple/35 hover:shadow-[0_20px_48px_-30px_rgba(124,58,237,0.24)] dark:border-stone-700 dark:bg-stone-900 dark:shadow-[0_20px_48px_-34px_rgba(2,6,23,0.84)] dark:hover:border-aurora-purple/35 dark:hover:bg-stone-900 sm:w-auto sm:min-w-[236px]"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-stone-900/8 text-stone-700 dark:bg-white/10 dark:text-stone-100">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-stone-900/10 text-stone-700 dark:bg-white/10 dark:text-stone-100">
                         <FolderKanban className="h-4 w-4" />
                       </span>
                       <span className="min-w-0 flex-1">
@@ -878,6 +896,17 @@ export function VideoCreateWorkspace({
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((open) => !open)}
+              className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left text-sm font-medium text-stone-700 transition hover:border-stone-300 dark:border-stone-700 dark:bg-stone-800/70 dark:text-stone-200"
+            >
+              <span>{t('advancedToggle')}</span>
+              <span className="text-xs text-stone-400">{showAdvanced ? t('advancedHide') : t('advancedShow')}</span>
+            </button>
+
+            {showAdvanced ? (
+            <>
             <Separator />
 
             {isWanxVideo && (supportsImageInput || wanxSupportsAudioInput) && (
@@ -893,7 +922,7 @@ export function VideoCreateWorkspace({
                   </div>
                 ) : null}
 
-                <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {supportsImageInput && wanxAllowsReferenceVideoInputs ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-3">
@@ -974,7 +1003,8 @@ export function VideoCreateWorkspace({
                         <label className="text-sm font-medium">
                           {t('form.uploadReference.labelWanxFirstFrame')}
                         </label>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {renderFrameGenButton('起始帧', (file) => setWanxFirstFrameImages([file]))}
                           {t('form.uploadReference.maxItems', { max: 1 })}
                         </span>
                       </div>
@@ -996,7 +1026,8 @@ export function VideoCreateWorkspace({
                         <label className="text-sm font-medium">
                           {t('form.uploadReference.labelWanxLastFrame')}
                         </label>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {renderFrameGenButton('结束帧', (file) => setWanxLastFrameImages([file]))}
                           {t('form.uploadReference.maxItems', { max: 1 })}
                         </span>
                       </div>
@@ -1060,7 +1091,9 @@ export function VideoCreateWorkspace({
             {isDoubaoVideo && supportsImageInput && (
               isDoubaoSeedance20 ? (
                 <div className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-3">
+                  {/* 参考创作：参考图片 / 视频 / 音频可组合 */}
+                  {createMode === 'references' ? (
+                  <div className="grid gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-3">
                         <label className="text-sm font-medium">
@@ -1151,7 +1184,11 @@ export function VideoCreateWorkspace({
                       </p>
                     </div>
                   </div>
+                  ) : null}
 
+                  {/* 首尾帧创作：只在这个模式给首尾帧槽位 */}
+                  {createMode === 'frames' ? (
+                    <>
                   <Separator />
 
                   <div className="space-y-2">
@@ -1159,7 +1196,13 @@ export function VideoCreateWorkspace({
                       <label className="text-sm font-medium">
                         {t('form.uploadReference.labelDoubaoFrames20')}
                       </label>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {/* 合并槽位：已经有首帧就把新生成的当尾帧追加 */}
+                        {renderFrameGenButton(doubaoFrameImages.length === 0 ? '起始帧' : '结束帧', (file) =>
+                          // 空 → 当首帧；已有首帧 → 当尾帧；已经两张 → 换掉尾帧
+                          // （用 slice(0,2) 的话，满了之后生成会被静默丢掉，按钮看着像没反应）
+                          setDoubaoFrameImages((prev) => (prev.length === 0 ? [file] : [prev[0], file])),
+                        )}
                         {t('form.uploadReference.optional')}
                       </span>
                     </div>
@@ -1185,6 +1228,8 @@ export function VideoCreateWorkspace({
                       {t('form.uploadReference.hintDoubaoFrames20')}
                     </p>
                   </div>
+                    </>
+                  ) : null}
 
                   <div className="rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-stone-50 to-emerald-50/70 p-4 shadow-sm dark:border-emerald-500/30 dark:from-stone-900 dark:to-emerald-950/20">
                     <div className="space-y-4">
@@ -1309,22 +1354,20 @@ export function VideoCreateWorkspace({
                 </div>
               )
             )}
+            </>
+            ) : null}
 
           </CardContent>
         </Card>
-      </FadeIn>
+      </>
 
-      <FadeIn variant="slide" delay={0.4}>
-        <Card className="relative min-w-0 overflow-hidden border border-stone-200/80 bg-white/92 p-0 shadow-canvas dark:border-stone-700 dark:bg-stone-900/92">
-          <CardHeader className="mb-0 border-b border-stone-100 px-5 pb-4 pt-5 dark:border-stone-800 sm:px-6">
-            <CardTitle className="flex items-center gap-3 text-xl sm:text-2xl">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-aurora-purple text-sm font-semibold text-white">
-                3
-              </span>
-              <span>{t('steps.step3')}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+      <>
+        <Card className="studio-field relative min-w-0">
+          <div className="studio-field-heading">
+                      <strong>{t('studio.fieldParams')}</strong>
+                      <span className="studio-optional">{t('studio.optional')}</span>
+                    </div>
+          <CardContent className="space-y-4 p-0">
             {isWanxVideo && wanxVideoResolutionOptions && wanxVideoRatioOptions && wanxVideoDurationOptions ? (
               <>
                 <AspectRatioSelect
@@ -1421,7 +1464,21 @@ export function VideoCreateWorkspace({
             )}
           </CardContent>
         </Card>
-      </FadeIn>
+      </>
+
+      {/* 「生成这一帧」弹窗：三个槽位共用一个，靠 frameGenSlot 记住往哪填 */}
+      {/* 关着就不渲染：每次打开都是全新实例，省掉「开关时重置状态」的 effect */}
+      {frameGenSlot !== null && (
+      <FrameGeneratorDialog
+        onClose={() => setFrameGenSlot(null)}
+        slotLabel={frameGenSlot.label}
+        initialPrompt={typeof prompt === 'string' ? prompt : ''}
+        onGenerated={(file) => {
+          frameGenSlot.apply(file)
+          setFrameGenSlot(null)
+        }}
+      />
+      )}
     </div>
   )
 }

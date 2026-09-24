@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import axios from 'axios';
 import { AiModelType, ApiChannelStatus } from '../../common/prisma-enums';
 
 import { EncryptionService } from '../../encryption/encryption.service';
@@ -20,6 +21,88 @@ export class AdminChatModelsService {
     private readonly aiSettings: AiSettingsService,
     private readonly adminModelsService: AdminModelsService,
   ) {}
+
+  /**
+   * 向中转站询问这把 Key 能用哪些模型。
+   *
+   * 走的是 OpenAI 通用的 GET /v1/models —— 官方、New API、one-api
+   * 以及绝大多数中转站都实现了它，所以不绑定任何一家。
+   * 只返回清单，不写库；用户勾选后再走 create 逐个落库。
+   */
+  async discover() {
+    const settings = await this.aiSettings.getAiSettings();
+    const baseUrl = settings.apiBaseUrl.trim();
+    const apiKey = settings.apiKey.trim();
+
+    if (!baseUrl || !apiKey) {
+      throw new BadRequestException('请先填写 API 地址和 API Key 并保存，再获取模型列表');
+    }
+
+    const url = AdminChatModelsService.buildModelsUrl(baseUrl);
+
+    let res: { status: number; data: unknown };
+    try {
+      res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        timeout: 20_000,
+        validateStatus: () => true,
+      });
+    } catch (e: any) {
+      throw new BadRequestException(`连不上 ${url}：${e?.message ?? '请求失败'}`);
+    }
+
+    if (res.status === 401 || res.status === 403) {
+      throw new BadRequestException('上游拒绝了这把 API Key，请检查 Key 是否正确、是否有权限');
+    }
+    if (res.status === 404) {
+      throw new BadRequestException(`${url} 返回 404，这个地址可能不支持 /v1/models，请改用内置清单添加`);
+    }
+    if (res.status >= 400) {
+      throw new BadRequestException(`上游返回 ${res.status}，暂时取不到模型列表`);
+    }
+
+    const ids = AdminChatModelsService.extractModelIds(res.data);
+    if (ids.length === 0) {
+      throw new BadRequestException('上游返回的模型列表是空的');
+    }
+
+    const existing = await this.prisma.aiModel.findMany({
+      where: { type: AiModelType.chat },
+      select: { modelKey: true },
+    });
+    const existingKeys = new Set(existing.map((m) => m.modelKey));
+
+    return {
+      url,
+      models: ids.map((id) => ({ modelKey: id, alreadyAdded: existingKeys.has(id) })),
+    };
+  }
+
+  /** baseUrl 可能带或不带 /v1，统一拼成 .../v1/models */
+  private static buildModelsUrl(baseUrl: string) {
+    const trimmed = baseUrl.replace(/\/+$/, '');
+    if (/\/v\d+$/.test(trimmed)) return `${trimmed}/models`;
+    return `${trimmed}/v1/models`;
+  }
+
+  /** 兼容 {data:[{id}]}（OpenAI）与直接返回数组两种形态 */
+  private static extractModelIds(payload: unknown): string[] {
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray((payload as { data?: unknown })?.data)
+        ? ((payload as { data: unknown[] }).data)
+        : [];
+
+    const ids = rows
+      .map((row) => {
+        if (typeof row === 'string') return row;
+        const id = (row as { id?: unknown })?.id;
+        return typeof id === 'string' ? id : null;
+      })
+      .filter((id): id is string => Boolean(id && id.trim()));
+
+    return Array.from(new Set(ids)).sort((a, b) => a.localeCompare(b));
+  }
 
   async list() {
     return this.prisma.aiModel.findMany({

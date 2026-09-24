@@ -45,18 +45,8 @@ function fillMissingId(data: unknown) {
 
 export function installSqliteBigIntIdMiddleware(client: PrismaClient) {
   client.$use(async (params, next) => {
-    if (!params.model || !SQLITE_BIGINT_ID_MODELS.has(params.model)) {
-      return next(params);
-    }
-
-    if (params.action === 'create') {
-      fillMissingId(params.args?.data);
-    }
-
-    if (params.action === 'upsert') {
-      fillMissingId(params.args?.create);
-    }
-
+    // SQLite tables use INTEGER PRIMARY KEY AUTOINCREMENT. Snowflake-style
+    // timestamps overflow INT and break user/project/task inserts.
     return next(params);
   });
 }

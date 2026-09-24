@@ -1,0 +1,25 @@
+const { getOutputCountConfig, clampOutputCount } = require('./oc.cjs')
+let fails=0; const check=(n,c,e='')=>{ if(c) console.log('  ✓ '+n); else { fails++; console.log('  ✗ '+n+' '+e) } }
+
+console.log('— 按模型给范围 —')
+check('图片模型 1–4', JSON.stringify(getOutputCountConfig('nanobanana','image').options)==='[1,2,3,4]')
+check('视频模型 1–2（慢且贵）', JSON.stringify(getOutputCountConfig('kling','video').options)==='[1,2]')
+check('视频模型带说明 key', getOutputCountConfig('kling','video').noteKey==='video')
+const mj=getOutputCountConfig('midjourney','image')
+check('MJ 只有 1（本来就出四宫格）', JSON.stringify(mj.options)==='[1]')
+check('MJ 有解释 key', mj.noteKey==='midjourney')
+check('provider 简写 mj 也识别', JSON.stringify(getOutputCountConfig('mj','image').options)==='[1]')
+check('大小写 / 空格不影响', JSON.stringify(getOutputCountConfig('  MidJourney ','image').options)==='[1]')
+check('provider 为 undefined 时走图片默认', JSON.stringify(getOutputCountConfig(undefined,'image').options)==='[1,2,3,4]')
+
+console.log('\n— 换模型后夹回范围 —')
+const img=getOutputCountConfig('nanobanana','image'), vid=getOutputCountConfig('kling','video'), m=getOutputCountConfig('mj','image')
+check('图片选了 4，换视频模型 → 2', clampOutputCount(4, vid)===2)
+check('图片选了 4，换 MJ → 1', clampOutputCount(4, m)===1)
+check('在范围内不变', clampOutputCount(3, img)===3)
+check('0 / 负数 → 1', clampOutputCount(0,img)===1 && clampOutputCount(-5,img)===1)
+check('小数四舍五入', clampOutputCount(2.6,img)===3)
+check('NaN → 1', clampOutputCount(NaN,img)===1)
+
+console.log(fails===0?'\n全部通过':'\n'+fails+' 项失败')
+process.exit(fails===0?0:1)

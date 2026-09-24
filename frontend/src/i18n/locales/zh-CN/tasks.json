@@ -31,11 +31,7 @@
     "error": "错误信息"
   },
   "failure": {
-    "reason": "失败原因",
-    "unknown": "上游没有返回具体失败原因",
-    "canceled": "任务已取消",
-    "modelRemoved": "模型已被移除或禁用",
-    "modalRequired": "需要继续提交 Midjourney 弹窗参数"
+    "reason": "失败原因"
   },
   "actions": {
     "view": "查看详情",
@@ -106,8 +102,9 @@
   },
   "empty": {
     "title": "暂无任务",
-    "description": "还没有创作任务，去创作工作台开始吧！",
-    "action": "开始创作"
+    "description": "还没有创作任务。去「创作」提交一次生成，任务会出现在这里，并显示进度、失败原因和重试入口。",
+    "action": "开始创作",
+    "altAction": "看看已有作品"
   },
   "polling": {
     "active": "正在实时同步任务状态..."
@@ -137,5 +134,85 @@
     "cancel": "取消任务失败",
     "retry": "重试任务失败",
     "mjAction": "执行 Midjourney 操作失败"
+  },
+  "queue": {
+    "kicker": "TASKS · 我的创作空间",
+    "title": "我的创作空间",
+    "subtitle": "图片和视频任务都在这里：看进度、查失败原因、下载结果、一键做同款。",
+    "stats": {
+      "active": "进行中",
+      "completed": "已完成",
+      "failed": "失败",
+      "total": "全部任务"
+    },
+    "tabs": {
+      "active": "当前",
+      "all": "全部",
+      "completed": "成功",
+      "failed": "失败"
+    },
+    "search": "搜索提示词",
+    "type": {
+      "all": "全部类型",
+      "image": "图片",
+      "video": "视频"
+    },
+    "project": {
+      "all": "全部项目",
+      "none": "未归入项目"
+    },
+    "create": "新建",
+    "queued": "排队中",
+    "generating": "生成中",
+    "elapsed": "已用 {time}",
+    "duration": "耗时 {time}",
+    "noResult": "已完成，但上游没有返回结果文件",
+    "noPreview": "暂无预览",
+    "actions": {
+      "detail": "详情",
+      "remix": "做同款",
+      "download": "下载"
+    },
+    "emptyActive": {
+      "title": "没有进行中的任务",
+      "description": "提交的生成会先出现在这里，完成后移到「成功」或「失败」。"
+    },
+    "emptyFiltered": {
+      "title": "没有符合条件的任务",
+      "description": "换个关键词或筛选条件试试。"
+    },
+    "clearFilters": "清除筛选",
+    "loadedAll": "已加载全部任务",
+    "retry": "重试"
+  },
+  "drawer": {
+    "title": "任务详情",
+    "close": "关闭",
+    "prompt": "提示词",
+    "negativePrompt": "反向提示词",
+    "copyPrompt": "复制提示词",
+    "taskNo": "任务编号",
+    "copyTaskNo": "复制编号",
+    "copied": "已复制",
+    "copyFailed": "复制失败，请手动选择文字复制",
+    "type": "类型",
+    "model": "模型",
+    "status": "状态",
+    "project": "项目",
+    "createdAt": "创建时间",
+    "completedAt": "完成时间",
+    "duration": "耗时",
+    "openOriginal": "新标签页打开原文件",
+    "moreActions": "更多操作"
+  },
+  "progress": {
+    "submitting": "提交中",
+    "queued": "排队中",
+    "generating": "生成中",
+    "real": "{value}%",
+    "estimated": "约 {value}%",
+    "remaining": "预计还需 {time}",
+    "overdue": "比平时久，仍在生成",
+    "elapsed": "已用 {time}"
   }
 }

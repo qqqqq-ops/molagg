@@ -1,6 +1,6 @@
 {
   "auth": {
-    "unauthorized": "本地模式未初始化，请刷新页面",
+    "unauthorized": "请先登录",
     "forbidden": "权限不足"
   },
   "tasks": {
@@ -35,5 +35,19 @@
     "tooShort": "内容过短",
     "fileTooLarge": "文件过大，最大{size}MB",
     "invalidFileType": "文件类型不支持"
+  },
+  "failure": {
+    "channelMissing": "这个模型所在的渠道还没填 Base URL 和 API Key，请求发不出去。",
+    "channelMissingAction": "去配置渠道",
+    "auth": "登录状态已失效，重新登录后再试一次。",
+    "network": "连不上本地服务。确认后端已经启动，然后重试。",
+    "rateLimited": "上游限流了，与你的操作无关。等一会儿再试，或换一个渠道/模型。",
+    "upstream": "上游服务商这次没返回结果，与你的参数无关。可以直接重试，或换一个模型。",
+    "invalidParams": "这次的参数组合上游不接受，调整参数后重试。",
+    "modelRemoved": "这个模型已被移除或停用，换一个模型再试。",
+    "canceled": "任务已取消。",
+    "modalRequired": "需要继续提交 Midjourney 弹窗参数。",
+    "unknown": "没拿到明确的失败原因。可以先重试一次；如果一直失败，检查渠道配置或换个模型。",
+    "detail": "上游返回：{detail}"
   }
 }

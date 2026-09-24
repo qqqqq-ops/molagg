@@ -439,6 +439,42 @@ export const DOUBAO_VIDEO_DURATION_OPTIONS: AspectRatioOption[] = [
     description: '超长视频',
     icon: Clock,
   },
+  {
+    value: '16',
+    label: '16秒',
+    description: '超长视频',
+    icon: Clock,
+  },
+  {
+    value: '18',
+    label: '18秒',
+    description: '超长视频',
+    icon: Clock,
+  },
+  {
+    value: '20',
+    label: '20秒',
+    description: '超长视频',
+    icon: Clock,
+  },
+  {
+    value: '24',
+    label: '24秒',
+    description: '超长视频',
+    icon: Clock,
+  },
+  {
+    value: '30',
+    label: '30秒',
+    description: '最长直出',
+    icon: Clock,
+  },
+  {
+    value: '-1',
+    label: '智能',
+    description: '由模型决定时长',
+    icon: Wand2,
+  },
 ]
 
 // 通用比例选项（用于其他provider）
@@ -606,10 +642,17 @@ export function getDoubaoVideoDurationOptions(provider?: string, remoteModel?: s
 
   // 豆包 / Bytedance / Ark
   if (normalizedProvider.includes('doubao') || normalizedProvider.includes('bytedance') || normalizedProvider.includes('ark')) {
+    if (normalizedRemoteModel.includes('seedance-2-5')) {
+      return DOUBAO_VIDEO_DURATION_OPTIONS.filter((option) => {
+        const value = Number(option.value)
+        return value === -1 || (Number.isFinite(value) && value >= 4 && value <= 30)
+      })
+    }
+
     if (normalizedRemoteModel.includes('seedance-2-0')) {
       return DOUBAO_VIDEO_DURATION_OPTIONS.filter((option) => {
         const value = Number(option.value)
-        return Number.isFinite(value) && value >= 4 && value <= 15
+        return value === -1 || (Number.isFinite(value) && value >= 4 && value <= 15)
       })
     }
 

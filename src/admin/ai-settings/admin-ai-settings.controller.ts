@@ -47,6 +47,11 @@ export class AdminAiSettingsController {
     return this.chatModelsService.list();
   }
 
+  @Post('chat-models/discover')
+  discoverChatModels() {
+    return this.chatModelsService.discover();
+  }
+
   @Post('chat-models')
   createChatModel(@Body() dto: CreateChatModelDto) {
     return this.chatModelsService.create(dto);

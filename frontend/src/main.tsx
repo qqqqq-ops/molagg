@@ -4,6 +4,7 @@ import 'katex/dist/katex.min.css'
 import './styles/globals.css'
 import { App } from './App'
 import { BrowserRouterProvider } from './lib/router'
+import './lib/api/interceptors'
 
 const rootElement = document.getElementById('root')
 

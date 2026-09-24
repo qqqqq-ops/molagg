@@ -1,122 +1,586 @@
 {
-  "title": "Online Canvas",
-  "description": "Sketch, annotate, and refine compositions right inside the site. Includes free drawing, shapes, text, JSON project import/export, and PNG output.",
-  "hero": {
-    "badge": "Canvas Workspace",
-    "meta": {
-      "draw": "Free Drawing",
-      "shapes": "Basic Shapes",
-      "project": "Project Import/Export",
-      "png": "PNG Output"
+  "sidebar": {
+    "newNode": "Add Node",
+    "presets": "Workflow Presets",
+    "tabs": {
+      "build": "Build",
+      "assistant": "Assistant",
+      "library": "Library",
+      "versions": "Versions"
     }
   },
-  "panels": {
-    "modes": "Editing Modes",
-    "insert": "Insert Content",
-    "styles": "Style Panel",
-    "files": "Project Files",
-    "projectImport": "Save to Project",
-    "tips": "Tips",
-    "board": "Canvas",
-    "status": "Current Status"
-  },
-  "tools": {
-    "select": "Select",
-    "brush": "Brush",
-    "eraser": "Eraser",
-    "rectangle": "Rectangle",
-    "circle": "Circle",
-    "line": "Line",
+  "groups": {
+    "generator": "Generators",
+    "media": "Media",
     "text": "Text",
-    "image": "Image"
+    "structure": "Structure"
   },
-  "style": {
-    "stroke": "Primary",
-    "fill": "Fill",
-    "brushSize": "Brush Size",
-    "applyToSelection": "Changing color or stroke width also updates the currently selected object."
+  "nodeKinds": {
+    "text": "Plain Text",
+    "markdown": "Markdown",
+    "stickyNote": "Sticky Note",
+    "image": "Image",
+    "video": "Video",
+    "audio": "Audio",
+    "imageGenerator": "Image Generator",
+    "videoGenerator": "Video Generator",
+    "audioGenerator": "Audio Generator",
+    "promptGroup": "Prompt Group",
+    "director": "Director Desk",
+    "script": "Script",
+    "videoStitch": "Video Stitch",
+    "group": "Group"
   },
-  "actions": {
-    "undo": "Undo",
-    "redo": "Redo",
-    "delete": "Delete Selected",
-    "clear": "Clear Canvas",
-    "importProject": "Import Project",
-    "exportProject": "Export Project",
-    "exportPng": "Export PNG",
-    "addImage": "Import Image",
-    "saveToProject": "Save to Project"
+  "toolbar": {
+    "undo": "Undo (⌘Z)",
+    "redo": "Redo (⇧⌘Z)",
+    "export": "Save as JSON to back up or share",
+    "import": "Import a canvas (replaces the current one)",
+    "merge": "Merge JSON into the current canvas",
+    "clear": "Clear canvas",
+    "status": "{nodes} nodes · {edges} connections",
+    "exportName": "Canvas",
+    "panMode": "Pan mode — drag to move the canvas (default; hold Shift/Ctrl to box-select)",
+    "selectMode": "Select mode — drag to box-select nodes (hold Space to pan)",
+    "cascadeRun": "Run all",
+    "cascadeRunTitle": "Run all — run every generator on the canvas, batch by batch, following the connections",
+    "cascadeCancel": "Stop",
+    "cascadeCancelTitle": "Stop — halt every node that is running",
+    "cascadeProgress": "Running · batch {batch}/{total}",
+    "view": "Canvas view (tidy / groups / minimap / snap to grid)",
+    "exportPng": "Export PNG"
   },
-  "projectImport": {
-    "projectLabel": "Choose Project",
-    "projectPlaceholder": "Select a project",
-    "assetCount": "{count} assets",
-    "inspirationCount": "{count} inspiration item(s)",
-    "promptCount": "{count} prompt(s)",
-    "assetTitleLabel": "Artwork Title",
-    "assetTitlePlaceholder": "For example: composition draft, character pose sketch, scene layout v1",
-    "helper": "The current canvas will be exported as PNG and saved directly into the selected project's asset library.",
-    "descriptionEmpty": "This project does not have a description yet. You can add one later from the project page.",
-    "coverImage": "Cover image",
-    "coverVideo": "Cover video",
-    "loading": "Loading projects...",
-    "empty": "No projects yet. Create one first from the Projects page.",
-    "login": "Canvas output can be saved directly into a local project.",
-    "loginAction": "Open Projects",
-    "manage": "Open Projects"
+  "upstream": {
+    "prefix": "← Connected: {summary}",
+    "images": "{count} image(s)",
+    "videos": "{count} video(s)",
+    "audios": "{count} audio clip(s)",
+    "texts": "{count} text block(s)",
+    "snippets": "{count} snippet(s)"
   },
-  "board": {
-    "title": "Creative Canvas",
-    "subtitle": "Draw freely on the board or insert shapes, images, and text, then reposition and resize them.",
-    "loading": "Initializing canvas...",
-    "hint": "Double click text to edit it. Selected objects can be moved, scaled, and rotated.",
-    "size": "Canvas Size {width} x {height}"
-  },
-  "status": {
-    "tool": "Active Tool",
-    "selection": "Selection",
-    "objects": "Objects",
-    "none": "Nothing selected",
-    "multiSelection": "{count} objects selected",
-    "objectTypes": {
-      "rectangle": "Rectangle",
-      "circle": "Circle",
-      "line": "Line",
-      "text": "Text",
-      "path": "Path",
-      "image": "Image",
-      "group": "Group",
-      "unknown": "Object"
+  "node": {
+    "pasteUrl": "Paste URL…",
+    "pastePrompt": "Paste a URL…",
+    "pickFile": "Choose file",
+    "text": {
+      "placeholder": "Type here…"
+    },
+    "sticky": {
+      "placeholder": "Quick note…",
+      "colorLabel": "Sticky note color {color}"
+    },
+    "markdown": {
+      "placeholder": "# Heading\nBody…"
+    },
+    "image": {
+      "openOriginal": "Open original",
+      "empty": "Source image (drop one in, or generate first)"
+    },
+    "video": {
+      "empty": "Generated video",
+      "capture": "Capture current frame",
+      "frameTitle": "Key Frame"
+    },
+    "audio": {
+      "empty": "Generated audio"
+    },
+    "generator": {
+      "model": "Model",
+      "modelLoading": "Loading channels…",
+      "modelPick": "Select…",
+      "modelEmpty": "No channels available",
+      "size": "Size",
+      "ratio": "Aspect Ratio",
+      "pickModelFirst": "Pick a model first — each provider offers different ratios.",
+      "outputCount": "Outputs",
+      "outputCountUnit": "{count}",
+      "outputCountHint": "Runs the same input several times; each run differs, so you can pick the best.",
+      "snippets": "Snippets",
+      "running": "Generating…",
+      "failed": "Generation failed",
+      "defaultOption": "Default",
+      "outputNote": {
+        "midjourney": "Midjourney already returns a 2×2 grid per task, so there is nothing to choose",
+        "video": "Video is slow and expensive — every extra one is a full task"
+      }
+    },
+    "imageGenerator": {
+      "run": "Generate image",
+      "placeholder": "Prompt…",
+      "multiAngleBadge": "Angles ×{count}",
+      "multiAngle": "Multi-angle",
+      "multiAngleHint": "One image per checked angle, each submitted as its own task.",
+      "lighting": "Lighting",
+      "lightingPreset": "Preset",
+      "lightPosition": "Light Position",
+      "lightColor": "Color Temperature",
+      "lightBrightness": "Softness",
+      "camera": "Camera",
+      "shotSize": "Shot Size",
+      "cameraHeight": "Camera Height"
+    },
+    "videoGenerator": {
+      "run": "Generate video",
+      "placeholder": "Camera movement + scene prompt…",
+      "duration": "Duration {seconds}s"
+    },
+    "audioGenerator": {
+      "placeholder": "Voiceover text…",
+      "voice": "Voice",
+      "voiceLoading": "Loading voices…",
+      "blocked": "Audio generation needs a TTS channel on the backend first."
+    },
+    "promptGroup": {
+      "badge": "{count} selected"
+    },
+    "director": {
+      "theme": "Story Theme",
+      "themePlaceholder": "One sentence on what this is about",
+      "outline": "Story Outline",
+      "outlinePlaceholder": "How many beats, and what happens in each",
+      "hint": "Connect to a Script node, then on to a generator."
+    },
+    "script": {
+      "placeholder": "Shot 1: …\nShot 2: …"
+    },
+    "videoStitch": {
+      "badge": "{count} clip(s)",
+      "hint": "Stitches upstream video nodes in connection order.",
+      "blocked": "Stitching needs backend support; for now it only records the order."
     }
   },
-  "tips": {
+  "shot": {
+    "lightPositions": {
+      "key": "Key Light",
+      "fill": "Fill Light",
+      "rim": "Rim Light",
+      "back": "Background Light",
+      "top": "Top Light",
+      "bottom": "Underlight"
+    },
+    "lightBrightness": {
+      "soft": "Soft",
+      "normal": "Standard",
+      "hard": "Hard"
+    },
+    "lightColors": {
+      "neutral": "Neutral",
+      "warm": "Warm",
+      "cool": "Cool",
+      "golden": "Golden",
+      "blue-hour": "Blue Hour",
+      "red-accent": "Red Accent"
+    },
+    "lightingPresets": {
+      "three-point": {
+        "label": "Three-Point",
+        "description": "Key + fill + rim — the classic cinematic setup"
+      },
+      "rembrandt": {
+        "label": "Rembrandt",
+        "description": "Key light 45° above — triangle of light on the cheek"
+      },
+      "split": {
+        "label": "Split",
+        "description": "Key light straight from the side — half the face in shadow, highly dramatic"
+      },
+      "butterfly": {
+        "label": "Butterfly",
+        "description": "Key light front and above — butterfly shadow under the nose, fashion look"
+      },
+      "silhouette": {
+        "label": "Silhouette",
+        "description": "Background light only — subject reads as a black outline"
+      },
+      "natural": {
+        "label": "Natural",
+        "description": "Soft ambient light with no strong direction"
+      }
+    },
+    "angles": {
+      "front": "Front",
+      "back": "Back",
+      "left": "Left",
+      "right": "Right",
+      "three-quarter-left": "3/4 Left",
+      "three-quarter-right": "3/4 Right",
+      "top-down": "High Angle",
+      "low-angle": "Low Angle",
+      "birdseye": "Bird's Eye"
+    },
+    "cameraHeights": {
+      "high": "Looking Down",
+      "eye": "Eye Level",
+      "low": "Looking Up"
+    },
+    "shotSizes": {
+      "closeup": "Close-Up",
+      "medium": "Medium",
+      "wide": "Wide"
+    }
+  },
+  "snippets": {
+    "categories": {
+      "style": "Style",
+      "quality": "Quality",
+      "mood": "Mood",
+      "composition": "Composition",
+      "camera": "Camera Move",
+      "negative": "Negative",
+      "custom": "My Saved"
+    },
     "items": {
-      "delete": "Press Delete or Backspace to remove selected objects.",
-      "history": "Use Ctrl/Cmd + Z for undo, and Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y for redo.",
-      "project": "Exported project files are JSON and can be imported later to continue editing.",
-      "png": "PNG export keeps the current white canvas background for quick delivery or sharing."
+      "b-cinematic": "Cinematic",
+      "b-photoreal": "Hyperreal",
+      "b-anime": "Anime",
+      "b-watercolor": "Watercolor",
+      "b-4k-hdr": "4K HDR",
+      "b-studio": "Studio Shot",
+      "b-detail": "High Detail",
+      "b-cozy": "Warm & Cozy",
+      "b-tense": "Tense & Dramatic",
+      "b-golden-ratio": "Golden Ratio",
+      "b-symmetric": "Symmetric",
+      "b-cam-push": "Dolly In",
+      "b-cam-pull": "Dolly Out",
+      "b-cam-pan": "Pan",
+      "b-cam-track": "Tracking",
+      "b-cam-follow": "Follow",
+      "b-cam-crane-up": "Crane Up",
+      "b-cam-crane-down": "Crane Down",
+      "b-cam-orbit": "Orbit",
+      "b-cam-handheld": "Handheld",
+      "b-cam-steadicam": "Steadicam",
+      "b-cam-jib": "Jib",
+      "b-cam-zoom-in": "Zoom In",
+      "b-cam-zoom-out": "Zoom Out",
+      "b-cam-dolly-zoom": "Dolly Zoom",
+      "b-cam-high": "High Angle",
+      "b-cam-low": "Low Angle",
+      "b-cam-aerial": "Aerial",
+      "b-cam-whip": "Whip Pan",
+      "b-cam-pov": "POV",
+      "b-cam-ots": "Over the Shoulder",
+      "b-cam-long-take": "Long Take",
+      "b-cam-slow-push": "Slow Push-In",
+      "b-negative": "Standard Negative"
     }
   },
-  "defaults": {
-    "text": "Double click to edit"
+  "presets": {
+    "applied": "Laid out \"{name}\"",
+    "character-design": {
+      "name": "Short-Drama Character Design",
+      "description": "Character description → front reference → four-angle turnaround, same person throughout",
+      "nodes": {
+        "desc": "Character Description",
+        "base": "Front Reference Shot",
+        "angles": "Character Turnaround"
+      },
+      "prompts": {
+        "angles": "Keep the same character, outfit, setting, lighting and art style exactly consistent"
+      }
+    },
+    "multi-angle-storyboard": {
+      "name": "Multi-Angle Storyboard",
+      "description": "One reference image into a front / side / back / top four-up",
+      "nodes": {
+        "src": "Source image (drop one in, or generate first)",
+        "gen": "Multi-Angle Generation"
+      },
+      "prompts": {
+        "gen": "Generate a four-up storyboard of the character: front, side, back and top views"
+      }
+    },
+    "keyframe-video": {
+      "name": "Keyframe Chaining",
+      "description": "Opening keyframe → image-to-video → capture the last frame to chain the next shot",
+      "nodes": {
+        "start": "Opening Keyframe",
+        "video": "Generate Video",
+        "clip": "Generated Video"
+      },
+      "prompts": {}
+    },
+    "picture-book": {
+      "name": "Children's Picture Book",
+      "description": "Story outline → page-by-page illustrations in one consistent style",
+      "nodes": {
+        "director": "Director Desk",
+        "script": "Script",
+        "style": "Style (keeps art consistent)",
+        "gen": "Generate Illustration"
+      },
+      "prompts": {}
+    },
+    "product-ecommerce": {
+      "name": "Full Product Listing Set",
+      "description": "Product photo → front / side / top-down / exploded, four listing images",
+      "nodes": {
+        "product": "Product Photo",
+        "info": "Product Info",
+        "gen": "Listing Image Generation"
+      },
+      "prompts": {}
+    },
+    "full-short-drama": {
+      "name": "Short Drama, End to End",
+      "description": "Director desk → script → characters → shots → video → stitch",
+      "nodes": {
+        "director": "Director Desk",
+        "script": "Script",
+        "character": "Character Design",
+        "scene": "Base Scene",
+        "video": "Generate Video",
+        "stitch": "Video Stitch"
+      },
+      "prompts": {}
+    },
+    "multi-time-scene": {
+      "name": "Scene Across Times of Day",
+      "description": "The same location in day / dusk / night / rain",
+      "nodes": {
+        "base": "Scene Description",
+        "day": "Base Scene Reference",
+        "dusk": "Dusk",
+        "night": "Night",
+        "rain": "Rain"
+      },
+      "prompts": {}
+    },
+    "image-tools-demo": {
+      "name": "Minimal Image Example",
+      "description": "The smallest runnable chain: text → image generator → result",
+      "nodes": {
+        "prompt": "Prompt",
+        "gen": "Image Generator"
+      },
+      "prompts": {}
+    }
   },
   "messages": {
-    "projectImported": "Project imported",
-    "projectExported": "Project exported",
-    "pngExported": "PNG download started",
-    "imageImported": "Image added to the canvas",
-    "cleared": "Canvas cleared",
-    "selectionDeleted": "Selection removed",
-    "savedToProject": "Artwork saved to project \"{project}\""
+    "exported": "Canvas exported",
+    "imported": "Canvas loaded",
+    "merged": "Merged into the current canvas",
+    "clearConfirm": "Clear the whole canvas? Undo can bring it back.",
+    "frameCaptured": "Frame captured as an image node — connect it to an image-to-video node to chain the next shot"
   },
   "errors": {
-    "initFailed": "Canvas failed to initialize. Please refresh and try again.",
-    "projectImportFailed": "Project import failed. Please check the file format.",
-    "imageImportFailed": "Image import failed. Please try another file.",
-    "nothingSelected": "Select at least one object first.",
-    "loadProjectsFailed": "Failed to load projects. Please try again later.",
-    "projectRequired": "Please choose a project first.",
-    "loginRequired": "Local mode is not initialized. Refresh the page.",
-    "saveToProjectFailed": "Failed to save into project. Please try again later."
+    "readFileFailed": "Could not read the file",
+    "readImageFailed": "Could not read the image",
+    "videoNotReady": "Video not ready — wait until it shows a picture, then capture",
+    "captureFailed": "Capture failed (cross-origin video without CORS?)",
+    "modelRequired": "Pick a model first",
+    "promptRequired": "Write a prompt first",
+    "submitFailed": "Submission failed",
+    "referencesDropped": "{count} upstream image(s) could not be fetched (cross-origin); they are not used as references this time",
+    "tooManyTasks": "This run would submit {planned} tasks ({count} outputs × {angles} angles), over the limit of {max}. Reduce the angles or the output count.",
+    "file": {
+      "invalidJson": "Not a valid JSON file",
+      "foreignFile": "Not a canvas file exported from this platform",
+      "unsupportedVersion": "Unsupported canvas file version (v{version}; this build supports up to v{max})",
+      "missingGraph": "The canvas file is missing nodes/edges"
+    },
+    "materialUnsupported": "\"{model}\" doesn't accept {kind}. Your connected {kind} are kept — pick another model",
+    "materialOverLimit": "\"{model}\" accepts at most {max} {kind}; {count} are connected",
+    "materialSwitch": "Switch to \"{model}\"",
+    "materialNoAlternative": "None of the available models accept {kind}",
+    "mediaNotSent": "Connected video / audio isn't sent to the model yet — only images are used as references",
+    "partialFailed": "{failed} of {total} didn't generate"
+  },
+  "assistant": {
+    "inspector": "Node Details",
+    "title": "Direct by Chat",
+    "model": "Text Model",
+    "noTextModel": "No text model available",
+    "noSelection": "Click any node on the canvas to see its settings here.",
+    "multiSelection": "{count} nodes selected; details show for one node at a time.",
+    "nodeEmpty": "Nothing filled in on this node yet.",
+    "selectedHint": "The selected node is sent along, so you can just say \"make this one vertical\".",
+    "empty": "Say what you want in plain words, e.g. \"add a video generator after this image\".",
+    "placeholder": "Say what to do… (Enter to send, Shift+Enter for a new line)",
+    "send": "Send",
+    "sending": "Working…",
+    "clear": "Clear chat",
+    "applied": "Applied: {added} added · {changed} changed · {connected} connected · {removed} removed",
+    "rejected": "{count} instruction(s) didn't make sense and were skipped (hover for details)",
+    "noRunHint": "The assistant only builds, connects and fills in nodes — it never presses generate. Each run costs money, so that press is yours.",
+    "field": {
+      "prompt": "Prompt",
+      "aspectRatio": "Aspect Ratio",
+      "durationSeconds": "Duration",
+      "outputCount": "Outputs",
+      "angleKeys": "Angles",
+      "snippetIds": "Snippets",
+      "shotSizeKey": "Shot Size",
+      "cameraHeightKey": "Camera Height",
+      "lightingPresetKey": "Lighting Preset"
+    }
+  },
+  "view": {
+    "tidy": "Tidy canvas",
+    "autoGroup": "Group by workflow",
+    "toggleAllGroups": "Collapse/expand all groups",
+    "group": "Group selected nodes",
+    "ungroup": "Ungroup",
+    "snapToGrid": "Snap to grid",
+    "alignGuides": "Alignment guides",
+    "minimap": "Minimap",
+    "autoGrouped": "Grouped {n} workflows (double-click a group header to collapse, Ctrl+Z to undo)",
+    "nothingToGroup": "Nothing to group (needs at least 2 connected nodes)",
+    "noGroups": "No groups yet — try \"Group by workflow\" first",
+    "collapsedAll": "Collapsed {n} groups",
+    "expandedAll": "Expanded {n} groups"
+  },
+  "group": {
+    "grouped": "Grouped {n} nodes",
+    "mediaGrouped": "Grouped {n} media nodes — drag one line from the group's right side to feed them all downstream",
+    "needTwo": "Select at least 2 nodes first (Shift+click or box-select), then press Cmd+G",
+    "noNesting": "Groups can't be nested; ungroup those nodes first",
+    "ungroupedOne": "Ungrouped (Ctrl+Z to undo)",
+    "ungroupedMany": "Ungrouped {n} groups (Ctrl+Z to undo)",
+    "ungroupNeedsSelection": "Select a group (or a node inside it), then press Cmd+Shift+G to ungroup",
+    "collapse": "Collapse (or double-click the header)",
+    "expand": "Expand (or double-click the header)",
+    "memberCount": "{count} nodes"
+  },
+  "tidy": {
+    "done": "Canvas tidied (Ctrl+Z to undo)",
+    "empty": "The canvas is empty"
+  },
+  "cascade": {
+    "started": "Started — {n} batches",
+    "emptyOrCyclic": "No generators to run, or the connections form a loop — can't run all",
+    "confirm": "This will run {nodes} generators in {batches} batches and submit {tasks} generation tasks in total, each one billed. Continue?",
+    "blocked": "{count} nodes aren't ready — nothing was submitted",
+    "issueNoModel": "\"{name}\" has no model",
+    "issueNoPrompt": "\"{name}\" has no prompt",
+    "issueMaterial": "the model on \"{name}\" doesn't accept the connected {kind}",
+    "listJoin": "; ",
+    "andMore": "…",
+    "stopped": "A node in batch {batch} didn't succeed — the rest were not submitted",
+    "done": "Done — all {n} batches finished",
+    "cancelled": "Stopped. Video tasks were asked to cancel; image tasks can't be cancelled mid-way and will finish in the background — find them in the task queue"
+  },
+  "flow": {
+    "edgeAutoFlipped": "Connection direction fixed: material → generator",
+    "switchedModel": "Switched to \"{model}\" to accept {kind}",
+    "minimapAria": "Canvas overview and current viewport"
+  },
+  "materialKind": {
+    "image": "reference images",
+    "video": "reference videos",
+    "audio": "reference audio"
+  },
+  "exportPng": {
+    "done": "Canvas image exported",
+    "empty": "The canvas is empty",
+    "failed": "Export failed (some images may block cross-origin reads)"
+  },
+  "search": {
+    "placeholder": "Search nodes, actions, or type / for commands (⌘K)",
+    "empty": "No matching nodes or actions",
+    "noCommand": "Unknown command — try /light or /angle",
+    "action": "Action",
+    "hint": "↑↓ to pick · Enter to run · Esc to close"
+  },
+  "slash": {
+    "light": {
+      "label": "Lighting",
+      "description": "With an image selected: add a relighting generator; otherwise: add a lighting prompt",
+      "textTitle": "Lighting prompt",
+      "generatorTitle": "Relight",
+      "seedPrompt": "Keep the subject and composition unchanged; relight using the selected lights only",
+      "createdFromSelection": "Lighting workflow added (selected image + {n} lights) — check the model, then press run",
+      "createdTextNode": "Lighting prompt added — connect it to an image generator (or select an image first, then use /light)"
+    },
+    "angle": {
+      "label": "Multi-angle",
+      "description": "With an image selected: add a multi-angle generator; otherwise: add an angle prompt",
+      "textTitle": "Angle prompt",
+      "generatorTitle": "Multi-angle",
+      "seedPrompt": "Same character with consistent look, outfit and colors, shown from the selected angle",
+      "createdFromSelection": "Multi-angle workflow added (selected image + {n} angles) — check the model, then press run",
+      "createdTextNode": "Angle prompt added — connect it to an image generator (or select an image first, then use /angle)"
+    }
+  },
+  "board": {
+    "loading": "Loading…",
+    "saved": "Saved",
+    "saving": "Saving…",
+    "failed": "Save failed — changes are still on this page",
+    "offline": "Not saving",
+    "offlineHint": "Couldn't load the saved canvas (not signed in, or the server is down). You can keep working, but a refresh will lose it — export JSON first",
+    "staleRuns": "{count} nodes were still generating last time; results will show up in the task queue, not here"
+  },
+  "library": {
+    "loading": "Loading…",
+    "loadFailed": "Failed to load",
+    "loadMore": "Load more",
+    "refresh": "Refresh",
+    "assets": {
+      "title": "Assets",
+      "images": "Images",
+      "videos": "Videos",
+      "search": "Search prompts, press Enter",
+      "empty": "No generated works yet",
+      "add": "Add to canvas",
+      "added": "Added to the canvas"
+    },
+    "log": {
+      "title": "Generation log",
+      "empty": "No generations yet",
+      "noPrompt": "(no prompt)",
+      "fromCanvas": "This canvas",
+      "completed": "Done",
+      "failed": "Failed",
+      "processing": "Generating",
+      "pending": "Queued"
+    },
+    "templates": {
+      "title": "Workflow templates",
+      "saveSelection": "Save selection as template",
+      "needSelection": "Select the nodes to save first",
+      "namePrompt": "Name this template",
+      "saved": "Saved template \"{name}\" ({n} nodes)",
+      "saveFailed": "Failed to save the template",
+      "none": "No templates yet — select some nodes and save them with the button above",
+      "nodeCount": "{n} nodes",
+      "applied": "Added template \"{name}\" ({n} nodes, Ctrl+Z to undo)",
+      "empty": "This template is empty",
+      "applyFailed": "Failed to add the template, try again",
+      "delete": "Delete template",
+      "deleteConfirm": "Delete template \"{name}\"? This can't be undone",
+      "deleteFailed": "Failed to delete"
+    }
+  },
+  "versions": {
+    "title": "Version snapshots",
+    "body": "Save the whole canvas as it is now, then compare or roll back to it later",
+    "offline": "The canvas isn't connected to storage (not signed in, or the server is down), so snapshots aren't available",
+    "create": "Take a snapshot",
+    "labelPrompt": "Add a note for this version (optional)",
+    "created": "Snapshot saved",
+    "createFailed": "Couldn't save the snapshot",
+    "empty": "No snapshots yet",
+    "counts": "{nodes} nodes · {edges} connections",
+    "compare": "Compare",
+    "restore": "Restore",
+    "delete": "Delete snapshot",
+    "restoreConfirm": "Go back to this version? The current canvas is saved as a snapshot first, and you can Ctrl+Z afterwards",
+    "autoBeforeRestore": "Auto-saved before restore",
+    "restored": "Restored (Ctrl+Z to undo)",
+    "restoreFailed": "Restore failed — the canvas wasn't changed",
+    "loadFailed": "Failed to load the snapshot",
+    "deleteConfirm": "Delete this snapshot? This can't be undone",
+    "deleteFailed": "Failed to delete",
+    "unchanged": "Identical to the current canvas",
+    "changedLead": "From this version to now:",
+    "added": "{n} added: {names}",
+    "removed": "{n} removed: {names}",
+    "changed": "{n} edited: {names}",
+    "moved": "{n} moved",
+    "edges": "Connections: +{added} / −{removed}",
+    "listJoin": ", ",
+    "andMore": "{names} and more ({n} total)"
   }
 }

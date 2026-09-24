@@ -1,6 +1,13 @@
 {
-  "title": "Fast Mode",
-  "subtitle": "Let AI help you create beautiful images and videos",
+  "title": "Start creating",
+  "subtitle": "Pick a model, tap a sample or write a sentence, then generate.",
+  "beginnerHint": "Three steps: choose a model, tap a sample or write a prompt, then generate. Skip advanced options for now.",
+  "videoSamples": {
+    "title": "Try video models",
+    "subtitle": "Each sample is paired with a model and prompt. Tap one to fill the form and compare models.",
+    "apply": "Use this sample",
+    "switchHint": "Video model samples are on the Video tab above."
+  },
   "hub": {
     "badge": "Creation Hub",
     "title": "Unified Creation Entry",
@@ -35,7 +42,9 @@
   },
   "tabs": {
     "image": "Image Creation",
-    "video": "Video Creation"
+    "video": "Video Creation",
+    "frames": "First / last frame",
+    "references": "Reference mode"
   },
   "modes": {
     "template": "Use Network Prompt",
@@ -63,6 +72,9 @@
     "backToTemplates": "Back to Prompts",
     "currentTemplate": "Current Prompt: {name}"
   },
+  "advancedToggle": "Advanced: references, project, first/last frames",
+  "advancedShow": "Show",
+  "advancedHide": "Hide",
   "steps": {
     "step1": "Choose AI Model",
     "step2": "Describe What You Want to Create",
@@ -106,7 +118,11 @@
       "async": "Async Generation",
       "imageToImage": "Image-to-Image",
       "highRes": "High Resolution"
-    }
+    },
+    "emptyHint": "Fill in the Base URL and API Key of any channel, and available models will show up here.",
+    "configureChannels": "Configure model channels",
+    "typeImage": "image",
+    "typeVideo": "video"
   },
   "form": {
     "model": {
@@ -227,6 +243,12 @@
       },
       "seed": "Seed",
       "style": "Style"
+    },
+    "assetKind": {
+      "image": "reference images",
+      "video": "reference videos",
+      "audio": "reference audio",
+      "frame": "keyframes"
     }
   },
   "videoAssistant": {
@@ -394,7 +416,9 @@
     "referenceLimitReached": "This model supports up to {max} reference asset(s)",
     "referenceAssetsMutuallyExclusive": "You cannot select project reference assets while first/last frame input is enabled",
     "promptTooShort": "Prompt must be at least 1 character",
-    "promptTooLong": "Prompt is too long. Please shorten it and try again"
+    "promptTooLong": "Prompt is too long. Please shorten it and try again",
+    "assetUnsupported": "This model does not accept {kind}. Switch models, or remove the uploaded {kind} first.",
+    "assetOverLimit": "This model accepts at most {max} {kind}; you have {count}. Remove the extras and try again."
   },
   "featuredTemplates": {
     "quickStart": "Quick Start",
@@ -418,8 +442,107 @@
     "scrollPrev": "View previous idea",
     "scrollNext": "View next idea",
     "sources": {
-      "system": "Prompt source: https://github.com/glidea/banana-prompt-quicker",
+      "system": "Built-in prompt library — tap a card to apply",
+      "systemVideo": "Video templates use the Seedance prompt format. Tapping a card selects Seedance or the matching video model.",
       "presets": "My Presets"
-    }
+    },
+    "presetsTitle": "Inspiration presets",
+    "gridHint": "Tap a card to fill the prompt on the left, then tweak a few words.",
+    "showMore": "Show more ({count} total)",
+    "showLess": "Show less"
+  },
+  "remix": {
+    "applied": "Applied this work's prompt and settings",
+    "modelMissing": "The original model is no longer available. Switched to the current default model — please re-check the settings."
+  },
+  "simple": {
+    "simpleLabel": "Simple",
+    "advancedLabel": "Advanced",
+    "toAdvanced": "Switch to advanced",
+    "toSimple": "Back to simple",
+    "hint": "Write one sentence and hit “Confirm and generate”. For reference images, first/last frames or more settings, switch to advanced.",
+    "generate": "Confirm and generate",
+    "modelSwitchHint": "An available model is picked for you — you can change it.",
+    "summaryTitle": "Current settings",
+    "ready": "Ready to generate",
+    "missingPrompt": "Needs a description",
+    "missingModel": "No model available",
+    "rowModel": "Model",
+    "rowOutput": "Output",
+    "rowOthers": "Other settings",
+    "othersDefault": "the current model's defaults",
+    "rowResult": "Result",
+    "resultValue": "Shown on the right, and saved to Tasks and Gallery",
+    "secondsUnit": "s",
+    "promptHelp": "Not sure what to write? Read the tutorial →",
+    "countLabel": "Count",
+    "countUnit": ""
+  },
+  "results": {
+    "title": "This session · {count}",
+    "viewAll": "View all in Tasks",
+    "clear": "Clear finished",
+    "download": "Download",
+    "open": "Open file",
+    "failed": "Failed",
+    "statusSubmitting": "Submitting…",
+    "statusQueued": "Queued",
+    "statusRunning": "Generating",
+    "emptyTitle": "Your results will appear here",
+    "emptyHint": "Write a prompt and set parameters on the left, then hit Generate. Results show up in this column and are saved to Tasks.",
+    "samplesTitle": "Not sure what to write? Pick a sample"
+  },
+  "studio": {
+    "showcase": "Showcase",
+    "modeImage": "Image",
+    "modeVideo": "Video",
+    "playSample": "Play sample",
+    "applyCase": "Apply case",
+    "applied": "Applied: {title}",
+    "moreCases": "More cases",
+    "currentConfig": "Current setup",
+    "cellOutput": "Output",
+    "cellReference": "Reference",
+    "cellDuration": "Duration",
+    "cellCount": "Count",
+    "cellModel": "Model",
+    "defaultRatio": "Model default",
+    "secondsValue": "{value}s",
+    "countImages": "{count} image(s)",
+    "countVideos": "{count} video(s)",
+    "parallel": "In parallel",
+    "noReference": "No reference",
+    "referenceCount": "{count} reference(s)",
+    "noModel": "Not selected",
+    "noteImageTitle": "{mode}",
+    "noteTextToImage": "Generated from the prompt only. Add reference images on the left to lock composition, subject or style.",
+    "noteImageToImage": "Reference images steer composition and style; say what to keep and what to change.",
+    "noteVideoTitle": "Video generation",
+    "noteVideoText": "Generates a {duration}s video from the prompt. Add references or first/last frames on the left; results appear in the preview above.",
+    "kickerImage": "NEW IMAGE",
+    "kickerVideo": "NEW SHOT",
+    "headingImage": "Make a new image",
+    "headingVideo": "Make a new shot",
+    "subheadingImage": "From one sentence to a trackable image task.",
+    "subheadingVideo": "From story intent to a trackable video task.",
+    "browsePresets": "Browse presets",
+    "viewTasks": "View tasks",
+    "modeImageDesc": "Text or reference to image, up to 4 at once",
+    "modeVideoDesc": "Text to video, frames and references",
+    "fieldModel": "Model",
+    "fieldContent": "Prompt & references",
+    "fieldParams": "Parameters",
+    "optional": "Optional",
+    "promptHelp": "Not sure what to write? Read the guide",
+    "presetsKicker": "FROM PROMPT TO RESULT",
+    "presetsTitleLine1": "Start with one sentence,",
+    "presetsTitleLine2": "make your next piece.",
+    "presetsSub": "Pick a preset and its prompt fills the left panel; tweak a few words and generate.",
+    "presetsCount": "{count} built-in presets",
+    "applyPreset": "Use this prompt",
+    "createVideo": "Create video",
+    "createImage": "Generate image",
+    "modeFramesDesc": "Prompt, first frame, or first and last frame control",
+    "modeReferencesDesc": "Combine reference images, video, and audio"
   }
 }

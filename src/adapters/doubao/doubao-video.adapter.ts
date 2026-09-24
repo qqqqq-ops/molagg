@@ -92,14 +92,22 @@ type StringListParseResult = {
 
 type DoubaoModelInfo = {
   raw: string;
+  isSeedance25Series: boolean;
   isSeedance20Series: boolean;
   isSeedance15: boolean;
   isSeedance10LiteI2V: boolean;
   supportsReferenceVideo: boolean;
   supportsReferenceAudio: boolean;
+  supportsAudioOnlyReference: boolean;
   supportsGenerateAudio: boolean;
   supportsDraft: boolean;
   supportsFlexServiceTier: boolean;
+  supports1080p: boolean;
+  maxReferenceImages: number;
+  maxReferenceVideos: number;
+  maxReferenceAudios: number;
+  minDuration: number;
+  maxDuration: number;
 };
 
 function asString(value: unknown): string | undefined {
@@ -163,20 +171,30 @@ function resolveDoubaoModel(params: Record<string, unknown>): string | undefined
 
 function getDoubaoModelInfo(model: string | undefined): DoubaoModelInfo {
   const raw = (model ?? '').toLowerCase();
-  const isSeedance20Series = raw.includes('seedance-2-0');
+  const isSeedance25Series = raw.includes('seedance-2-5') || raw.includes('seedance-2.5');
+  const isSeedance20Series = raw.includes('seedance-2-0') && !isSeedance25Series;
+  const isSeedance2Family = isSeedance25Series || isSeedance20Series;
   const isSeedance15 = raw.includes('seedance-1-5');
   const isSeedance10LiteI2V = raw.includes('seedance-1-0-lite-i2v');
 
   return {
     raw,
+    isSeedance25Series,
     isSeedance20Series,
     isSeedance15,
     isSeedance10LiteI2V,
-    supportsReferenceVideo: isSeedance20Series,
-    supportsReferenceAudio: isSeedance20Series,
-    supportsGenerateAudio: isSeedance20Series || isSeedance15,
+    supportsReferenceVideo: isSeedance2Family,
+    supportsReferenceAudio: isSeedance2Family,
+    supportsAudioOnlyReference: isSeedance25Series,
+    supportsGenerateAudio: isSeedance2Family || isSeedance15,
     supportsDraft: isSeedance15,
-    supportsFlexServiceTier: !isSeedance20Series,
+    supportsFlexServiceTier: !isSeedance20Series && !isSeedance25Series,
+    supports1080p: !isSeedance20Series,
+    maxReferenceImages: isSeedance25Series ? 30 : isSeedance20Series ? 9 : 4,
+    maxReferenceVideos: isSeedance25Series ? 10 : isSeedance20Series ? 3 : 0,
+    maxReferenceAudios: isSeedance25Series ? 10 : isSeedance20Series ? 3 : 0,
+    minDuration: isSeedance2Family || isSeedance15 ? 4 : 2,
+    maxDuration: isSeedance25Series ? 30 : isSeedance20Series ? 15 : isSeedance15 ? 12 : 12,
   };
 }
 
@@ -247,7 +265,7 @@ function hasAnyMediaInput(input: {
 /**
  * 豆包视频生成适配器
  *
- * 重点适配 Seedance 2.0 / 2.0 fast：
+ * 重点适配 Seedance 2.5 / 2.0 / 2.0 fast：
  * - 文生视频
  * - 图生视频（首帧 / 首尾帧）
  * - 多模态参考生视频（参考图 / 参考视频 / 参考音频）
@@ -388,29 +406,34 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
     }
 
     if (referenceImages.provided) {
-      const maxImages = modelInfo.isSeedance20Series ? 9 : 4;
+      const maxImages = modelInfo.maxReferenceImages;
       if (referenceImages.items.length < 1 || referenceImages.items.length > maxImages) {
         errors.push(`referenceImages must contain 1-${maxImages} images`);
       }
     }
 
     if (referenceVideos.provided) {
-      if (referenceVideos.items.length < 1 || referenceVideos.items.length > 3) {
-        errors.push('referenceVideos must contain 1-3 videos');
+      if (referenceVideos.items.length < 1 || referenceVideos.items.length > modelInfo.maxReferenceVideos) {
+        errors.push(`referenceVideos must contain 1-${modelInfo.maxReferenceVideos} videos`);
       }
       if (referenceVideos.items.length > 0 && !modelInfo.supportsReferenceVideo) {
-        errors.push('referenceVideos are only supported by Seedance 2.0 series models');
+        errors.push('referenceVideos are only supported by Seedance 2.0 / 2.5 series models');
       }
     }
 
     if (referenceAudios.provided) {
-      if (referenceAudios.items.length < 1 || referenceAudios.items.length > 3) {
-        errors.push('referenceAudios must contain 1-3 audios');
+      if (referenceAudios.items.length < 1 || referenceAudios.items.length > modelInfo.maxReferenceAudios) {
+        errors.push(`referenceAudios must contain 1-${modelInfo.maxReferenceAudios} audios`);
       }
       if (referenceAudios.items.length > 0 && !modelInfo.supportsReferenceAudio) {
-        errors.push('referenceAudios are only supported by Seedance 2.0 series models');
+        errors.push('referenceAudios are only supported by Seedance 2.0 / 2.5 series models');
       }
-      if (referenceAudios.items.length > 0 && referenceImages.items.length === 0 && referenceVideos.items.length === 0) {
+      if (
+        referenceAudios.items.length > 0 &&
+        referenceImages.items.length === 0 &&
+        referenceVideos.items.length === 0 &&
+        !modelInfo.supportsAudioOnlyReference
+      ) {
         errors.push('referenceAudios require at least one referenceImage or referenceVideo');
       }
     }
@@ -423,8 +446,8 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
     if (resolution && !['480p', '720p', '1080p'].includes(resolution)) {
       errors.push('resolution must be 480p, 720p, or 1080p');
     }
-    if (resolution === '1080p' && modelInfo.isSeedance20Series) {
-      errors.push('resolution 1080p is not supported by Seedance 2.0 series models');
+    if (resolution === '1080p' && !modelInfo.supports1080p) {
+      errors.push('resolution 1080p is not supported by this Seedance model');
     }
     if (resolution === '1080p' && modelInfo.isSeedance10LiteI2V && referenceImages.items.length > 0) {
       errors.push('resolution 1080p is not supported by Seedance 1.0 lite i2v reference-image mode');
@@ -439,13 +462,11 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
     if (duration !== undefined) {
       if (!Number.isInteger(duration)) {
         errors.push('duration must be an integer');
-      } else if (modelInfo.isSeedance20Series) {
-        if (duration !== -1 && (duration < 4 || duration > 15)) {
-          errors.push('duration must be -1 or an integer between 4 and 15 seconds for Seedance 2.0 series');
-        }
-      } else if (modelInfo.isSeedance15) {
-        if (duration !== -1 && (duration < 4 || duration > 12)) {
-          errors.push('duration must be -1 or an integer between 4 and 12 seconds for Seedance 1.5 pro');
+      } else if (modelInfo.isSeedance25Series || modelInfo.isSeedance20Series || modelInfo.isSeedance15) {
+        if (duration !== -1 && (duration < modelInfo.minDuration || duration > modelInfo.maxDuration)) {
+          errors.push(
+            `duration must be -1 or an integer between ${modelInfo.minDuration} and ${modelInfo.maxDuration} seconds`,
+          );
         }
       } else if (duration < 2 || duration > 12) {
         errors.push('duration must be an integer between 2 and 12 seconds');
@@ -459,8 +480,8 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
       } else if (frames < 29 || frames > 289 || (frames - 25) % 4 !== 0) {
         errors.push('frames must be within [29, 289] and satisfy 25 + 4n');
       }
-      if (modelInfo.isSeedance20Series || modelInfo.isSeedance15) {
-        errors.push('frames is not supported by Seedance 2.0 / 1.5 models');
+      if (modelInfo.isSeedance25Series || modelInfo.isSeedance20Series || modelInfo.isSeedance15) {
+        errors.push('frames is not supported by Seedance 2.5 / 2.0 / 1.5 models');
       }
     }
 
@@ -483,8 +504,8 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
     if (cameraFixed !== undefined && typeof cameraFixed !== 'boolean') {
       errors.push('camera_fixed must be boolean');
     }
-    if (cameraFixed === true && modelInfo.isSeedance20Series) {
-      errors.push('camera_fixed is not supported by Seedance 2.0 series models');
+    if (cameraFixed === true && (modelInfo.isSeedance20Series || modelInfo.isSeedance25Series)) {
+      errors.push('camera_fixed is not supported by Seedance 2.0 / 2.5 series models');
     }
     if (cameraFixed === true && referenceImages.items.length > 0) {
       errors.push('camera_fixed is not supported in reference-image mode');
@@ -505,7 +526,7 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
       errors.push('service_tier must be default or flex');
     }
     if (serviceTier === 'flex' && !modelInfo.supportsFlexServiceTier) {
-      errors.push('service_tier=flex is not supported by Seedance 2.0 series models');
+      errors.push('service_tier=flex is not supported by this Seedance model');
     }
 
     const expiresAfter = asNumber(p.execution_expires_after) ?? asNumber(p.executionExpiresAfter);
@@ -520,7 +541,7 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
       errors.push('generate_audio must be boolean');
     }
     if (generateAudio !== undefined && !modelInfo.supportsGenerateAudio) {
-      errors.push('generate_audio is only supported by Seedance 2.0 series and Seedance 1.5 pro');
+      errors.push('generate_audio is only supported by Seedance 2.5 / 2.0 / 1.5 models');
     }
 
     const draft = p.draft;
@@ -684,6 +705,9 @@ export class DoubaoVideoAdapter extends BaseVideoAdapter {
 
     const generateAudio = raw.generate_audio ?? raw.generateAudio;
     if (typeof generateAudio === 'boolean') body.generate_audio = generateAudio;
+
+    const outputFormat = asString(raw.output_format) ?? asString(raw.outputFormat);
+    if (outputFormat) body.output_format = outputFormat;
 
     if (typeof raw.draft === 'boolean') body.draft = raw.draft;
 

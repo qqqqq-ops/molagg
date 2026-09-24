@@ -61,7 +61,13 @@ export interface ChannelTestResult {
   ok: boolean
   baseUrl: string
   provider: string
+  /** 实际探测的地址，排查时用 */
+  url?: string
   status?: number
+  /** 失败归类：地址没填 / 可达 / 不支持该接口 / 上游错误 / 连不上 */
+  reason?: 'no_base_url' | 'reachable' | 'not_supported' | 'upstream_error' | 'unreachable'
+  /** 人话结论 */
+  message?: string
   error?: string
   ms: number
 }

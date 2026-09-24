@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
-import { AiSettingsService } from '../settings/ai-settings.service';
+import { UserCredentialsService } from '../credentials/user-credentials.service';
 import {
   MIDJOURNEY_SYSTEM_PROMPT,
   PROJECT_DESCRIPTION_BUNDLE_SYSTEM_PROMPT,
@@ -31,7 +31,7 @@ type PromptRequestInput = {
 export class PromptOptimizeService {
   private readonly logger = new Logger(PromptOptimizeService.name);
 
-  constructor(private readonly aiSettings: AiSettingsService) {}
+  constructor(private readonly credentials: UserCredentialsService) {}
 
   private normalizeContent(value: any): string {
     if (typeof value === 'string') return value;
@@ -162,9 +162,9 @@ export class PromptOptimizeService {
       task,
     } = input;
 
-    const settings = await this.aiSettings.getAiSettings();
+    const settings = await this.credentials.getAiSettings(userId);
     if (!settings.apiBaseUrl || !settings.apiKey || !settings.modelName) {
-      throw new BadRequestException('AI 优化功能未配置，请联系管理员');
+      throw new BadRequestException('请先在设置中填写对话 API 的 Base URL、API Key 和模型名');
     }
 
     try {

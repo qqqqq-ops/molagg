@@ -8,24 +8,25 @@ import { Variants } from 'framer-motion'
 /**
  * 页面过渡动画变体
  */
+// 时长刻意压短：切页 / 切 tab 时内容要立刻可用，动画只做点缀（原 0.4–0.5s 叠上延迟，用户实测「很久才加载出来」）
 export const pageTransition: Variants = {
   initial: {
     opacity: 0,
-    y: 20,
+    y: 8,
   },
   animate: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.4,
+      duration: 0.2,
       ease: [0.25, 0.1, 0.25, 1],
     },
   },
   exit: {
     opacity: 0,
-    y: -20,
+    y: -8,
     transition: {
-      duration: 0.3,
+      duration: 0.15,
       ease: [0.25, 0.1, 0.25, 1],
     },
   },
@@ -41,7 +42,7 @@ export const fadeIn: Variants = {
   animate: {
     opacity: 1,
     transition: {
-      duration: 0.5,
+      duration: 0.25,
       ease: 'easeOut',
     },
   },
@@ -53,13 +54,13 @@ export const fadeIn: Variants = {
 export const slideUp: Variants = {
   initial: {
     opacity: 0,
-    y: 30,
+    y: 12,
   },
   animate: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.25,
       ease: [0.25, 0.1, 0.25, 1],
     },
   },
@@ -77,7 +78,7 @@ export const scaleIn: Variants = {
     opacity: 1,
     scale: 1,
     transition: {
-      duration: 0.4,
+      duration: 0.2,
       ease: [0.25, 0.1, 0.25, 1],
     },
   },
@@ -89,7 +90,7 @@ export const scaleIn: Variants = {
 export const staggerContainer: Variants = {
   animate: {
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.04,
     },
   },
 }

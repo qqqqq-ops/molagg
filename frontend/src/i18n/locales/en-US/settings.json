@@ -27,6 +27,7 @@
     },
     "apiBaseUrl": "API Base URL",
     "apiKey": "API Key",
+    "chatHint": "This tab is for chat and prompt optimization. Image and video keys are on the Images/Videos tab.",
     "promptOptimizeModel": "Prompt Optimization Model",
     "storage": {
       "title": "Tencent Cloud COS",
@@ -39,6 +40,10 @@
     }
   },
   "media": {
+    "title": "Image / video channels",
+    "description": "Enter your own Base URL and API Key for each provider. Image and video models from the same provider share one key.",
+    "configured": "Connected",
+    "notConfigured": "Not connected",
     "channels": {
       "fields": {
         "name": "Channel Name",

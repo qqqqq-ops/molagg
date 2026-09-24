@@ -91,7 +91,7 @@ export function EnhancedSelect({
     <div
       ref={menuRef}
       className={cn(
-        'overflow-y-auto rounded-[20px] border border-stone-200 bg-white shadow-[0_24px_60px_-28px_rgba(15,23,42,0.38)] dark:border-stone-700 dark:bg-stone-950 dark:shadow-[0_28px_70px_-30px_rgba(2,6,23,0.78)]',
+        'enhanced-select-menu overflow-y-auto rounded-[20px] border border-stone-200 bg-white shadow-[0_24px_60px_-28px_rgba(15,23,42,0.38)] dark:border-stone-700 dark:bg-stone-950 dark:shadow-[0_28px_70px_-30px_rgba(2,6,23,0.78)]',
         'animate-in fade-in duration-200',
         openUpwards ? 'slide-in-from-bottom-2' : 'slide-in-from-top-2'
       )}

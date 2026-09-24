@@ -68,6 +68,41 @@ export const AVAILABLE_PROVIDERS: ProviderConfig[] = [
     supportTypes: ['video'],
     description: '阿里云百炼万相参考生视频',
   },
+  {
+    key: 'kling',
+    displayName: '可灵',
+    adapterClass: 'KlingVideoAdapter',
+    supportTypes: ['video'],
+    description: '快手可灵视频格式',
+  },
+  {
+    key: 'sora',
+    displayName: 'Sora',
+    adapterClass: 'SoraVideoAdapter',
+    supportTypes: ['video'],
+    description: 'OpenAI /v1/videos 格式',
+  },
+  {
+    key: 'veo',
+    displayName: 'Veo',
+    adapterClass: 'VeoVideoAdapter',
+    supportTypes: ['video'],
+    description: 'Google Veo /v1/videos/generations 格式',
+  },
+  {
+    key: 'hailuo',
+    displayName: '海螺',
+    adapterClass: 'HailuoVideoAdapter',
+    supportTypes: ['video'],
+    description: 'MiniMax 海螺 /v1/video_generation 格式',
+  },
+  {
+    key: 'vidu',
+    displayName: 'Vidu',
+    adapterClass: 'ViduVideoAdapter',
+    supportTypes: ['video'],
+    description: '生数 Vidu /ent/v2 格式',
+  },
 ]
 
 export function isAdminModelsHiddenProvider(key?: string | null) {

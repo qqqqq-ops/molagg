@@ -9,6 +9,7 @@ import { parseSqliteJson } from '../../common/utils/sqlite-json.util';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { DEFAULT_API_CHANNELS, DEFAULT_API_CHANNEL_IDS, upsertDefaultApiChannels } from './default-api-channels';
 import { UpdateChannelDto } from './dto/update-channel.dto';
+import { probeChannel } from '../../common/utils/channel-probe.util';
 
 @Injectable()
 export class AdminChannelsService {
@@ -97,22 +98,11 @@ export class AdminChannelsService {
 
   async test(id: bigint) {
     const channel = await this.getFixedChannel(id);
-    if (!channel.baseUrl.trim()) {
-      return { ok: false, baseUrl: '', provider: channel.provider, error: 'Base URL is not configured', ms: 0 };
-    }
-    const startedAt = Date.now();
-    try {
-      const res = await axios.request({
-        method: 'HEAD',
-        url: channel.baseUrl,
-        timeout: Math.min(channel.timeout, 10_000),
-        validateStatus: () => true,
-      });
-
-      return { ok: true, baseUrl: channel.baseUrl, provider: channel.provider, status: res.status, ms: Date.now() - startedAt };
-    } catch (e: any) {
-      return { ok: false, baseUrl: channel.baseUrl, provider: channel.provider, error: e?.message ?? 'Request failed', ms: Date.now() - startedAt };
-    }
+    return probeChannel({
+      baseUrl: channel.baseUrl,
+      provider: channel.provider,
+      timeout: channel.timeout,
+    });
   }
 
   async statistics(id: bigint) {

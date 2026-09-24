@@ -27,18 +27,21 @@ async function ensurePersonalSqliteIndexes() {
 
 async function main() {
   const localEmail = 'local@flowmuse.personal';
+  const existingOwner = await prisma.user.findFirst({ orderBy: { id: 'asc' } });
 
-  await prisma.user.upsert({
-    where: { email: localEmail },
-    create: {
-      id: LOCAL_USER_ID,
-      email: localEmail,
-      username: 'local',
-      role: 'admin',
-      status: 'active',
-    },
-    update: {},
-  });
+  if (!existingOwner) {
+    await prisma.user.upsert({
+      where: { email: localEmail },
+      create: {
+        id: LOCAL_USER_ID,
+        email: localEmail,
+        username: 'local',
+        role: 'admin',
+        status: 'active',
+      },
+      update: {},
+    });
+  }
 
   for (const provider of defaultModelProviders) {
     await prisma.modelProvider.upsert({
@@ -154,8 +157,60 @@ async function main() {
   });
 
   await ensurePersonalSqliteIndexes();
+  await migrateGlobalKeysToOwner();
 
-  console.log(`Seed completed. Local user email: ${localEmail}`);
+  console.log(`Seed completed. Placeholder user email: ${localEmail} (first registered account claims this workspace)`);
+}
+
+async function migrateGlobalKeysToOwner() {
+  const owner = await prisma.user.findFirst({ orderBy: { id: 'asc' } });
+  if (!owner) return;
+
+  const channels = await prisma.apiChannel.findMany();
+  for (const channel of channels) {
+    if (!channel.apiKey) continue;
+    const existing = await prisma.userChannelCredential.findUnique({
+      where: {
+        user_channel_credential_user_channel_unique: {
+          userId: owner.id,
+          channelId: channel.id,
+        },
+      },
+    });
+    if (existing) continue;
+    await prisma.userChannelCredential.create({
+      data: {
+        userId: owner.id,
+        channelId: channel.id,
+        baseUrl: channel.baseUrl,
+        apiKey: channel.apiKey,
+        apiSecret: channel.apiSecret,
+        extraHeaders: channel.extraHeaders,
+      },
+    });
+  }
+
+  const existingAi = await prisma.userAiSetting.findUnique({ where: { userId: owner.id } });
+  if (!existingAi) {
+    const rows = await prisma.systemConfig.findMany({
+      where: { key: { in: ['ai.apiBaseUrl', 'ai.apiKey', 'ai.modelName'] } },
+    });
+    const map = Object.fromEntries(rows.map((row) => [row.key, row.value]));
+    if (map['ai.apiKey'] || map['ai.apiBaseUrl'] || map['ai.modelName']) {
+      await prisma.userAiSetting.create({
+        data: {
+          userId: owner.id,
+          apiBaseUrl: map['ai.apiBaseUrl'] || '',
+          apiKey: map['ai.apiKey'] || null,
+          modelName: map['ai.modelName'] || '',
+        },
+      });
+    }
+  }
+
+  await prisma.apiChannel.updateMany({
+    data: { apiKey: null, apiSecret: null },
+  });
 }
 
 main()

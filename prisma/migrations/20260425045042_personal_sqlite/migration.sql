@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "email" TEXT NOT NULL,
     "username" TEXT,
+    "password_hash" TEXT,
     "avatar" TEXT,
     "role" TEXT NOT NULL DEFAULT 'user',
     "status" TEXT NOT NULL DEFAULT 'active',
@@ -14,6 +15,8 @@ CREATE TABLE IF NOT EXISTS "users" (
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS "users_email_key" ON "users"("email");
 
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "api_channels" (
@@ -472,3 +475,85 @@ CREATE INDEX IF NOT EXISTS "chat_file_idx_user_status_time" ON "chat_files"("use
 
 -- CreateIndex
 CREATE INDEX IF NOT EXISTS "chat_file_idx_project_asset_time" ON "chat_files"("project_asset_id", "created_at");
+
+CREATE TABLE IF NOT EXISTS "user_channel_credentials" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "user_id" INTEGER NOT NULL,
+    "channel_id" INTEGER NOT NULL,
+    "base_url" TEXT,
+    "api_key" TEXT,
+    "api_secret" TEXT,
+    "extra_headers" TEXT,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "user_channel_credentials_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "user_channel_credentials_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "api_channels" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "user_channel_credential_user_channel_unique" ON "user_channel_credentials"("user_id", "channel_id");
+CREATE INDEX IF NOT EXISTS "user_channel_credential_idx_user" ON "user_channel_credentials"("user_id");
+
+CREATE TABLE IF NOT EXISTS "user_ai_settings" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "user_id" INTEGER NOT NULL,
+    "api_base_url" TEXT,
+    "api_key" TEXT,
+    "model_name" TEXT,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "user_ai_settings_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "user_ai_settings_user_id_key" ON "user_ai_settings"("user_id");
+
+-- 无限画布：自动保存 / 版本快照 / 工作流模板（2026-09-23 加）
+-- 同一段也在 src/canvas/canvas-tables.ts 里，CanvasService 启动时补表（Docker 部署不重跑 init）。改一处要改两处。
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "canvas_boards" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "user_id" BIGINT NOT NULL,
+    "name" TEXT NOT NULL,
+    "graph" TEXT NOT NULL,
+    "node_count" INTEGER NOT NULL DEFAULT 0,
+    "edge_count" INTEGER NOT NULL DEFAULT 0,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "canvas_boards_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "canvas_snapshots" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "user_id" BIGINT NOT NULL,
+    "board_id" BIGINT NOT NULL,
+    "label" TEXT NOT NULL,
+    "graph" TEXT NOT NULL,
+    "node_count" INTEGER NOT NULL DEFAULT 0,
+    "edge_count" INTEGER NOT NULL DEFAULT 0,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "canvas_snapshots_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "canvas_snapshots_board_id_fkey" FOREIGN KEY ("board_id") REFERENCES "canvas_boards" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "canvas_templates" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "user_id" BIGINT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "graph" TEXT NOT NULL,
+    "node_count" INTEGER NOT NULL DEFAULT 0,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "canvas_templates_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "canvas_board_idx_user_time" ON "canvas_boards"("user_id", "updated_at");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "canvas_snapshot_idx_board_time" ON "canvas_snapshots"("board_id", "created_at");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "canvas_template_idx_user_time" ON "canvas_templates"("user_id", "updated_at");

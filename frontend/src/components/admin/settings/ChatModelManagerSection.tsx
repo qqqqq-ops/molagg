@@ -13,6 +13,7 @@ import {
   type ChatModelItem,
 } from '@/lib/api/services/admin/ai'
 import { cn } from '@/lib/utils/cn'
+import { ChatModelImportPanel } from './ChatModelImportPanel'
 
 type ChatModelDraft = {
   name: string
@@ -474,6 +475,13 @@ export function ChatModelManagerSection({ apiConfigured }: { apiConfigured: bool
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h2 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">{t('title')}</h2>
         <div className="flex flex-wrap items-center gap-2">
+          {/* 没配好 Base URL / Key 时，上游发现和入库都做不了 */}
+          {apiConfigured ? (
+            <ChatModelImportPanel
+              existingModelKeys={models.map((item) => item.modelKey)}
+              onImported={() => void loadData()}
+            />
+          ) : null}
           <Button
             type="button"
             variant="secondary"

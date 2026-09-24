@@ -9,6 +9,7 @@ import {
   extractAutoProjectAssetMetadata,
   type AutoProjectTaskAssetMetadata,
 } from '../common/utils/task-provider-data.util';
+import { UserCredentialsService } from '../credentials/user-credentials.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { ImagesService } from '../images/images.service';
 import { buildModelCapabilities } from '../models/model-capabilities';
@@ -92,6 +93,7 @@ type AutoProjectConversationContext = {
     defaultParams: unknown;
     supportsImageInput: boolean | null;
     channel: {
+      id?: bigint;
       baseUrl: string;
       apiKey: string | null;
       extraHeaders: unknown;
@@ -171,6 +173,7 @@ export class AutoProjectWorkflowService {
     private readonly encryption: EncryptionService,
     private readonly imagesService: ImagesService,
     private readonly videosService: VideosService,
+    private readonly credentials: UserCredentialsService,
   ) {}
 
   async completeTurn(params: {
@@ -5671,10 +5674,16 @@ export class AutoProjectWorkflowService {
   private async requestChatCompletion(
     conversation: AutoProjectConversationContext,
     messages: UpstreamMessage[],
+    userId?: bigint,
   ) {
-    const decryptedApiKey = this.encryption.decryptString(conversation.model.channel.apiKey);
+    const channelId = conversation.model.channel.id;
+    const channel =
+      userId && channelId
+        ? await this.credentials.resolveChannel(userId, channelId)
+        : conversation.model.channel;
+    const decryptedApiKey = this.encryption.decryptString(channel.apiKey);
     if (!decryptedApiKey) {
-      throw new BadRequestException('Channel API key is not configured');
+      throw new BadRequestException('请先在设置中配置对话模型的 API Key');
     }
 
     const headers: Record<string, string> = {
@@ -5682,7 +5691,7 @@ export class AutoProjectWorkflowService {
       Authorization: `Bearer ${decryptedApiKey}`,
     };
 
-    const extraHeaders = this.normalizeExtraHeaders(conversation.model.channel.extraHeaders);
+    const extraHeaders = this.normalizeExtraHeaders(channel.extraHeaders);
     for (const [key, value] of Object.entries(extraHeaders)) {
       headers[key] = value;
     }
@@ -5692,7 +5701,7 @@ export class AutoProjectWorkflowService {
         ? (conversation.model.defaultParams as Record<string, unknown>)
         : {};
 
-    const timeoutBase = Math.max(5_000, Math.min(conversation.model.channel.timeout ?? 60_000, 600_000));
+    const timeoutBase = Math.max(5_000, Math.min(channel.timeout ?? 60_000, 600_000));
     const timeoutMs = Math.max(timeoutBase, 180_000);
     const requestBody = {
       ...defaultParams,
@@ -5702,7 +5711,7 @@ export class AutoProjectWorkflowService {
     };
 
     const response = await this.requestChatCompletionWithRetry({
-      url: this.buildChatCompletionUrl(conversation.model.channel.baseUrl),
+      url: this.buildChatCompletionUrl(channel.baseUrl),
       body: requestBody,
       headers,
       timeoutMs,

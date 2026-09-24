@@ -31,11 +31,7 @@
     "error": "Error Message"
   },
   "failure": {
-    "reason": "Failure Reason",
-    "unknown": "The upstream service did not return a specific reason",
-    "canceled": "Task canceled",
-    "modelRemoved": "The model was removed or disabled",
-    "modalRequired": "Midjourney modal parameters are required before continuing"
+    "reason": "Failure Reason"
   },
   "actions": {
     "view": "View Details",
@@ -105,9 +101,10 @@
     "error": "Submission failed, please try again"
   },
   "empty": {
-    "title": "No Tasks",
-    "description": "You haven't created any tasks yet. Go to the creation studio to get started!",
-    "action": "Start Creating"
+    "title": "No tasks yet",
+    "description": "No generation tasks yet. Submit one from “Create” and it will appear here with progress, failure reasons and a retry button.",
+    "action": "Start creating",
+    "altAction": "Browse my works"
   },
   "polling": {
     "active": "Task status syncing live..."
@@ -137,5 +134,85 @@
     "cancel": "Failed to cancel task",
     "retry": "Failed to retry task",
     "mjAction": "Failed to execute Midjourney action"
+  },
+  "queue": {
+    "kicker": "TASKS · MY STUDIO",
+    "title": "My creative space",
+    "subtitle": "All image and video tasks in one place: track progress, see why a task failed, download results, remix in one click.",
+    "stats": {
+      "active": "In progress",
+      "completed": "Completed",
+      "failed": "Failed",
+      "total": "All tasks"
+    },
+    "tabs": {
+      "active": "Current",
+      "all": "All",
+      "completed": "Succeeded",
+      "failed": "Failed"
+    },
+    "search": "Search prompts",
+    "type": {
+      "all": "All types",
+      "image": "Image",
+      "video": "Video"
+    },
+    "project": {
+      "all": "All projects",
+      "none": "No project"
+    },
+    "create": "New",
+    "queued": "Queued",
+    "generating": "Generating",
+    "elapsed": "{time} elapsed",
+    "duration": "Took {time}",
+    "noResult": "Completed, but the provider returned no file",
+    "noPreview": "No preview",
+    "actions": {
+      "detail": "Details",
+      "remix": "Remix",
+      "download": "Download"
+    },
+    "emptyActive": {
+      "title": "Nothing in progress",
+      "description": "New generations show up here first, then move to Succeeded or Failed."
+    },
+    "emptyFiltered": {
+      "title": "No matching tasks",
+      "description": "Try another keyword or filter."
+    },
+    "clearFilters": "Clear filters",
+    "loadedAll": "All tasks loaded",
+    "retry": "Retry"
+  },
+  "drawer": {
+    "title": "Task details",
+    "close": "Close",
+    "prompt": "Prompt",
+    "negativePrompt": "Negative prompt",
+    "copyPrompt": "Copy prompt",
+    "taskNo": "Task ID",
+    "copyTaskNo": "Copy ID",
+    "copied": "Copied",
+    "copyFailed": "Copy failed, please select the text manually",
+    "type": "Type",
+    "model": "Model",
+    "status": "Status",
+    "project": "Project",
+    "createdAt": "Created",
+    "completedAt": "Completed",
+    "duration": "Duration",
+    "openOriginal": "Open original in new tab",
+    "moreActions": "More actions"
+  },
+  "progress": {
+    "submitting": "Submitting",
+    "queued": "Queued",
+    "generating": "Generating",
+    "real": "{value}%",
+    "estimated": "~{value}%",
+    "remaining": "~{time} left",
+    "overdue": "Taking longer than usual",
+    "elapsed": "{time} elapsed"
   }
 }

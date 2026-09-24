@@ -13,7 +13,12 @@ const backendUrl = (process.env.BACKEND_URL || 'http://127.0.0.1:3000').replace(
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
+  '.gif': 'image/gif',
   '.ico': 'image/x-icon',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.map': 'application/json; charset=utf-8',
@@ -31,9 +36,49 @@ function sendFile(response, filePath) {
   createReadStream(filePath).pipe(response)
 }
 
+// 逐跳头：描述的是「这一段连接」，不能原样转发给浏览器
+const HOP_BY_HOP_HEADERS = ['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-connection']
+// 慢请求 / 出错 / 被放弃的请求打一行日志，排查「切页要等几分钟」这类问题用
+const SLOW_REQUEST_MS = 1000
+const STUCK_REQUEST_MS = 5000
+const inflight = new Map()
+let requestSeq = 0
+
+function logProxy(message) {
+  console.log(`[proxy] ${new Date().toISOString()} ${message}`)
+}
+
+// 每 10 秒报告一次挂了超过 5 秒还没结束的请求
+setInterval(() => {
+  const now = Date.now()
+  for (const entry of inflight.values()) {
+    if (now - entry.started > STUCK_REQUEST_MS) {
+      logProxy(`STUCK ${entry.method} ${entry.url} pending ${now - entry.started}ms stage=${entry.stage}`)
+    }
+  }
+}, 10_000).unref()
+
 async function proxyToBackend(request, response) {
   const target = `${backendUrl}${request.url}`
   const headers = new Headers()
+  const id = ++requestSeq
+  const entry = { method: request.method, url: request.url, started: Date.now(), stage: 'waiting-backend' }
+  inflight.set(id, entry)
+
+  // 浏览器放弃了（切页、视频只读完元数据就断开等），上游请求也要跟着取消，否则会一直占着后端连接
+  const controller = new AbortController()
+  response.on('close', () => {
+    inflight.delete(id)
+    const elapsed = Date.now() - entry.started
+    if (!response.writableFinished) {
+      controller.abort()
+      if (elapsed > SLOW_REQUEST_MS) logProxy(`ABORTED ${entry.method} ${entry.url} after ${elapsed}ms stage=${entry.stage}`)
+      return
+    }
+    if (elapsed > SLOW_REQUEST_MS || response.statusCode >= 500) {
+      logProxy(`${response.statusCode} ${entry.method} ${entry.url} ${elapsed}ms`)
+    }
+  })
 
   for (const [key, value] of Object.entries(request.headers)) {
     if (value === undefined) continue
@@ -49,16 +94,32 @@ async function proxyToBackend(request, response) {
       headers,
       body: request.method === 'GET' || request.method === 'HEAD' ? undefined : request,
       duplex: 'half',
+      signal: controller.signal,
     })
 
-    response.writeHead(upstream.status, Object.fromEntries(upstream.headers.entries()))
+    entry.stage = 'streaming-body'
+    const outHeaders = Object.fromEntries(upstream.headers.entries())
+    for (const name of HOP_BY_HOP_HEADERS) delete outHeaders[name]
+    response.writeHead(upstream.status, outHeaders)
 
     if (upstream.body) {
-      Readable.fromWeb(upstream.body).pipe(response)
+      const body = Readable.fromWeb(upstream.body)
+      // 上游中途断开时必须销毁响应：否则浏览器会按 content-length 一直等剩下的字节，直到 5 分钟超时
+      body.on('error', (error) => {
+        if (!controller.signal.aborted) logProxy(`STREAM-ERROR ${entry.method} ${entry.url} ${error?.message ?? error}`)
+        response.destroy()
+      })
+      body.pipe(response)
     } else {
       response.end()
     }
-  } catch {
+  } catch (error) {
+    if (controller.signal.aborted) return
+    logProxy(`FAILED ${entry.method} ${entry.url} ${error?.message ?? error}`)
+    if (response.headersSent) {
+      response.destroy()
+      return
+    }
     response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' })
     response.end(JSON.stringify({ code: 502, msg: 'Backend proxy failed' }))
   }

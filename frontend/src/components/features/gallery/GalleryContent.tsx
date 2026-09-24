@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from '@/i18n/client'
-import { Images } from 'lucide-react'
+import { Images, Wand2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { PageEmptyState } from '@/components/shared/PageEmptyState'
@@ -12,6 +12,7 @@ import { tasksService } from '@/lib/api/services/tasks'
 import type { ApiTask } from '@/lib/api/types'
 import { useRouter } from '@/lib/router'
 import { cn } from '@/lib/utils/cn'
+import { buildRemixHref } from '@/lib/utils/remix'
 
 interface GalleryContentProps {
   locale: string
@@ -55,7 +56,16 @@ function getAspectRatio(task: ApiTask) {
   return task.type === 'video' ? '16 / 9' : '1 / 1'
 }
 
-function GalleryArtworkCard({ artwork, isZh }: { artwork: ApiTask; isZh: boolean }) {
+function GalleryArtworkCard({
+  artwork,
+  isZh,
+  onRemix,
+}: {
+  artwork: ApiTask
+  isZh: boolean
+  onRemix: (artwork: ApiTask) => void
+}) {
+  const t = useTranslations('gallery')
   const [isLoaded, setIsLoaded] = useState(false)
   const preview = getCardPreview(artwork)
   const aspectRatio = useMemo(() => getAspectRatio(artwork), [artwork])
@@ -64,7 +74,7 @@ function GalleryArtworkCard({ artwork, isZh }: { artwork: ApiTask; isZh: boolean
 
   return (
     <MasonryItem>
-      <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
+      <div className="group relative overflow-hidden rounded-[24px] border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
         <div className="relative" style={{ aspectRatio }}>
           {!isLoaded ? (
             <div className="absolute inset-0 animate-pulse bg-stone-100 dark:bg-stone-900" />
@@ -96,6 +106,34 @@ function GalleryArtworkCard({ artwork, isZh }: { artwork: ApiTask; isZh: boolean
             />
           )}
         </div>
+
+        {/* 卡片原先没有任何点击行为，这里给出「做同款」入口 */}
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 transition-opacity duration-300',
+            'bg-gradient-to-t from-black/75 via-black/40 to-transparent',
+            'opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100',
+          )}
+        >
+          {artwork.prompt ? (
+            <p className="hidden line-clamp-2 text-xs leading-5 text-white/85 md:block">
+              {artwork.prompt}
+            </p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => onRemix(artwork)}
+            title={t('remixHint')}
+            className={cn(
+              'pointer-events-auto inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5',
+              'bg-white/95 text-xs font-medium text-stone-900 shadow-lg transition hover:bg-white',
+            )}
+          >
+            <Wand2 className="h-3.5 w-3.5" />
+            {t('remix')}
+          </button>
+        </div>
       </div>
     </MasonryItem>
   )
@@ -117,6 +155,10 @@ export function GalleryContent({ locale }: GalleryContentProps) {
     () => artworks.filter((artwork) => artwork.resultUrl || artwork.thumbnailUrl),
     [artworks],
   )
+
+  const handleRemix = (artwork: ApiTask) => {
+    router.push(buildRemixHref(locale, artwork))
+  }
 
   const loadArtworks = async (pageNum: number, append = false) => {
     if (loadingRef.current) return
@@ -202,9 +244,14 @@ export function GalleryContent({ locale }: GalleryContentProps) {
             title={t('empty')}
             description={t('emptyDescription')}
             action={
-              <Button onClick={() => router.push(`/${locale}/create`)}>
-                {t('emptyAction')}
-              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Button onClick={() => router.push(`/${locale}/create`)}>
+                  {t('emptyAction')}
+                </Button>
+                <Button variant="secondary" onClick={() => router.push(`/${locale}/templates`)}>
+                  {t('emptyAltAction')}
+                </Button>
+              </div>
             }
           />
         ) : null}
@@ -213,7 +260,12 @@ export function GalleryContent({ locale }: GalleryContentProps) {
           <>
             <MasonryGrid columns={4}>
               {visibleArtworks.map((artwork) => (
-                <GalleryArtworkCard key={`${artwork.type}-${artwork.id}`} artwork={artwork} isZh={isZh} />
+                <GalleryArtworkCard
+                  key={`${artwork.type}-${artwork.id}`}
+                  artwork={artwork}
+                  isZh={isZh}
+                  onRemix={handleRemix}
+                />
               ))}
             </MasonryGrid>
 

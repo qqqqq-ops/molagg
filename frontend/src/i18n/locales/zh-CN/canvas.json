@@ -1,122 +1,586 @@
 {
-  "title": "在线画板",
-  "description": "在站内直接画草图、加标注、整理构图。支持画笔、形状、文字、项目 JSON 导入导出，以及成品 PNG 下载。",
-  "hero": {
-    "badge": "画板工作区",
-    "meta": {
-      "draw": "自由绘制",
-      "shapes": "基础图形",
-      "project": "项目导入导出",
-      "png": "PNG 成图"
+  "sidebar": {
+    "newNode": "新建节点",
+    "presets": "工作流预设",
+    "tabs": {
+      "build": "搭积木",
+      "assistant": "助手",
+      "library": "素材",
+      "versions": "版本"
     }
   },
-  "panels": {
-    "modes": "编辑模式",
-    "insert": "插入内容",
-    "styles": "样式面板",
-    "files": "项目文件",
-    "projectImport": "导入项目",
-    "tips": "操作提示",
-    "board": "创作画布",
-    "status": "当前状态"
-  },
-  "tools": {
-    "select": "选择",
-    "brush": "画笔",
-    "eraser": "橡皮擦",
-    "rectangle": "矩形",
-    "circle": "圆形",
-    "line": "直线",
+  "groups": {
+    "generator": "创作",
+    "media": "素材",
     "text": "文字",
-    "image": "图片"
+    "structure": "结构"
   },
-  "style": {
-    "stroke": "主色",
-    "fill": "填充",
-    "brushSize": "笔刷大小",
-    "applyToSelection": "修改颜色或粗细时，会同步到当前选中的对象。"
+  "nodeKinds": {
+    "text": "纯文本",
+    "markdown": "Markdown",
+    "stickyNote": "便利贴",
+    "image": "图片节点",
+    "video": "视频节点",
+    "audio": "音频节点",
+    "imageGenerator": "图片创作",
+    "videoGenerator": "视频创作",
+    "audioGenerator": "音频创作",
+    "promptGroup": "提示词组",
+    "director": "导演台",
+    "script": "脚本",
+    "videoStitch": "视频拼接",
+    "group": "分组"
   },
-  "actions": {
-    "undo": "撤销",
-    "redo": "重做",
-    "delete": "删除选中",
-    "clear": "清空画板",
-    "importProject": "导入项目",
-    "exportProject": "导出项目",
-    "exportPng": "导出 PNG",
-    "addImage": "导入图片",
-    "saveToProject": "导入到项目"
+  "toolbar": {
+    "undo": "撤销 (⌘Z)",
+    "redo": "重做 (⇧⌘Z)",
+    "export": "存成 JSON 备份/分享",
+    "import": "导入画布（替换当前）",
+    "merge": "合并 JSON 进当前画布",
+    "clear": "清空画布",
+    "status": "{nodes} 个节点 · {edges} 条连线",
+    "exportName": "画布",
+    "panMode": "移动模式 — 左键拖动平移画布（默认；按住 Shift/Ctrl 可临时框选）",
+    "selectMode": "框选模式 — 左键拖动框选多个节点（按住空格可临时平移）",
+    "cascadeRun": "级联执行",
+    "cascadeRunTitle": "级联执行 — 按连线先后，把画布上所有生成节点一批批跑完",
+    "cascadeCancel": "取消级联",
+    "cascadeCancelTitle": "取消级联 — 一键停下所有正在跑的节点",
+    "cascadeProgress": "级联中 · 第 {batch}/{total} 批",
+    "view": "画布视图（整理画布 / 成组 / 小地图 / 网格吸附）",
+    "exportPng": "导出 PNG"
   },
-  "projectImport": {
-    "projectLabel": "选择项目",
-    "projectPlaceholder": "请选择一个项目",
-    "assetCount": "{count} 个素材",
-    "inspirationCount": "{count} 条灵感",
-    "promptCount": "{count} 条提示词",
-    "assetTitleLabel": "作品名称",
-    "assetTitlePlaceholder": "例如：品牌构图草稿、角色姿态草图、镜头布局初稿",
-    "helper": "会把当前画布导出的 PNG 直接作为图片素材写入项目素材库。",
-    "descriptionEmpty": "这个项目还没有描述，可以稍后去项目管理页补充。",
-    "coverImage": "封面图",
-    "coverVideo": "封面视频",
-    "loading": "正在加载项目列表...",
-    "empty": "还没有可用项目，先去项目页创建一个项目吧。",
-    "login": "画板成品可直接沉淀到本地项目里。",
-    "loginAction": "打开项目",
-    "manage": "前往项目管理"
+  "upstream": {
+    "prefix": "← 已连入：{summary}",
+    "images": "{count} 张图",
+    "videos": "{count} 个视频",
+    "audios": "{count} 段音频",
+    "texts": "{count} 段文字",
+    "snippets": "{count} 个素材"
   },
-  "board": {
-    "title": "创作画布",
-    "subtitle": "在画布上自由绘制，也可以插入形状、图片和文字后拖动调整。",
-    "loading": "正在初始化画板...",
-    "hint": "双击文字可直接编辑；选中对象后可拖拽、缩放和旋转。",
-    "size": "画布尺寸 {width} × {height}"
-  },
-  "status": {
-    "tool": "当前工具",
-    "selection": "当前选中",
-    "objects": "对象数量",
-    "none": "未选中",
-    "multiSelection": "已选 {count} 个对象",
-    "objectTypes": {
-      "rectangle": "矩形",
-      "circle": "圆形",
-      "line": "直线",
-      "text": "文字",
-      "path": "路径",
-      "image": "图片",
-      "group": "组合",
-      "unknown": "对象"
+  "node": {
+    "pasteUrl": "粘贴 URL…",
+    "pastePrompt": "粘贴 URL…",
+    "pickFile": "选择文件",
+    "text": {
+      "placeholder": "输入文字…"
+    },
+    "sticky": {
+      "placeholder": "随手记…",
+      "colorLabel": "便利贴颜色 {color}"
+    },
+    "markdown": {
+      "placeholder": "# 标题\n正文…"
+    },
+    "image": {
+      "openOriginal": "打开原图",
+      "empty": "源图 (拖入图片或先生成)"
+    },
+    "video": {
+      "empty": "生成的视频",
+      "capture": "截取当前帧",
+      "frameTitle": "关键帧图"
+    },
+    "audio": {
+      "empty": "生成音频"
+    },
+    "generator": {
+      "model": "模型",
+      "modelLoading": "渠道加载中…",
+      "modelPick": "选择…",
+      "modelEmpty": "暂无可用渠道",
+      "size": "尺寸",
+      "ratio": "画幅",
+      "pickModelFirst": "先选模型——各家可选的画幅不一样。",
+      "outputCount": "生成数量",
+      "outputCountUnit": "{count} 条",
+      "outputCountHint": "同一份输入跑几遍，每遍结果不同，挑一条满意的。",
+      "snippets": "素材",
+      "running": "生成中…",
+      "failed": "生成失败",
+      "defaultOption": "默认",
+      "outputNote": {
+        "midjourney": "Midjourney 一个任务就返回四宫格，不用再选数量",
+        "video": "视频慢且贵，每多一条就是一个完整任务"
+      }
+    },
+    "imageGenerator": {
+      "run": "生成图片",
+      "placeholder": "提示词…",
+      "multiAngleBadge": "多角度 ×{count}",
+      "multiAngle": "多角度",
+      "multiAngleHint": "勾几个角度就出几张图，每张单独提交一个任务。",
+      "lighting": "打光",
+      "lightingPreset": "成套方案",
+      "lightPosition": "光位",
+      "lightColor": "色温",
+      "lightBrightness": "软硬",
+      "camera": "镜头",
+      "shotSize": "景别",
+      "cameraHeight": "机位"
+    },
+    "videoGenerator": {
+      "run": "生成视频",
+      "placeholder": "运镜+场景提示词…",
+      "duration": "时长 {seconds}s"
+    },
+    "audioGenerator": {
+      "placeholder": "配音文本…",
+      "voice": "音色",
+      "voiceLoading": "音色库加载中…",
+      "blocked": "音频生成要后端接入 TTS 渠道后才能用。"
+    },
+    "promptGroup": {
+      "badge": "已选 {count}"
+    },
+    "director": {
+      "theme": "故事主题",
+      "themePlaceholder": "一句话说清楚要讲什么",
+      "outline": "故事大纲",
+      "outlinePlaceholder": "分几段、每段发生什么",
+      "hint": "连到脚本节点，再连给图片 / 视频创作节点。"
+    },
+    "script": {
+      "placeholder": "镜头 1：…\n镜头 2：…"
+    },
+    "videoStitch": {
+      "badge": "{count} 段",
+      "hint": "按连线顺序拼接上游的视频节点。",
+      "blocked": "拼接要后端支持，现在只记录顺序。"
     }
   },
-  "tips": {
+  "shot": {
+    "lightPositions": {
+      "key": "主光",
+      "fill": "辅光",
+      "rim": "轮廓光",
+      "back": "背景光",
+      "top": "顶光",
+      "bottom": "底光"
+    },
+    "lightBrightness": {
+      "soft": "柔和",
+      "normal": "标准",
+      "hard": "硬朗"
+    },
+    "lightColors": {
+      "neutral": "自然",
+      "warm": "暖调",
+      "cool": "冷调",
+      "golden": "金色",
+      "blue-hour": "蓝调",
+      "red-accent": "红艳"
+    },
+    "lightingPresets": {
+      "three-point": {
+        "label": "三点布光",
+        "description": "主光 + 辅光 + 轮廓光 — 经典电影布光"
+      },
+      "rembrandt": {
+        "label": "伦勃朗",
+        "description": "主光 45° 上方 — 鼻翼三角影区"
+      },
+      "split": {
+        "label": "分裂光",
+        "description": "主光纯侧 — 半边脸完全阴影, 强戏剧张力"
+      },
+      "butterfly": {
+        "label": "蝴蝶光",
+        "description": "主光正前上方 — 鼻下蝴蝶状阴影, 时尚硬照"
+      },
+      "silhouette": {
+        "label": "剪影",
+        "description": "仅背景光 — 主体黑剪影"
+      },
+      "natural": {
+        "label": "自然光",
+        "description": "柔和环境光, 无明显方向"
+      }
+    },
+    "angles": {
+      "front": "正面",
+      "back": "背面",
+      "left": "左侧",
+      "right": "右侧",
+      "three-quarter-left": "左 3/4",
+      "three-quarter-right": "右 3/4",
+      "top-down": "俯视",
+      "low-angle": "仰视",
+      "birdseye": "顶视"
+    },
+    "cameraHeights": {
+      "high": "俯拍",
+      "eye": "平视",
+      "low": "仰拍"
+    },
+    "shotSizes": {
+      "closeup": "特写",
+      "medium": "中景",
+      "wide": "远景"
+    }
+  },
+  "snippets": {
+    "categories": {
+      "style": "风格",
+      "quality": "画质",
+      "mood": "氛围",
+      "composition": "构图",
+      "camera": "运镜",
+      "negative": "负面词",
+      "custom": "我的收藏"
+    },
     "items": {
-      "delete": "按 Delete / Backspace 可以删除选中对象。",
-      "history": "按 Ctrl/Cmd + Z 撤销，Ctrl/Cmd + Shift + Z 或 Ctrl/Cmd + Y 重做。",
-      "project": "导出的项目文件为 JSON，可稍后重新导入继续编辑。",
-      "png": "导出的 PNG 会保留当前画布白底，适合直接交付或分享。"
+      "b-cinematic": "电影感",
+      "b-photoreal": "超写实",
+      "b-anime": "日系动漫",
+      "b-watercolor": "手绘水彩",
+      "b-4k-hdr": "4K HDR",
+      "b-studio": "Studio 棚拍",
+      "b-detail": "高清细节",
+      "b-cozy": "温馨柔和",
+      "b-tense": "戏剧紧张",
+      "b-golden-ratio": "黄金分割",
+      "b-symmetric": "对称构图",
+      "b-cam-push": "推 (推进)",
+      "b-cam-pull": "拉 (拉远)",
+      "b-cam-pan": "摇 (横摇)",
+      "b-cam-track": "移 (平移跟随)",
+      "b-cam-follow": "跟 (跟拍)",
+      "b-cam-crane-up": "升 (升镜)",
+      "b-cam-crane-down": "降 (降镜)",
+      "b-cam-orbit": "环绕",
+      "b-cam-handheld": "手持",
+      "b-cam-steadicam": "稳定器跟拍",
+      "b-cam-jib": "摇臂",
+      "b-cam-zoom-in": "变焦推",
+      "b-cam-zoom-out": "变焦拉",
+      "b-cam-dolly-zoom": "希区柯克变焦",
+      "b-cam-high": "俯拍",
+      "b-cam-low": "仰拍",
+      "b-cam-aerial": "鸟瞰",
+      "b-cam-whip": "甩镜",
+      "b-cam-pov": "第一人称",
+      "b-cam-ots": "越肩",
+      "b-cam-long-take": "长镜头",
+      "b-cam-slow-push": "慢推特写",
+      "b-negative": "通用负面词"
     }
   },
-  "defaults": {
-    "text": "双击编辑文字"
+  "presets": {
+    "applied": "已铺开「{name}」",
+    "character-design": {
+      "name": "短剧角色设计",
+      "description": "角色描述 → 正面基准图 → 多角度四视图，保证同一个人",
+      "nodes": {
+        "desc": "角色描述",
+        "base": "正面角色图（参考基准）",
+        "angles": "角色多角度"
+      },
+      "prompts": {
+        "angles": "保持同一角色、服装、场景、光影与画风完全一致"
+      }
+    },
+    "multi-angle-storyboard": {
+      "name": "多角度分镜",
+      "description": "一张基准图出正视、侧视、后视、俯视四宫格",
+      "nodes": {
+        "src": "源图 (拖入图片或先生成)",
+        "gen": "多角度生成"
+      },
+      "prompts": {
+        "gen": "生成角色的正视、侧视、后视、俯视四宫格分镜图"
+      }
+    },
+    "keyframe-video": {
+      "name": "关键帧推演分镜",
+      "description": "起始关键帧 → 图生视频 → 截尾帧接龙下一段",
+      "nodes": {
+        "start": "起始关键帧 (派生基准)",
+        "video": "生成视频",
+        "clip": "生成的视频"
+      },
+      "prompts": {}
+    },
+    "picture-book": {
+      "name": "儿童绘本生成",
+      "description": "故事大纲 → 逐页插画，统一画风",
+      "nodes": {
+        "director": "导演台",
+        "script": "脚本",
+        "style": "风格 (统一画风)",
+        "gen": "生成插画"
+      },
+      "prompts": {}
+    },
+    "product-ecommerce": {
+      "name": "通用产品全套电商图",
+      "description": "产品图 → 正面 / 侧面 / 俯瞰 / 拆解四张电商图",
+      "nodes": {
+        "product": "产品图片",
+        "info": "产品信息",
+        "gen": "电商图生成"
+      },
+      "prompts": {}
+    },
+    "full-short-drama": {
+      "name": "短剧全流程",
+      "description": "导演台 → 脚本 → 角色 → 分镜 → 视频 → 拼接",
+      "nodes": {
+        "director": "导演台",
+        "script": "脚本",
+        "character": "角色设计生成",
+        "scene": "生成基础场景",
+        "video": "生成视频",
+        "stitch": "视频拼接"
+      },
+      "prompts": {}
+    },
+    "multi-time-scene": {
+      "name": "多时段场景背景",
+      "description": "同一场景的白天 / 傍晚 / 夜晚 / 雨天四版",
+      "nodes": {
+        "base": "场景描述",
+        "day": "基础场景图（参考基准）",
+        "dusk": "傍晚场景",
+        "night": "夜晚场景",
+        "rain": "雨天场景"
+      },
+      "prompts": {}
+    },
+    "image-tools-demo": {
+      "name": "图片工具示例",
+      "description": "最小可跑的一条：文字 → 图片创作 → 结果",
+      "nodes": {
+        "prompt": "提示词",
+        "gen": "图片创作"
+      },
+      "prompts": {}
+    }
   },
   "messages": {
-    "projectImported": "项目已导入",
-    "projectExported": "项目已导出",
-    "pngExported": "PNG 已开始下载",
-    "imageImported": "图片已放入画布",
-    "cleared": "画板已清空",
-    "selectionDeleted": "已删除选中对象",
-    "savedToProject": "作品已导入项目「{project}」"
+    "exported": "画布已导出",
+    "imported": "画布已载入",
+    "merged": "已合并进当前画布",
+    "clearConfirm": "清空整块画布？可以用撤销找回。",
+    "frameCaptured": "已截取当前帧为图片节点 — 连到图生视频节点即可接龙下一段"
   },
   "errors": {
-    "initFailed": "画板初始化失败，请刷新后重试",
-    "projectImportFailed": "项目导入失败，请确认文件格式正确",
-    "imageImportFailed": "图片导入失败，请更换文件后重试",
-    "nothingSelected": "请先选中一个对象",
-    "loadProjectsFailed": "项目列表加载失败，请稍后重试",
-    "projectRequired": "请先选择一个项目",
-    "loginRequired": "本地模式未初始化，请刷新页面",
-    "saveToProjectFailed": "导入项目失败，请稍后重试"
+    "readFileFailed": "读取文件失败",
+    "readImageFailed": "读取图片失败",
+    "videoNotReady": "视频未就绪 — 请等视频加载出画面后再截帧",
+    "captureFailed": "截帧失败 (视频跨域无 CORS?)",
+    "modelRequired": "请先选择模型",
+    "promptRequired": "请先填写提示词",
+    "submitFailed": "提交失败",
+    "referencesDropped": "{count} 张上游图片取不回来（跨域），这次不作为参考图",
+    "tooManyTasks": "这一次会提交 {planned} 个任务（生成数量 {count} × 角度 {angles} 个），超过上限 {max}。减少角度或数量。",
+    "file": {
+      "invalidJson": "不是合法的 JSON 文件",
+      "foreignFile": "不是本平台导出的画布文件",
+      "unsupportedVersion": "画布文件版本不支持 (v{version}，当前最高 v{max})",
+      "missingGraph": "画布文件缺少 nodes/edges"
+    },
+    "materialUnsupported": "「{model}」不支持{kind}，连进来的{kind}用不上。素材留着没动，可以换个模型",
+    "materialOverLimit": "「{model}」最多收 {max} 个{kind}，现在连了 {count} 个",
+    "materialSwitch": "换成「{model}」",
+    "materialNoAlternative": "现有模型里没有能收{kind}的",
+    "mediaNotSent": "连进来的视频 / 音频这一版还不会发给模型，只有图片会作为参考",
+    "partialFailed": "{total} 条里有 {failed} 条没生成出来"
+  },
+  "assistant": {
+    "inspector": "节点详情",
+    "title": "对话指挥",
+    "model": "文本模型",
+    "noTextModel": "没有可用的文本模型",
+    "noSelection": "点画布上任意一个节点，这里显示它的设置。",
+    "multiSelection": "选中了 {count} 个节点；只选一个才看得到详情。",
+    "nodeEmpty": "这个节点还什么都没填。",
+    "selectedHint": "选中的节点会一起发给模型，可以直接说「把这个改成竖屏」。",
+    "empty": "用大白话说要做什么，比如「加一个视频创作节点，接在这张图后面」。",
+    "placeholder": "说一句要做的事… (Enter 发送，Shift+Enter 换行)",
+    "send": "发送",
+    "sending": "处理中…",
+    "clear": "清空对话",
+    "applied": "已改动：新建 {added} 个 · 修改 {changed} 处 · 连线 {connected} 条 · 删除 {removed} 个",
+    "rejected": "有 {count} 条指令看不懂，已跳过（鼠标悬停看原因）",
+    "noRunHint": "助手只会建节点、连线、填参数，不会替你点生成——跑一次是要花钱的，那一下由你按。",
+    "field": {
+      "prompt": "提示词",
+      "aspectRatio": "画幅",
+      "durationSeconds": "时长",
+      "outputCount": "生成数量",
+      "angleKeys": "角度",
+      "snippetIds": "素材",
+      "shotSizeKey": "景别",
+      "cameraHeightKey": "机位",
+      "lightingPresetKey": "打光方案"
+    }
+  },
+  "view": {
+    "tidy": "整理画布",
+    "autoGroup": "按功能成组",
+    "toggleAllGroups": "全部折叠/展开",
+    "group": "成组选中的节点",
+    "ungroup": "解散分组",
+    "snapToGrid": "网格吸附",
+    "alignGuides": "对齐参考线",
+    "minimap": "小地图",
+    "autoGrouped": "已按功能成组 {n} 个工作流（双击组头可折叠，Ctrl+Z 撤销）",
+    "nothingToGroup": "没有可成组的工作流（需要至少 2 个相连的节点）",
+    "noGroups": "还没有分组 — 先点「按功能成组」",
+    "collapsedAll": "已折叠 {n} 组",
+    "expandedAll": "已展开 {n} 组"
+  },
+  "group": {
+    "grouped": "已分组 {n} 个节点",
+    "mediaGrouped": "已成素材组 {n} 个节点 — 从组右侧拉一根线，就能把整组连到下游",
+    "needTwo": "请先选中至少 2 个节点（按住 Shift 点选或框选），再按 Cmd+G",
+    "noNesting": "分组里不能再套分组；已在组里的节点要先解组",
+    "ungroupedOne": "已解散分组（Ctrl+Z 撤销）",
+    "ungroupedMany": "已解散 {n} 个分组（Ctrl+Z 撤销）",
+    "ungroupNeedsSelection": "请先选中一个分组（或组里的节点），再按 Cmd+Shift+G 解组",
+    "collapse": "折叠（也可以双击组头）",
+    "expand": "展开（也可以双击组头）",
+    "memberCount": "{count} 个节点"
+  },
+  "tidy": {
+    "done": "画布已整理（Ctrl+Z 撤销）",
+    "empty": "画布上还没有节点"
+  },
+  "cascade": {
+    "started": "已开始级联，共 {n} 批",
+    "emptyOrCyclic": "画布上没有能跑的生成节点，或者连线绕成了一个圈 — 没法级联",
+    "confirm": "将按连线先后运行 {nodes} 个生成节点，分 {batches} 批，一共提交 {tasks} 个生成任务，每个都会真实扣费。继续吗？",
+    "blocked": "有 {count} 个节点还不能跑，一个都没有提交",
+    "issueNoModel": "「{name}」没选模型",
+    "issueNoPrompt": "「{name}」没写提示词",
+    "issueMaterial": "「{name}」选的模型不支持连进来的{kind}",
+    "listJoin": "；",
+    "andMore": "……",
+    "stopped": "第 {batch} 批有节点没成功，后面的已经停下，没有再提交",
+    "done": "级联完成：{n} 批都跑完了",
+    "cancelled": "已取消级联。视频任务已通知后台取消；图片任务没法中途取消，会在后台跑完，结果在任务队列里"
+  },
+  "flow": {
+    "edgeAutoFlipped": "已自动调整连线方向：素材 → 生成节点",
+    "switchedModel": "已切换到「{model}」以支持{kind}",
+    "minimapAria": "画布概览与当前视口"
+  },
+  "materialKind": {
+    "image": "参考图",
+    "video": "参考视频",
+    "audio": "参考音频"
+  },
+  "exportPng": {
+    "done": "画布图片已导出",
+    "empty": "画布上还没有节点",
+    "failed": "导出失败（可能有图片不允许跨域读取）"
+  },
+  "search": {
+    "placeholder": "搜索节点、动作，或输入 / 用命令（⌘K）",
+    "empty": "没有匹配的节点或动作",
+    "noCommand": "没有这个命令 — 目前有 /light 和 /angle",
+    "action": "动作",
+    "hint": "↑↓ 挑选 · 回车执行 · Esc 关闭"
+  },
+  "slash": {
+    "light": {
+      "label": "打光",
+      "description": "选中一张图：建一个重新打光的生成节点；没选：建一段打光提示词",
+      "textTitle": "打光提示词",
+      "generatorTitle": "重新打光",
+      "seedPrompt": "保持画面主体和构图不变，只按勾选的灯位重新打光",
+      "createdFromSelection": "已建打光工作流（选中图 + {n} 个灯位）— 检查一下模型，再点生成",
+      "createdTextNode": "已建打光提示词节点 — 连到图片创作节点就能用（或先选中一张图再用 /light）"
+    },
+    "angle": {
+      "label": "多角度",
+      "description": "选中一张图：建一个出多个视角的生成节点；没选：建一段角度提示词",
+      "textTitle": "角度提示词",
+      "generatorTitle": "多角度",
+      "seedPrompt": "同一个角色，保持外形、服装和配色一致，换成勾选的视角",
+      "createdFromSelection": "已建多角度工作流（选中图 + {n} 个视角）— 检查一下模型，再点生成",
+      "createdTextNode": "已建角度提示词节点 — 连到图片创作节点就能用（或先选中一张图再用 /angle）"
+    }
+  },
+  "board": {
+    "loading": "读取画布…",
+    "saved": "已自动保存",
+    "saving": "保存中…",
+    "failed": "保存失败，改动还在本页",
+    "offline": "不会自动保存",
+    "offlineHint": "读不到存着的画布（没登录，或后台没开）。画布照样能用，但刷新就没了，记得先导出 JSON",
+    "staleRuns": "有 {count} 个节点上次还在生成，页面刷新后这里不再跟进，结果去任务队列看"
+  },
+  "library": {
+    "loading": "加载中…",
+    "loadFailed": "加载失败",
+    "loadMore": "加载更多",
+    "refresh": "刷新",
+    "assets": {
+      "title": "资产库",
+      "images": "图片",
+      "videos": "视频",
+      "search": "按提示词搜，回车",
+      "empty": "还没有生成过的作品",
+      "add": "放到画布上",
+      "added": "已放到画布上"
+    },
+    "log": {
+      "title": "生成日志",
+      "empty": "还没有生成记录",
+      "noPrompt": "（没有提示词）",
+      "fromCanvas": "本画布",
+      "completed": "已完成",
+      "failed": "失败",
+      "processing": "生成中",
+      "pending": "排队中"
+    },
+    "templates": {
+      "title": "工作流模板",
+      "saveSelection": "把选中的节点存为模板",
+      "needSelection": "请先选中要保存的节点",
+      "namePrompt": "给这个模板起个名字",
+      "saved": "已存为模板「{name}」（{n} 个节点）",
+      "saveFailed": "保存模板失败",
+      "none": "还没有自己的模板 — 选中一段节点，点上面的按钮存下来",
+      "nodeCount": "{n} 个节点",
+      "applied": "已添加模板「{name}」（{n} 个节点，Ctrl+Z 撤销）",
+      "empty": "这个模板是空的",
+      "applyFailed": "添加模板失败，请重试",
+      "delete": "删除模板",
+      "deleteConfirm": "删除模板「{name}」？删了不能恢复",
+      "deleteFailed": "删除失败"
+    }
+  },
+  "versions": {
+    "title": "版本快照",
+    "body": "把此刻的整张画布存一份，之后可以对比差在哪、一键回到那一版",
+    "offline": "画布没接上后台存储（没登录，或后台没开），暂时存不了快照",
+    "create": "存一个快照",
+    "labelPrompt": "给这个版本写个备注（可以不填）",
+    "created": "快照已存好",
+    "createFailed": "快照没存上",
+    "empty": "还没有快照",
+    "counts": "{nodes} 个节点 · {edges} 条连线",
+    "compare": "对比",
+    "restore": "恢复",
+    "delete": "删除快照",
+    "restoreConfirm": "回到这一版？现在的样子会先自动存一个快照，恢复后也能 Ctrl+Z 撤回",
+    "autoBeforeRestore": "恢复前自动保存",
+    "restored": "已恢复到这一版（Ctrl+Z 撤销）",
+    "restoreFailed": "恢复失败，画布没动",
+    "loadFailed": "读取快照失败",
+    "deleteConfirm": "删除这个快照？删了不能恢复",
+    "deleteFailed": "删除失败",
+    "unchanged": "跟现在一模一样，没有变化",
+    "changedLead": "从这一版到现在：",
+    "added": "多了 {n} 个：{names}",
+    "removed": "少了 {n} 个：{names}",
+    "changed": "改了 {n} 个：{names}",
+    "moved": "挪了位置 {n} 个",
+    "edges": "连线 多 {added} 条 / 少 {removed} 条",
+    "listJoin": "、",
+    "andMore": "{names} 等 {n} 个"
   }
 }

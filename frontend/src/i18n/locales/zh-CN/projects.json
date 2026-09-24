@@ -39,14 +39,15 @@
   },
   "projectList": {
     "title": "我的项目",
-    "empty": "还没有项目，先创建一个吧。",
-    "emptyDescription": "项目会保存描述、素材和已导入作品，方便后续创作复用。",
+    "empty": "还没有项目",
+    "emptyDescription": "项目会保存描述、素材和已导入作品。先建一个，之后在创作页就能直接选用它的素材和上下文。",
     "cardHint": "点击项目卡片进入具体项目管理",
     "openHint": "像打开文件夹一样进入项目并继续整理素材",
     "noDescription": "暂无项目描述",
     "assetCount": "{count} 个素材",
     "updatedAt": "最近更新 {date}",
-    "open": "进入项目"
+    "open": "进入项目",
+    "emptyAltAction": "先去创作"
   },
   "detail": {
     "title": "项目信息",

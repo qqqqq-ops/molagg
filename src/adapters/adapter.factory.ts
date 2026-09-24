@@ -3,9 +3,14 @@ import { ApiChannel } from '@prisma/client';
 import { DoubaoImageAdapter } from './doubao/doubao-image.adapter';
 import { DoubaoVideoAdapter } from './doubao/doubao-video.adapter';
 import { GptImageAdapter } from './gptimage/gptimage-image.adapter';
+import { HailuoVideoAdapter } from './hailuo/hailuo-video.adapter';
+import { KlingVideoAdapter } from './kling/kling-video.adapter';
 import { MidjourneyImageAdapter } from './midjourney/midjourney-image.adapter';
 import { NanobananaImageAdapter } from './nanobanana/nanobanana-image.adapter';
 import { QianwenImageAdapter } from './qianwen/qianwen-image.adapter';
+import { SoraVideoAdapter } from './sora/sora-video.adapter';
+import { VeoVideoAdapter } from './veo/veo-video.adapter';
+import { ViduVideoAdapter } from './vidu/vidu-video.adapter';
 import { WanxVideoAdapter } from './wanx/wanx-video.adapter';
 import { BaseImageAdapter } from './base/base-image.adapter';
 import { BaseVideoAdapter } from './base/base-video.adapter';
@@ -30,6 +35,14 @@ export class AdapterFactory {
     ['doubao_video', DoubaoVideoAdapter],
     ['wanx', WanxVideoAdapter],
     ['wanxiang', WanxVideoAdapter],
+    ['kling', KlingVideoAdapter],
+    ['sora', SoraVideoAdapter],
+    ['openai', SoraVideoAdapter],
+    ['veo', VeoVideoAdapter],
+    ['google', VeoVideoAdapter],
+    ['hailuo', HailuoVideoAdapter],
+    ['minimax', HailuoVideoAdapter],
+    ['vidu', ViduVideoAdapter],
   ]);
 
   static createImageAdapter(provider: string, channel: ApiChannel): BaseImageAdapter {

@@ -13,7 +13,7 @@ type WanxI2vMediaType = 'first_frame' | 'last_frame' | 'driving_audio' | 'first_
 type WanxR2vMediaType = 'reference_image' | 'reference_video' | 'first_frame';
 type WanxMediaType = WanxI2vMediaType | WanxR2vMediaType;
 type WanxModelKind = 't2v' | 'i2v' | 'r2v' | 'unknown';
-type WanxGeneration = 'wan2.7' | 'happyhorse-1.0' | 'wan2.6' | 'unknown';
+type WanxGeneration = 'wan3.0' | 'wan2.7' | 'happyhorse-1.0' | 'wan2.6' | 'unknown';
 
 type WanxMediaItem = {
   type: WanxMediaType;
@@ -138,6 +138,9 @@ function resolveWanxModel(params: Record<string, unknown>) {
 
 function resolveWanxGeneration(model: string | undefined): WanxGeneration {
   const normalized = (model ?? '').toLowerCase();
+  if (normalized.startsWith('wan3.0') || normalized.startsWith('wan3-0') || normalized.startsWith('wan-3.0')) {
+    return 'wan3.0';
+  }
   if (normalized.startsWith('wan2.7')) return 'wan2.7';
   if (normalized.startsWith('happyhorse-1.0')) return 'happyhorse-1.0';
   if (normalized.startsWith('wan2.6')) return 'wan2.6';
@@ -145,7 +148,7 @@ function resolveWanxGeneration(model: string | undefined): WanxGeneration {
 }
 
 function isSupportedWanxGeneration(generation: WanxGeneration) {
-  return generation === 'wan2.7' || generation === 'happyhorse-1.0';
+  return generation === 'wan3.0' || generation === 'wan2.7' || generation === 'happyhorse-1.0';
 }
 
 function isHappyhorseGeneration(generation: WanxGeneration) {
@@ -153,37 +156,42 @@ function isHappyhorseGeneration(generation: WanxGeneration) {
 }
 
 function getWanxDurationRange(generation: WanxGeneration) {
+  if (generation === 'wan3.0') return { min: 2, max: 30 };
   return isHappyhorseGeneration(generation)
     ? { min: 3, max: 15 }
     : { min: 2, max: 15 };
 }
 
+function isWan3Family(generation: WanxGeneration) {
+  return generation === 'wan3.0' || generation === 'wan2.7';
+}
+
 function supportsPromptExtend(generation: WanxGeneration) {
-  return generation === 'wan2.7';
+  return isWan3Family(generation);
 }
 
 function supportsT2vAudioInput(generation: WanxGeneration) {
-  return generation === 'wan2.7' || generation === 'happyhorse-1.0';
+  return isWan3Family(generation) || generation === 'happyhorse-1.0';
 }
 
 function supportsI2vLastFrame(generation: WanxGeneration) {
-  return generation === 'wan2.7';
+  return isWan3Family(generation);
 }
 
 function supportsI2vDrivingAudio(generation: WanxGeneration) {
-  return generation === 'wan2.7';
+  return isWan3Family(generation);
 }
 
 function supportsR2vVideoReferences(generation: WanxGeneration) {
-  return generation === 'wan2.7';
+  return isWan3Family(generation);
 }
 
 function supportsR2vAudioReferences(generation: WanxGeneration) {
-  return generation === 'wan2.7';
+  return isWan3Family(generation);
 }
 
 function supportsR2vFirstFrame(generation: WanxGeneration) {
-  return generation === 'wan2.7';
+  return isWan3Family(generation);
 }
 
 function resolveWanxModelKind(model: string | undefined): WanxModelKind {

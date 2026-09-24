@@ -9,7 +9,7 @@ import { useTranslations } from '@/i18n/client'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
-import { adminChannelService } from '@/lib/api/services/admin/channels'
+import { userSettingsService } from '@/lib/api/services/userSettings'
 import type { Channel, UpdateChannelDto } from '@/lib/api/types/admin/channels'
 
 const labelClassName = 'block font-ui text-sm font-medium text-stone-700 dark:text-stone-200'
@@ -73,7 +73,7 @@ export function ChannelModal({
         updateDto.apiKey = apiKey.trim()
       }
 
-      await adminChannelService.updateChannel(channel.id, updateDto)
+      await userSettingsService.updateChannel(channel.id, updateDto)
       onSuccess?.()
       handleClose()
     } catch (err) {

@@ -63,11 +63,12 @@ function isWanxProvider(provider: string): boolean {
   return normalizedProvider.includes('wanx') || normalizedProvider.includes('wanxiang');
 }
 
-type WanxModelFamily = 'wan2.7' | 'happyhorse-1.0' | null;
+type WanxModelFamily = 'wan3.0' | 'wan2.7' | 'happyhorse-1.0' | null;
 type WanxModelKind = 't2v' | 'i2v' | 'r2v' | null;
 
 function resolveWanxModelFamily(remoteModel: string | null): WanxModelFamily {
   const normalizedRemoteModel = (remoteModel ?? '').toLowerCase();
+  if (normalizedRemoteModel.startsWith('wan3.0') || normalizedRemoteModel.startsWith('wan3-0')) return 'wan3.0';
   if (normalizedRemoteModel.startsWith('wan2.7')) return 'wan2.7';
   if (normalizedRemoteModel.startsWith('happyhorse-1.0')) return 'happyhorse-1.0';
   return null;
@@ -84,6 +85,7 @@ function resolveWanxModelKind(remoteModel: string | null): WanxModelKind {
 
 function getWanxModelLabel(family: WanxModelFamily) {
   if (family === 'happyhorse-1.0') return 'happyhorse-1.0';
+  if (family === 'wan3.0') return 'wan3.0';
   return 'wan2.7';
 }
 
@@ -127,7 +129,7 @@ function inferVideoInputFromProvider(
     const wanxKind = resolveWanxModelKind(remoteModel);
     if (wanxKind === 't2v') return false;
     if (wanxKind === 'i2v') return true;
-    if (wanxKind === 'r2v') return wanxFamily === 'wan2.7';
+    if (wanxKind === 'r2v') return wanxFamily === 'wan2.7' || wanxFamily === 'wan3.0';
   }
 
   if (
@@ -154,7 +156,7 @@ function inferAudioInputFromProvider(
   if (isWanxProvider(provider)) {
     const wanxFamily = resolveWanxModelFamily(remoteModel);
     const wanxKind = resolveWanxModelKind(remoteModel);
-    if (wanxFamily === 'wan2.7') return wanxKind !== null;
+    if (wanxFamily === 'wan2.7' || wanxFamily === 'wan3.0') return wanxKind !== null;
     if (wanxFamily === 'happyhorse-1.0') return wanxKind === 't2v';
     return false;
   }
@@ -165,7 +167,7 @@ function inferAudioInputFromProvider(
     (normalizedProvider.includes('doubao') ||
       normalizedProvider.includes('bytedance') ||
       normalizedProvider.includes('ark')) &&
-    normalizedRemoteModel.includes('seedance-2-0')
+    (normalizedRemoteModel.includes('seedance-2-0') || normalizedRemoteModel.includes('seedance-2-5'))
   ) || (
     (normalizedProvider.includes('wanx') || normalizedProvider.includes('wanxiang')) &&
     normalizedRemoteModel.includes('wan2.7')
@@ -314,11 +316,13 @@ export function buildModelCapabilities(model: AiModel, providerConfig?: ModelPro
 
     if (providerKey === 'doubao') {
       const normalizedRemoteModel = (remoteModel ?? '').toLowerCase();
+      const isSeedance25 = normalizedRemoteModel.includes('seedance-2-5');
+      const isSeedance20 = normalizedRemoteModel.includes('seedance-2-0');
       caps.operationParamKey = null;
       caps.supports.multiImageInput = true;
-      caps.limits.maxInputImages = normalizedRemoteModel.includes('seedance-2-0') ? 9 : 4;
-      caps.limits.maxInputVideos = normalizedRemoteModel.includes('seedance-2-0') ? 3 : undefined;
-      caps.limits.maxInputAudios = normalizedRemoteModel.includes('seedance-2-0') ? 3 : undefined;
+      caps.limits.maxInputImages = isSeedance25 ? 30 : isSeedance20 ? 9 : 4;
+      caps.limits.maxInputVideos = isSeedance25 ? 10 : isSeedance20 ? 3 : undefined;
+      caps.limits.maxInputAudios = isSeedance25 ? 10 : isSeedance20 ? 3 : undefined;
       caps.operations = [
         {
           key: 'contentGenerationTask',
@@ -350,12 +354,27 @@ export function buildModelCapabilities(model: AiModel, providerConfig?: ModelPro
       return withAdminOverrides(caps, model, remoteModel);
     }
 
+    if (['kling', 'sora', 'veo', 'hailuo', 'vidu'].includes(providerKey)) {
+      caps.supports.multiImageInput = true;
+      caps.limits.maxInputImages = providerKey === 'kling' || providerKey === 'sora' ? 1 : 4;
+      caps.operations = [
+        {
+          key: `${providerKey}.video`,
+          execution: 'async',
+          description: `${caps.provider} 视频生成异步任务`,
+          requiredParameters: ['model', 'prompt'],
+          optionalParameters: ['duration', 'ratio', 'resolution', 'firstFrame', 'referenceImages'],
+        },
+      ];
+      return withAdminOverrides(caps, model, remoteModel);
+    }
+
     if (providerKey === 'wanx') {
       const normalizedRemoteModel = (remoteModel ?? '').toLowerCase();
       const wanxFamily = resolveWanxModelFamily(remoteModel);
       const wanxKind = resolveWanxModelKind(remoteModel);
       const wanxLabel = getWanxModelLabel(wanxFamily);
-      const isWan27 = wanxFamily === 'wan2.7';
+      const isWan27 = wanxFamily === 'wan2.7' || wanxFamily === 'wan3.0';
       const isHappyhorse = wanxFamily === 'happyhorse-1.0';
       const isWan26 = normalizedRemoteModel.includes('wan2.6');
 

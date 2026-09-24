@@ -2,6 +2,7 @@ import { ImageTask, VideoTask } from '@prisma/client';
 import { asSqliteJsonRecord } from '../utils/sqlite-json.util';
 
 import { serializeUserFacingProviderData } from './user-provider-data.serializer';
+import { readStoredTaskProgress } from '../utils/task-progress.util';
 
 export type ApiTaskType = 'image' | 'video';
 
@@ -20,6 +21,8 @@ export type ApiTask = {
   parameters: Record<string, unknown> | null;
   providerData?: unknown | null;
   status: ImageTask['status'];
+  /** 上游给的真实进度 0–100（只有部分上游有）；没有为 null，前端自行估算 */
+  progress: number | null;
   resultUrl: string | null;
   thumbnailUrl: string | null;
   storageKey: string | null;
@@ -57,6 +60,7 @@ export function serializeImageTask(task: ImageTask): ApiTask {
     parameters: toJsonObject(task.parameters),
     ...(providerData !== undefined ? { providerData } : {}),
     status: task.status,
+    progress: readStoredTaskProgress(task),
     resultUrl: task.resultUrl ?? null,
     thumbnailUrl: task.thumbnailUrl ?? null,
     storageKey: task.storageKey ?? null,
@@ -89,6 +93,7 @@ export function serializeVideoTask(
     parameters: toJsonObject(task.parameters),
     ...(providerData !== undefined ? { providerData } : {}),
     status: task.status,
+    progress: readStoredTaskProgress(task),
     resultUrl: task.resultUrl ?? null,
     thumbnailUrl: task.thumbnailUrl ?? null,
     storageKey: task.storageKey ?? null,
@@ -120,6 +125,7 @@ export function serializeImageTaskLite(task: ImageTask): ApiTaskLite {
     negativePrompt: task.negativePrompt ?? null,
     ...(providerData !== undefined ? { providerData } : {}),
     status: task.status,
+    progress: readStoredTaskProgress(task),
     resultUrl: task.resultUrl ?? null,
     thumbnailUrl: task.thumbnailUrl ?? null,
     storageKey: task.storageKey ?? null,
@@ -148,6 +154,7 @@ export function serializeVideoTaskLite(task: VideoTask): ApiTaskLite {
     negativePrompt: null,
     ...(providerData !== undefined ? { providerData } : {}),
     status: task.status,
+    progress: readStoredTaskProgress(task),
     resultUrl: task.resultUrl ?? null,
     thumbnailUrl: task.thumbnailUrl ?? null,
     storageKey: task.storageKey ?? null,

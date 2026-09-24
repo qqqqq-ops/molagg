@@ -3,7 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
+import { CanvasModule } from './canvas/canvas.module';
+import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { CredentialsModule } from './credentials/credentials.module';
 import { EncryptionModule } from './encryption/encryption.module';
 import { ImagesModule } from './images/images.module';
 import { LocalRunnerModule } from './local-runner/local-runner.module';
@@ -21,6 +24,8 @@ import { VideosModule } from './videos/videos.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    AuthModule,
+    CredentialsModule,
     EncryptionModule,
     StorageModule,
     SettingsModule,
@@ -32,6 +37,7 @@ import { VideosModule } from './videos/videos.module';
     PromptOptimizeModule,
     ChatModule,
     ProjectsModule,
+    CanvasModule,
     TasksModule,
     AdminModule,
   ],

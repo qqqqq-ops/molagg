@@ -29,7 +29,10 @@ const COMMON_ASPECT_RATIO_VALUES = ['1:1', '4:3', '3:4', '16:9', '9:16'];
 
 const DOUBAO_VIDEO_RESOLUTION_VALUES = ['480p', '720p', '1080p'];
 const DOUBAO_VIDEO_RATIO_VALUES = ['16:9', '4:3', '1:1', '3:4', '9:16', '21:9', 'adaptive'];
-const DOUBAO_VIDEO_DURATION_VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
+const DOUBAO_VIDEO_DURATION_VALUES = [
+  '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15',
+  '16', '18', '20', '24', '30',
+];
 const WANX_VIDEO_RESOLUTION_VALUES = ['720P', '1080P'];
 const WANX_VIDEO_RATIO_VALUES = ['16:9', '9:16', '1:1', '4:3', '3:4'];
 const WANX_VIDEO_DURATION_VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
@@ -215,6 +218,7 @@ export function getAutoProjectVideoOptionCatalog(model: AiModel): AutoProjectMod
         DOUBAO_VIDEO_DURATION_VALUES.filter((item) => {
           const numeric = Number(item);
           if (!Number.isFinite(numeric)) return false;
+          if (remoteModel.includes('seedance-2-5')) return numeric >= 4 && numeric <= 30;
           if (remoteModel.includes('seedance-2-0')) return numeric >= 4 && numeric <= 15;
           if (remoteModel.includes('seedance-1-5')) return numeric >= 4 && numeric <= 12;
           return numeric >= 2 && numeric <= 12;
@@ -229,7 +233,9 @@ export function getAutoProjectVideoOptionCatalog(model: AiModel): AutoProjectMod
       resolutions: WANX_VIDEO_RESOLUTION_VALUES,
       durations: remoteModel.includes('happyhorse-1.0')
         ? HAPPYHORSE_VIDEO_DURATION_VALUES
-        : WANX_VIDEO_DURATION_VALUES,
+        : remoteModel.includes('wan3.0')
+          ? [...WANX_VIDEO_DURATION_VALUES, '16', '18', '20', '24', '30']
+          : WANX_VIDEO_DURATION_VALUES,
     };
   }
 

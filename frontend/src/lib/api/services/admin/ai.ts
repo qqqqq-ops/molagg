@@ -48,6 +48,18 @@ export interface CreateChatModelPayload {
   sortOrder?: number
 }
 
+export interface DiscoveredChatModel {
+  modelKey: string
+  /** 库里已有同名模型，界面上应置灰 */
+  alreadyAdded: boolean
+}
+
+export interface DiscoverChatModelsResult {
+  /** 实际请求的地址，出错时方便排查 */
+  url: string
+  models: DiscoveredChatModel[]
+}
+
 export interface UpdateChatModelPayload {
   name?: string
   modelKey?: string
@@ -79,6 +91,11 @@ export const adminAiService = {
 
   listChatModels: async (): Promise<ChatModelItem[]> => {
     return adminApiClient.get('/ai/chat-models')
+  },
+
+  /** 让上游告诉我们这把 Key 能用哪些模型（GET {baseUrl}/v1/models） */
+  discoverChatModels: async (): Promise<DiscoverChatModelsResult> => {
+    return adminApiClient.post('/ai/chat-models/discover')
   },
 
   createChatModel: async (payload: CreateChatModelPayload): Promise<ChatModelItem> => {

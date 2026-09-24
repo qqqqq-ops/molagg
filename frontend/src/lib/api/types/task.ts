@@ -25,6 +25,8 @@ export interface ApiTask {
   parameters: Record<string, unknown> | null
   providerData?: Record<string, unknown> | null
   status: TaskStatus
+  /** 上游给的真实进度 0–100；只有部分上游有，没有为 null（前端按历史耗时估算，见 lib/utils/taskProgress） */
+  progress?: number | null
   resultUrl: string | null
   thumbnailUrl: string | null
   storageKey: string | null

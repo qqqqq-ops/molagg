@@ -6,6 +6,7 @@ import { AdapterFactory } from '../adapters/adapter.factory';
 import { VideoGenerateParams } from '../adapters/base/base-video.adapter';
 import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
 import { normalizeUploadedFileName } from '../common/utils/upload-filename.util';
+import { UserCredentialsService } from '../credentials/user-credentials.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { LocalTaskRunnerService } from '../local-runner/local-task-runner.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,19 +37,19 @@ type VideoTaskWithRelations = Prisma.VideoTaskGetPayload<{
 
 const SEEDANCE_UPLOAD_RULES: Record<VideoInputUploadKind, SeedanceUploadRule> = {
   image: {
-    maxFiles: 9,
+    maxFiles: 30,
     maxFileSizeMb: 30,
     allowedMimePrefixes: ['image/'],
     allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.gif', '.heic', '.heif'],
   },
   video: {
-    maxFiles: 3,
+    maxFiles: 10,
     maxFileSizeMb: 50,
     allowedMimePrefixes: ['video/'],
     allowedExtensions: ['.mp4', '.mov'],
   },
   audio: {
-    maxFiles: 3,
+    maxFiles: 10,
     maxFileSizeMb: 15,
     allowedMimeTypes: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave'],
     allowedExtensions: ['.mp3', '.wav'],
@@ -83,10 +84,11 @@ export class VideosService {
     private readonly encryption: EncryptionService,
     private readonly storage: StorageService,
     private readonly taskRunner: LocalTaskRunnerService,
+    private readonly credentials: UserCredentialsService,
   ) {}
 
   private getUploadRules(provider: VideoInputUploadProvider) {
-    return provider === 'wanx' ? WANX_UPLOAD_RULES : SEEDANCE_UPLOAD_RULES;
+    return provider === 'wanx' ? WANX_UPLOAD_RULES : SEEDANCE_UPLOAD_RULES
   }
 
   private assertVideoInputUploadFile(
@@ -232,9 +234,8 @@ export class VideosService {
     return this.taskRunner.getVideoState(taskIdStr, retryCount);
   }
 
-  private async createVideoAdapter(provider: string, channelId: bigint) {
-    const channel = await this.prisma.apiChannel.findUnique({ where: { id: channelId } });
-    if (!channel) throw new NotFoundException('Channel not found');
+  private async createVideoAdapter(provider: string, userId: bigint, channelId: bigint) {
+    const channel = await this.credentials.resolveChannel(userId, channelId);
 
     const decryptedChannel = {
       ...channel,
@@ -374,12 +375,9 @@ export class VideosService {
       if (!isFixedMediaModelId(model.id)) {
         throw new BadRequestException('个人版只支持内置固定视频模型');
       }
-      if (
-        model.channel.status !== ApiChannelStatus.active ||
-        !model.channel.baseUrl.trim() ||
-        !model.channel.apiKey
-      ) {
-        throw new BadRequestException(`请先配置 ${model.channel.name} 渠道的 Base URL 和 API Key`);
+      const userChannel = await this.credentials.resolveChannel(userId, model.channelId);
+      if (!userChannel.baseUrl.trim() || !userChannel.apiKey) {
+        throw new BadRequestException(`请先配置 ${userChannel.name} 渠道的 Base URL 和 API Key`);
       }
 
       // Validate params early before creating the local task.
@@ -392,7 +390,7 @@ export class VideosService {
       if (model.modelKey && !(mergedParams as any).model) (mergedParams as any).model = model.modelKey;
       const normalizedParams = await this.storage.normalizeVideoGenerateParams(mergedParams);
 
-      const adapter = AdapterFactory.createVideoAdapter(model.provider, model.channel as any);
+      const adapter = AdapterFactory.createVideoAdapter(model.provider, userChannel as any);
       const validation = adapter.validateParams(normalizedParams);
       if (!validation.valid) {
         throw new BadRequestException(validation.errors?.join(', ') ?? 'Invalid params');
@@ -488,7 +486,7 @@ export class VideosService {
         throw new BadRequestException('任务已开始处理，无法取消');
       }
     } else {
-      const adapter = await this.createVideoAdapter(task.provider, task.channelId);
+      const adapter = await this.createVideoAdapter(task.provider, task.userId, task.channelId);
       await adapter.cancelTask(task.providerTaskId);
     }
 

@@ -1,24 +1,28 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from '@/lib/compat/link'
 import { usePathname, useRouter } from '@/lib/router'
-import { CanvasBoardContent } from '@/components/features/canvas/CanvasBoardContent'
+import { AuthPage } from '@/components/features/auth/AuthPage'
+import { CanvasV2Content } from '@/components/features/canvas-v2/CanvasV2Content'
 import { ChatContent } from '@/components/features/chat/ChatContent'
 import { SimplifiedCreateContent } from '@/components/features/create/SimplifiedCreateContent'
-import { GalleryContent } from '@/components/features/gallery/GalleryContent'
+import { LibraryContent } from '@/components/features/library/LibraryContent'
 import { LandingHomePage } from '@/components/features/home/LandingHomePage'
 import { ProjectDetailContent } from '@/components/features/projects/ProjectDetailContent'
-import { ProjectsContent } from '@/components/features/projects/ProjectsContent'
 import { TasksContent } from '@/components/features/tasks/TasksContent'
 import { TemplatesContent } from '@/components/features/templates/TemplatesContent'
+import { TutorialContent } from '@/components/features/tutorial/TutorialContent'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { UnauthorizedGuard } from '@/components/providers/UnauthorizedGuard'
 import { ConditionalLayout } from '@/components/layouts/ConditionalLayout'
 import { I18nProvider, useTranslations } from '@/i18n/client'
 import { defaultLocale, locales, type Locale } from '@/i18n/locales'
 import { tasksService } from '@/lib/api/services/tasks'
+import { useAuth } from '@/lib/hooks/useAuth'
+import { useAuthStore } from '@/lib/store/authStore'
+import { buildLoginHref } from '@/lib/local/session'
 import type { ApiTask } from '@/lib/api/types'
 
-const SITE_TITLE = 'FlowMuse'
+const SITE_TITLE = 'Molagg'
 const HOME_HERO_TASK_PAGE_SIZE = 48
 
 type RouteMatch = {
@@ -37,10 +41,40 @@ function withDefaultLocalePath(pathname: string) {
   return `/${defaultLocale}${pathname.startsWith('/') ? pathname : `/${pathname}`}`
 }
 
+function RequireAuth({ locale, children }: { locale: Locale; children: ReactNode }) {
+  const { isAuthenticated, isReady } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (!isReady || isAuthenticated) return
+    const next = `${pathname}${window.location.search}`
+    router.replace(buildLoginHref(locale, next))
+  }, [isAuthenticated, isReady, locale, pathname, router])
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center text-sm text-stone-500">
+        正在进入...
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) return null
+
+  return <>{children}</>
+}
+
 function HomeRoute({ locale }: { locale: Locale }) {
+  const { isAuthenticated, isReady } = useAuth()
   const [heroTasks, setHeroTasks] = useState<ApiTask[]>([])
 
   useEffect(() => {
+    if (!isReady || !isAuthenticated) {
+      setHeroTasks([])
+      return
+    }
+
     let cancelled = false
 
     tasksService
@@ -63,7 +97,7 @@ function HomeRoute({ locale }: { locale: Locale }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isAuthenticated, isReady])
 
   return <LandingHomePage locale={locale} heroTasks={heroTasks} />
 }
@@ -126,13 +160,34 @@ function resolveRoute(pathname: string): RouteMatch {
     }
   }
 
+  if (section === 'auth' && (firstParam === 'login' || firstParam === 'register') && routeSegments.length === 2) {
+    return {
+      locale,
+      routeKey: `${locale}:auth:${firstParam}`,
+      element: <AuthPage locale={locale} mode={firstParam} />,
+    }
+  }
+
   if (section === 'gallery') {
     if (routeSegments.length === 1) {
       return {
         locale,
         routeKey: `${locale}:gallery`,
-        element: <GalleryContent locale={locale} />,
+        element: (
+          <RequireAuth locale={locale}>
+            <LibraryContent locale={locale} />
+          </RequireAuth>
+        ),
       }
+    }
+  }
+
+  // 教程刻意不加登录守卫：第一次来的人还没注册，也应该能先把文档读完。
+  if (section === 'tutorial' && routeSegments.length === 1) {
+    return {
+      locale,
+      routeKey: `${locale}:tutorial`,
+      element: <TutorialContent locale={locale} />,
     }
   }
 
@@ -148,7 +203,11 @@ function resolveRoute(pathname: string): RouteMatch {
     return {
       locale,
       routeKey: `${locale}:templates`,
-      element: <TemplatesContent />,
+      element: (
+        <RequireAuth locale={locale}>
+          <TemplatesContent />
+        </RequireAuth>
+      ),
     }
   }
 
@@ -157,14 +216,23 @@ function resolveRoute(pathname: string): RouteMatch {
       return {
         locale,
         routeKey: `${locale}:projects`,
-        element: <ProjectsContent />,
+        element: (
+          <RequireAuth locale={locale}>
+            {/* 「我的作品」和「项目」已合并为资产库，旧链接 /projects 仍然可用 */}
+            <LibraryContent locale={locale} />
+          </RequireAuth>
+        ),
       }
     }
 
     return {
       locale,
       routeKey: `${locale}:projects:${firstParam}`,
-      element: <ProjectDetailContent projectId={firstParam} />,
+      element: (
+        <RequireAuth locale={locale}>
+          <ProjectDetailContent projectId={firstParam} />
+        </RequireAuth>
+      ),
     }
   }
 
@@ -172,7 +240,11 @@ function resolveRoute(pathname: string): RouteMatch {
     return {
       locale,
       routeKey: `${locale}:tasks`,
-      element: <TasksContent />,
+      element: (
+        <RequireAuth locale={locale}>
+          <TasksContent />
+        </RequireAuth>
+      ),
     }
   }
 
@@ -180,7 +252,11 @@ function resolveRoute(pathname: string): RouteMatch {
     return {
       locale,
       routeKey: `${locale}:canvas`,
-      element: <CanvasBoardContent />,
+      element: (
+        <RequireAuth locale={locale}>
+          <CanvasV2Content />
+        </RequireAuth>
+      ),
     }
   }
 
@@ -188,7 +264,11 @@ function resolveRoute(pathname: string): RouteMatch {
     return {
       locale,
       routeKey: `${locale}:chat:${firstParam ?? 'new'}`,
-      element: <ChatContent initialConversationId={firstParam ?? null} />,
+      element: (
+        <RequireAuth locale={locale}>
+          <ChatContent initialConversationId={firstParam ?? null} />
+        </RequireAuth>
+      ),
     }
   }
 
@@ -203,6 +283,13 @@ function AppContent() {
   const pathname = usePathname()
   const router = useRouter()
   const route = useMemo(() => resolveRoute(pathname), [pathname])
+
+  useEffect(() => {
+    const finish = () => useAuthStore.setState({ _hasHydrated: true })
+    const unsub = useAuthStore.persist.onFinishHydration(finish)
+    if (useAuthStore.persist.hasHydrated()) finish()
+    return unsub
+  }, [])
 
   useEffect(() => {
     document.title = SITE_TITLE

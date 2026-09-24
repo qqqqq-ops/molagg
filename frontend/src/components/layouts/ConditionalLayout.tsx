@@ -10,6 +10,7 @@ import { Sidebar } from './Sidebar'
 import { MobileTabBar } from './MobileTabBar'
 import { RouteLoadingBar } from '@/components/shared/RouteLoadingBar'
 import { ToastProvider } from '@/components/shared/ToastProvider'
+import { cn } from '@/lib/utils/cn'
 
 interface ConditionalLayoutProps {
   children: React.ReactNode
@@ -22,9 +23,19 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const isAuthRoute = pathSegments[1] === 'auth'
   const isLandingRoute = pathSegments.length === 0 || pathSegments.length === 1
   const useSideNav = !isLandingRoute && !isAuthRoute
+  // 工作台三页（创作 / 任务队列 / 画布）：连同侧栏、底部标签栏一起切到工作台配色（样式见 globals.css 的 .studio-shell）。
+  // 深浅跟随站点主题（默认跟随系统）：html 上有 .dark 用深色变量，没有就用浅色那一套（html:not(.dark) .studio-skin）
+  const isStudioRoute = pathSegments[1] === 'create' || pathSegments[1] === 'tasks' || pathSegments[1] === 'canvas'
 
   return (
-    <div className={isChatRoute ? 'flex min-w-0 h-[100dvh] min-h-[100dvh] flex-col overflow-hidden bg-canvas dark:bg-canvas-dark' : 'flex min-w-0 min-h-screen flex-col overflow-x-clip bg-canvas dark:bg-canvas-dark'}>
+    <div
+      className={cn(
+        isChatRoute
+          ? 'flex min-w-0 h-[100dvh] min-h-[100dvh] flex-col overflow-hidden bg-canvas dark:bg-canvas-dark'
+          : 'flex min-w-0 min-h-screen flex-col overflow-x-clip bg-canvas dark:bg-canvas-dark',
+        isStudioRoute && 'studio-skin studio-shell',
+      )}
+    >
       {/* 全局路由加载进度条 */}
       <RouteLoadingBar />
       <ToastProvider />

@@ -1,5 +1,5 @@
 import { type LandingHomeCopy } from './landingHomePage.shared'
-import { LandingTopBarActions } from './LandingTopBarActions'
+import { LandingAuthActions, LandingHomeButton, LandingTopBarActions } from './LandingTopBarActions'
 import styles from './LandingHomePage.module.css'
 
 export type LandingTopBarProps = {
@@ -12,11 +12,17 @@ export function LandingTopBar({
   copy,
 }: LandingTopBarProps) {
   return (
-    <header className={`${styles.topBar} ${styles.topBarMenuOnly}`}>
+    <header className={styles.topBar}>
+      <div className={styles.topBarSpacer}>
+        <LandingHomeButton locale={locale} />
+      </div>
       <LandingTopBarActions
         locale={locale}
         copy={copy}
       />
+      <div className={styles.topBarAuth}>
+        <LandingAuthActions locale={locale} />
+      </div>
     </header>
   )
 }

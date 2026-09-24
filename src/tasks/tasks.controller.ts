@@ -14,4 +14,14 @@ export class TasksController {
   listFeed(@CurrentUser('id') userId: bigint, @Query() query: QueryTaskFeedDto) {
     return this.tasksService.listFeed(userId, query);
   }
+
+  @Get('stats')
+  getStats(@CurrentUser('id') userId: bigint) {
+    return this.tasksService.getStats(userId);
+  }
+
+  @Get('estimates')
+  getDurationEstimates(@CurrentUser('id') userId: bigint) {
+    return this.tasksService.getDurationEstimates(userId);
+  }
 }

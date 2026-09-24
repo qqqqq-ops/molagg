@@ -52,5 +52,50 @@
     "timeout": 900000,
     "maxRetry": 3,
     "priority": 100
+  },
+  {
+    "id": 12,
+    "name": "可灵",
+    "provider": "kling",
+    "baseUrl": "",
+    "timeout": 900000,
+    "maxRetry": 3,
+    "priority": 100
+  },
+  {
+    "id": 13,
+    "name": "Sora",
+    "provider": "sora",
+    "baseUrl": "",
+    "timeout": 900000,
+    "maxRetry": 3,
+    "priority": 100
+  },
+  {
+    "id": 14,
+    "name": "Veo",
+    "provider": "veo",
+    "baseUrl": "",
+    "timeout": 900000,
+    "maxRetry": 3,
+    "priority": 100
+  },
+  {
+    "id": 15,
+    "name": "海螺",
+    "provider": "hailuo",
+    "baseUrl": "",
+    "timeout": 900000,
+    "maxRetry": 3,
+    "priority": 100
+  },
+  {
+    "id": 16,
+    "name": "Vidu",
+    "provider": "vidu",
+    "baseUrl": "",
+    "timeout": 900000,
+    "maxRetry": 3,
+    "priority": 100
   }
 ]

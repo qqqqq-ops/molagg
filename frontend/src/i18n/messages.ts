@@ -1,3 +1,4 @@
+import authEn from './locales/en-US/auth.json'
 import canvasEn from './locales/en-US/canvas.json'
 import chatEn from './locales/en-US/chat.json'
 import commonEn from './locales/en-US/common.json'
@@ -10,6 +11,7 @@ import promptsEn from './locales/en-US/prompts.json'
 import settingsEn from './locales/en-US/settings.json'
 import tasksEn from './locales/en-US/tasks.json'
 import templatesEn from './locales/en-US/templates.json'
+import authZh from './locales/zh-CN/auth.json'
 import canvasZh from './locales/zh-CN/canvas.json'
 import chatZh from './locales/zh-CN/chat.json'
 import commonZh from './locales/zh-CN/common.json'
@@ -28,6 +30,7 @@ export type Messages = Record<string, unknown>
 
 export const messagesByLocale: Record<Locale, Messages> = {
   'zh-CN': {
+    auth: authZh,
     canvas: canvasZh,
     chat: chatZh,
     common: commonZh,
@@ -42,6 +45,7 @@ export const messagesByLocale: Record<Locale, Messages> = {
     templates: templatesZh,
   },
   'en-US': {
+    auth: authEn,
     canvas: canvasEn,
     chat: chatEn,
     common: commonEn,
