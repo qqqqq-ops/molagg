@@ -27,6 +27,13 @@ export type LandingHomeCopy = {
   /** 时长被上游锁死时的说明，{seconds} 为秒数 */
   fixedDuration: string
   imageUnit: string
+  sizeLabel: string
+  sizeSquare: string
+  sizeLandscape: string
+  sizePortrait: string
+  tierLabel: string
+  tierStandard: string
+  tierRealistic: string
   loadingModels: string
   noModels: string
   noReferenceModels: string
@@ -142,6 +149,13 @@ export function getLandingHomeCopy(locale: string): LandingHomeCopy {
       secondsUnit: '秒',
       fixedDuration: '固定 {seconds} 秒一条',
       imageUnit: '张',
+      sizeLabel: '比例',
+      sizeSquare: '1:1 方图',
+      sizeLandscape: '3:2 横版',
+      sizePortrait: '2:3 竖版',
+      tierLabel: '画质',
+      tierStandard: '通用',
+      tierRealistic: '写实增强',
       loadingModels: '正在读取模型…',
       noModels: '还没有可用模型',
       noReferenceModels: '当前没有支持参考图的模型，移除参考图或去配置渠道',
@@ -183,6 +197,13 @@ export function getLandingHomeCopy(locale: string): LandingHomeCopy {
     secondsUnit: 's',
     fixedDuration: 'Fixed {seconds}s per clip',
     imageUnit: '',
+    sizeLabel: 'Ratio',
+    sizeSquare: '1:1 square',
+    sizeLandscape: '3:2 landscape',
+    sizePortrait: '2:3 portrait',
+    tierLabel: 'Quality',
+    tierStandard: 'Standard',
+    tierRealistic: 'Realistic+',
     loadingModels: 'Loading models…',
     noModels: 'No model available yet',
     noReferenceModels: 'No model here accepts reference images. Remove it or configure a channel.',

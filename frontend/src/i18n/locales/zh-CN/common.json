@@ -62,7 +62,9 @@
     "active": "有效"
   },
   "relayPricing": {
-    "image": "价格：{standard} / 张（高画质 {high} / 张），按 OpusAPI 计费",
+    "image": "价格：{standard} / 张（写实增强 {realistic} / 张），按 OpusAPI 计费",
+    "imageStandard": "价格：{price} / 张，按 OpusAPI 计费",
+    "imageRealistic": "价格：写实增强 {price} / 张，按 OpusAPI 计费",
     "imageTotal": "，这次 {count} 张约 {total}",
     "video": "价格：{seconds} 秒一条 {price}，按 Molagg 计费",
     "videoTotal": "，这次 {count} 条共 {total}"

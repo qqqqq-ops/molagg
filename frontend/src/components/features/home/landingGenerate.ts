@@ -145,7 +145,25 @@ type BuildParametersInput = {
    * 用哪个由厂商决定：getImageSizeOptions 有值的走 sizeOverride，否则走 ratioOverride。
    */
   ratioOverride?: string
+  /** GPT Image 用哪个上游模型：首页选「写实增强」时传 gpt-image-2-adobe；不传就用模型自带的 remoteModel */
+  gptImageModelOverride?: string
   sizeOverride?: string
+}
+
+/**
+ * 首页 GPT Image 的比例：只给 OpenAI 图片接口标准支持的三种像素尺寸（别的尺寸有被中转站拒掉、白扣费的风险）。
+ * 三种价格一样。
+ */
+export const LANDING_GPT_IMAGE_SIZES = [
+  { value: '1024x1024', ratio: '1:1' },
+  { value: '1536x1024', ratio: '3:2' },
+  { value: '1024x1536', ratio: '2:3' },
+] as const
+
+/** 这个图片模型是不是 GPT Image（首页才给它比例 / 写实增强选项） */
+export function isGptImageModel(model: { provider?: string | null } | null | undefined) {
+  const provider = normalizeProviderFamily(model?.provider ?? '')
+  return provider.includes('gpt') || provider.includes('openai')
 }
 
 export async function buildLandingParameters({
@@ -156,6 +174,7 @@ export async function buildLandingParameters({
   uploadVideoReference,
   ratioOverride,
   sizeOverride,
+  gptImageModelOverride,
 }: BuildParametersInput): Promise<Record<string, unknown>> {
   const provider = normalizeProviderFamily(model.provider)
   const name = resolveModelName(model)
@@ -183,7 +202,7 @@ export async function buildLandingParameters({
       if (remoteModel) parameters.model = remoteModel
     } else if (isGptImage) {
       parameters.gptImageOperation = hasReference ? 'edits' : 'generations'
-      parameters.model = remoteModel || 'gpt-image-2-all'
+      parameters.model = gptImageModelOverride || remoteModel || 'gpt-image-2-all'
     } else if (isDoubao) {
       // 豆包图片没有比例参数，只能用像素尺寸把方图定下来；有参考图时仍用 2K 让它跟随参考图
       parameters.size = hasReference ? '2K' : sizeOverride || '2048x2048'

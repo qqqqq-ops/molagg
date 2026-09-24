@@ -15,7 +15,9 @@ check('空地址 / 乱写的地址不算', !r.isHostOf('', 'opusapi.xyz') && !r.
 
 console.log('\n— 出不出价 —')
 const img = r.relayPriceFor({ provider: 'gptimage' }, 'https://api.opusapi.xyz')
-check('GPT Image + opusapi → 生图价 0.4 / 高画质 0.8', img && img.kind === 'image' && img.standard === 0.4 && img.high === 0.8, J(img))
+check('GPT Image + opusapi → 生图价 通用 0.4 / 写实增强 0.8', img && img.kind === 'image' && img.standard === 0.4 && img.realistic === 0.8, J(img))
+check('写实增强 3 张 = 2.4', r.estimateRelayCost(img, 3, 'realistic') === 2.4)
+check('不指定档位按通用算：3 张 = 1.2', r.estimateRelayCost(img, 3) === 1.2)
 const vid = r.relayPriceFor({ provider: 'molagg' }, 'https://molagg.com')
 check('Molagg 视频 + molagg.com → 30 秒 ¥6', vid && vid.kind === 'video' && vid.perClip === 6 && vid.seconds === 30, J(vid))
 check('api.molagg.com 也算', r.relayPriceFor({ provider: 'molagg' }, 'https://api.molagg.com') !== null)
@@ -26,7 +28,7 @@ check('没模型 → 不出价', r.relayPriceFor(null, 'https://opusapi.xyz') ==
 console.log('\n— 合计与显示 —')
 check('4 张图 = ¥1.6', r.estimateRelayCost(img, 4) === 1.6)
 check('2 条视频 = ¥12', r.estimateRelayCost(vid, 2) === 12)
-check('0.1+0.2 这类不出现一长串小数', r.estimateRelayCost({ kind: 'image', standard: 0.1, high: 0 }, 3) === 0.3)
+check('0.1+0.2 这类不出现一长串小数', r.estimateRelayCost({ kind: 'image', standard: 0.1, realistic: 0 }, 3) === 0.3)
 check('显示去掉多余的 0：¥6、¥0.4、¥0.75', r.formatYuan(6) === '¥6' && r.formatYuan(0.4) === '¥0.4' && r.formatYuan(0.75) === '¥0.75')
 
 console.log(fails === 0 ? '\n全部通过' : '\n' + fails + ' 项失败')

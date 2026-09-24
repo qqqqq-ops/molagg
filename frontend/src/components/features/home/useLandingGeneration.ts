@@ -19,6 +19,9 @@ type SubmitInput = {
   count: number
   duration: number
   referenceImages: File[]
+  /** GPT Image：像素尺寸（比例）和上游模型（写实增强），首页选了才有 */
+  size?: string
+  gptImageModel?: string
 }
 
 export function useLandingGeneration({ mode, userId }: { mode: LandingMode; userId: string | null }) {
@@ -55,7 +58,7 @@ export function useLandingGeneration({ mode, userId }: { mode: LandingMode; user
   }, [mode, userId, modelsReloadToken])
 
   const submit = useCallback(
-    async ({ mode: jobMode, prompt, model, count, duration, referenceImages }: SubmitInput) => {
+    async ({ mode: jobMode, prompt, model, count, duration, referenceImages, size, gptImageModel }: SubmitInput) => {
       const keys = addPlaceholders(jobMode, jobMode === 'image' ? count : 1)
 
       let parameters: Record<string, unknown>
@@ -65,6 +68,8 @@ export function useLandingGeneration({ mode, userId }: { mode: LandingMode; user
           model,
           duration,
           referenceImages,
+          sizeOverride: size,
+          gptImageModelOverride: gptImageModel,
           uploadVideoReference: async (files, provider) => {
             const result = await videoService.uploadSeedanceInputs('image', files, provider)
             return result.files.map((file) => file.url)

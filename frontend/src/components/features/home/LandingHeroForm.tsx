@@ -6,6 +6,7 @@ import { SystemConfigModal } from '@/components/admin/settings/SystemConfigModal
 import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
+import { RELAY_PRICING, type ImageTier } from '@/lib/utils/relayPricing'
 import { pickDefaultModelId } from '@/lib/utils/defaultModels'
 import { VIDEO_MODEL_SAMPLES, findSampleModelId } from '@/lib/prompts/videoModelSamples'
 import { useLandingHomePageShell } from './LandingHomePageShellClient'
@@ -16,6 +17,8 @@ import {
   getMaxReferenceImages,
   getFixedVideoDuration,
   getVideoDurationOptions,
+  isGptImageModel,
+  LANDING_GPT_IMAGE_SIZES,
 } from './landingGenerate'
 import { LANDING_IMAGE_SAMPLES, buildCreateHref, type LandingHomeCopy } from './landingHomePage.shared'
 import { useLandingGeneration } from './useLandingGeneration'
@@ -27,6 +30,7 @@ type LandingHeroFormProps = {
 }
 
 const IMAGE_COUNTS = Array.from({ length: LANDING_MAX_IMAGE_COUNT }, (_, index) => index + 1)
+const IMAGE_TIERS: ImageTier[] = ['standard', 'realistic']
 
 /**
  * 落地页就地生成：一句描述 + 可选参考图 + 张数/时长，结果直接出在这一页。
@@ -48,6 +52,8 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
   const [selectedModelId, setSelectedModelId] = useState('')
   const [imageCount, setImageCount] = useState(1)
   const [duration, setDuration] = useState(5)
+  const [imageSize, setImageSize] = useState<string>(LANDING_GPT_IMAGE_SIZES[0].value)
+  const [imageTier, setImageTier] = useState<ImageTier>('standard')
 
   const hasReference = referenceImages.length > 0
   const candidates = useMemo(() => filterLandingModels(models, hasReference), [models, hasReference])
@@ -56,6 +62,12 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
   const durationOptions = useMemo(() => getVideoDurationOptions(selectedModel), [selectedModel])
   const fixedDuration = getFixedVideoDuration(selectedModel)
   const maxReferences = getMaxReferenceImages(mode, selectedModel)
+  const price = priceFor(selectedModel)
+  // GPT Image 出图：首页直接给比例；走站长的 opusapi 时再给「通用 / 写实增强」（写实增强是另一个上游模型，别的中转站未必有）
+  const isGptImage = mode === 'image' && isGptImageModel(selectedModel)
+  const showSizeChoice = isGptImage && !hasReference
+  const showTierChoice = isGptImage && price?.kind === 'image'
+  const activeTier: ImageTier = showTierChoice ? imageTier : 'standard'
 
   const referencePreviews = useMemo(() => referenceImages.map((file) => URL.createObjectURL(file)), [referenceImages])
   useEffect(() => () => referencePreviews.forEach((url) => URL.revokeObjectURL(url)), [referencePreviews])
@@ -127,6 +139,8 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
         count: imageCount,
         duration,
         referenceImages,
+        size: showSizeChoice ? imageSize : undefined,
+        gptImageModel: activeTier === 'realistic' ? RELAY_PRICING.image.realisticModel : undefined,
       })
     } finally {
       setIsSubmitting(false)
@@ -196,8 +210,54 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
         </div>
         )}
 
-        {/* 走站长两个中转站时才显示价格 */}
-        <RelayPriceNote price={priceFor(selectedModel)} count={mode === 'image' ? imageCount : 1} />
+        {showSizeChoice ? (
+          <div className={styles.optionGroup} role="radiogroup" aria-label={copy.sizeLabel}>
+            <span className={styles.optionLabel}>{copy.sizeLabel}</span>
+            {LANDING_GPT_IMAGE_SIZES.map((option, index) => {
+              const active = imageSize === option.value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`${styles.optionChip} ${active ? styles.optionChipActive : ''}`}
+                  onClick={() => setImageSize(option.value)}
+                >
+                  {[copy.sizeSquare, copy.sizeLandscape, copy.sizePortrait][index]}
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
+
+        {showTierChoice ? (
+          <div className={styles.optionGroup} role="radiogroup" aria-label={copy.tierLabel}>
+            <span className={styles.optionLabel}>{copy.tierLabel}</span>
+            {IMAGE_TIERS.map((tier) => {
+              const active = imageTier === tier
+              return (
+                <button
+                  key={tier}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`${styles.optionChip} ${active ? styles.optionChipActive : ''}`}
+                  onClick={() => setImageTier(tier)}
+                >
+                  {tier === 'realistic' ? copy.tierRealistic : copy.tierStandard}
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
+
+        {/* 走站长两个中转站时才显示价格；首页选了画质就只报这一档 */}
+        <RelayPriceNote
+          price={price}
+          count={mode === 'image' ? imageCount : 1}
+          imageTier={showTierChoice ? imageTier : undefined}
+        />
       </>
     )
   }
@@ -344,6 +404,7 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
 
         {/* 比例落地页不给选，但要说清楚现在是什么、去哪改 —— 高级版入口放这一行，做成显眼的按钮 */}
         <div className={styles.advancedRow}>
+          {showSizeChoice ? <span /> : (
           <span className={styles.ratioNote}>
             {copy.ratioLabel}
             <strong>
@@ -351,6 +412,7 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
             </strong>
             <span className={styles.ratioNoteHint}>{copy.advancedHint}</span>
           </span>
+          )}
           <button
             type="button"
             className={styles.advancedCta}
