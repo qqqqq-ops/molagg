@@ -547,6 +547,7 @@
     "createImage": "Generate image",
     "modeFramesDesc": "Lock the opening and closing shots with a first and last frame",
     "modeReferencesDesc": "Reference images, video and audio, guided by your prompt",
-    "casesComing": "Reference-mode examples are coming soon"
+    "casesComing": "Examples for this mode are coming soon",
+    "referenceImage": "Reference"
   }
 }

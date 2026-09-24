@@ -547,6 +547,7 @@
     "createImage": "生成图片",
     "modeFramesDesc": "用首帧和尾帧锁定视频的开头与结尾画面",
     "modeReferencesDesc": "参考图片、视频、音频，用提示词引导生成",
-    "casesComing": "参考创作的示例还在准备中"
+    "casesComing": "这个模式的示例还在准备中",
+    "referenceImage": "参考图"
   }
 }

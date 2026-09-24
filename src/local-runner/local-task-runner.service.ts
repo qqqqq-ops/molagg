@@ -30,6 +30,25 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** 查进度连续出错多少次才放弃（每次间隔 5–20 秒，约几分钟） */
+const MAX_POLL_ERRORS = 10;
+
+/**
+ * 查一次上游进度。查询本身偶尔 502 / 超时 / 断网，不代表上游任务失败——上游照样出片、照样扣费，
+ * 这时判失败就把已经付钱的结果丢了。所以单次出错返回 null（这一轮先跳过），连续出错太多次才抛出。
+ */
+async function pollOnce<T>(query: () => Promise<T>, errors: { count: number }): Promise<T | null> {
+  try {
+    const result = await query();
+    errors.count = 0;
+    return result;
+  } catch (error) {
+    errors.count += 1;
+    if (errors.count >= MAX_POLL_ERRORS) throw error;
+    return null;
+  }
+}
+
 function asNonEmptyString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
@@ -254,6 +273,7 @@ export class LocalTaskRunnerService {
     let delayMs = 5_000;
     const deadline = Date.now() + 10 * 60_000;
 
+    const pollErrors = { count: 0 };
     while (Date.now() < deadline) {
       await sleep(delayMs);
       // 上限原为 45s；为了进度能跟得上，压到 15s（查状态接口一般不计费）
@@ -264,7 +284,8 @@ export class LocalTaskRunnerService {
       if (latestState.status === TaskStatus.completed && latestState.resultUrl) return;
       if (latestState.status === TaskStatus.failed) return;
 
-      const status = await adapter.queryTaskStatus(providerTaskId);
+      const status = await pollOnce(() => adapter.queryTaskStatus(providerTaskId), pollErrors);
+      if (!status) continue;
       const providerData = mergeTaskProviderData(latestState.providerData, status.providerData);
 
       if (status.status === TaskStatus.completed) {
@@ -353,6 +374,7 @@ export class LocalTaskRunnerService {
     const waitMinutes = String(model.provider ?? '').toLowerCase() === 'molagg' ? 90 : 20;
     const deadline = Date.now() + waitMinutes * 60_000;
 
+    const pollErrors = { count: 0 };
     while (Date.now() < deadline) {
       await sleep(delayMs);
       // 上限原为 90s；为了进度能跟得上，压到 20s（查状态接口一般不计费）
@@ -363,7 +385,8 @@ export class LocalTaskRunnerService {
       if (latestState.status === TaskStatus.completed && latestState.resultUrl) return;
       if (latestState.status === TaskStatus.failed) return;
 
-      const status = await adapter.queryTaskStatus(providerTaskId);
+      const status = await pollOnce(() => adapter.queryTaskStatus(providerTaskId), pollErrors);
+      if (!status) continue;
       const providerData = mergeTaskProviderData(latestState.providerData, status.providerData);
 
       if (status.status === TaskStatus.completed) {

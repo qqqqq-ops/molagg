@@ -32,13 +32,35 @@ const contentTypes = {
  * Safari / iPhone 播 mp4 必须能按段取，否则视频根本放不出来；Chrome 没有它也拖不了进度条。
  * 创作页的展示案例是 26MB 的原片，所以这里一定要支持。只认单段 `bytes=start-end`，多段请求按整文件返回。
  */
+/**
+ * 只有打包产物（dist/assets 下，文件名带内容哈希）才能「缓存一年、永不重查」。
+ * public 里的文件（展示样片、封面、图标）名字不变、内容会换——缓存一年的话，换了封面用户也看不到，
+ * 所以这些每次都跟服务器核对一下（没变就 304，不重新下载）。
+ */
+function cacheControlFor(filePath, ext) {
+  if (ext === '.html') return 'no-cache'
+  const relative = path.relative(distDir, filePath).split(path.sep)
+  return relative[0] === 'assets' ? 'public, max-age=31536000, immutable' : 'no-cache'
+}
+
 function sendFile(request, response, filePath) {
   const ext = path.extname(filePath)
-  const size = statSync(filePath).size
+  const stat = statSync(filePath)
+  const size = stat.size
+  // 用「大小 + 修改时间」当版本号：文件没变，浏览器核对时直接回 304，不用重新下 26MB 的样片
+  const etag = `"${size.toString(16)}-${Math.floor(stat.mtimeMs).toString(16)}"`
   const headers = {
     'Content-Type': contentTypes[ext] || 'application/octet-stream',
-    'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
+    'Cache-Control': cacheControlFor(filePath, ext),
     'Accept-Ranges': 'bytes',
+    ETag: etag,
+    'Last-Modified': stat.mtime.toUTCString(),
+  }
+
+  if (request.headers['if-none-match'] === etag) {
+    response.writeHead(304, headers)
+    response.end()
+    return
   }
 
   const match = /^bytes=(\d*)-(\d*)$/.exec(request.headers.range || '')

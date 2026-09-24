@@ -201,6 +201,13 @@ export function CreateStudioPanel({
             {item.duration ? ` · ${item.duration}s` : ''}
           </strong>
         </div>
+        {item.reference ? (
+          // 参考创作：角落里放生成时用的参考图，一眼看出「参考了什么 → 生成了什么」
+          <figure className="pointer-events-none absolute bottom-4 left-4 w-[22%] min-w-20 overflow-hidden border border-white/20 bg-black/65 backdrop-blur-sm">
+            <img src={item.reference} alt="" className="aspect-[3/2] w-full object-cover" />
+            <figcaption className="px-2 py-1 text-[10px] font-semibold text-white/85">{t('referenceImage')}</figcaption>
+          </figure>
+        ) : null}
         {item.video ? (
           <button
             type="button"

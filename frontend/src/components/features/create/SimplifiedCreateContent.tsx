@@ -39,7 +39,12 @@ import { ProjectContextPanel } from './ProjectContextPanel'
 import { PromptOptimizePanel } from './PromptOptimizePanel'
 import { VideoCreateWorkspace } from './VideoCreateWorkspace'
 import { CreateStudioPanel, type StudioSummary } from './CreateStudioPanel'
-import { IMAGE_SHOWCASE_CASES, VIDEO_SHOWCASE_CASES, type CreateShowcaseCase } from './showcaseCases'
+import {
+  IMAGE_SHOWCASE_CASES,
+  REFERENCE_SHOWCASE_CASES,
+  VIDEO_SHOWCASE_CASES,
+  type CreateShowcaseCase,
+} from './showcaseCases'
 import { VIDEO_MODEL_SAMPLES, findSampleModelId, type VideoModelSample } from '@/lib/prompts/videoModelSamples'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 import { getFixedVideoDuration } from '@/components/features/home/landingGenerate'
@@ -3155,12 +3160,12 @@ export function SimplifiedCreateContent() {
           >
             <CreateStudioPanel
               locale={locale}
-              // 现有 4 条视频样片是纯文字生成的（Molagg），只挂在首尾帧创作（Molagg 临时放在那）；参考创作还没有真实样片
+              // 首尾帧创作：4 条纯文字生成的样片（Molagg 临时放在那）；参考创作：4 条「参考图 → 成片」
               cases={
                 activeTab === 'video'
                   ? createMode === 'frames'
                     ? VIDEO_SHOWCASE_CASES
-                    : []
+                    : REFERENCE_SHOWCASE_CASES
                   : IMAGE_SHOWCASE_CASES
               }
               onApplyCase={handleApplyShowcaseCase}

@@ -24,6 +24,7 @@ const FIXED_SECONDS = 30;
 const ASPECT_RATIOS = ['16:9', '9:16', '1:1', '4:3', '3:4'];
 const RESOLUTIONS = ['720p', '1080p'];
 const MAX_IMAGES = 30;
+const MODES = ['text-to-video', 'first-frame', 'reference'];
 
 function asStringList(value: unknown): string[] {
   if (Array.isArray(value)) return value.map((item) => asString(item)).filter((item): item is string => Boolean(item));
@@ -39,6 +40,18 @@ function referenceImagesOf(p: Record<string, unknown>) {
     ...asStringList(p.images),
   ];
   return [...new Set(list)];
+}
+
+/**
+ * 上游的 mode：不写时「带图 = 首帧生」，所以参考创作必须显式写 reference。
+ * 显式传了 mode 就用它；否则只有首帧字段 → first-frame，有参考图字段 → reference，没图 → 文生。
+ */
+function resolveMode(p: Record<string, unknown>): string | undefined {
+  const explicit = asString(p.mode)?.toLowerCase();
+  if (explicit) return explicit;
+  if (asStringList(p.referenceImage).length || asStringList(p.referenceImages).length) return 'reference';
+  if (asStringList(p.firstFrame).length) return 'first-frame';
+  return undefined;
 }
 
 export class MolaggVideoAdapter extends BaseVideoAdapter {
@@ -92,6 +105,10 @@ export class MolaggVideoAdapter extends BaseVideoAdapter {
     if (images.some((url) => !/^https?:\/\//i.test(url) || /^https?:\/\/(localhost|127\.|0\.0\.0\.0|\[::1\])/i.test(url))) {
       errors.push('reference images must be public http(s) URLs (not base64 or localhost)');
     }
+    const mode = resolveMode(p);
+    if (mode && !MODES.includes(mode)) errors.push(`mode must be one of ${MODES.join(', ')}`);
+    else if (mode && mode !== 'text-to-video' && images.length === 0) errors.push('this mode requires images');
+    else if (mode === 'text-to-video' && images.length > 0) errors.push('text-to-video cannot take images');
     return { valid: errors.length === 0, errors };
   }
 
@@ -110,6 +127,8 @@ export class MolaggVideoAdapter extends BaseVideoAdapter {
     if (resolution && RESOLUTIONS.includes(resolution)) body.resolution = resolution;
     const images = referenceImagesOf(p);
     if (images.length > 0) body.images = images;
+    const mode = resolveMode(p);
+    if (mode) body.mode = mode;
     return body;
   }
 }
