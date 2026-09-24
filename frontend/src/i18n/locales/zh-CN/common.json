@@ -60,5 +60,11 @@
     "completed": "已完成",
     "failed": "失败",
     "active": "有效"
+  },
+  "relayPricing": {
+    "image": "价格：{standard} / 张（高画质 {high} / 张），按 OpusAPI 计费",
+    "imageTotal": "，这次 {count} 张约 {total}",
+    "video": "价格：{seconds} 秒一条 {price}，按 Molagg 计费",
+    "videoTotal": "，这次 {count} 条共 {total}"
   }
 }

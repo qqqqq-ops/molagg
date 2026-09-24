@@ -9,7 +9,9 @@ import { Modal } from '@/components/ui/Modal'
 import { imageService } from '@/lib/api/services'
 import type { ApiTask } from '@/lib/api/types'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
+import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
 import { useMediaModels } from '@/lib/hooks/useMediaModels'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
 import { urlToFile } from '@/lib/utils/urlToFile'
 import { cn } from '@/lib/utils/cn'
 
@@ -115,6 +117,7 @@ export function FrameGeneratorDialog({
   // 默认选第一个、换模型时画幅失效——都用派生值，不在 effect 里同步 state
   const modelId = pickedModelId || models[0]?.id || ''
   const model = models.find((item) => item.id === modelId) ?? null
+  const priceFor = useRelayPricing()
   const sizeOptions = model ? getImageSizeOptions(model.provider) : null
   const usesSize = Boolean(sizeOptions?.length)
   const aspectOptions = usesSize ? sizeOptions! : model ? getAspectRatioOptions(model.provider) : []
@@ -259,6 +262,8 @@ export function FrameGeneratorDialog({
             modelId={modelId || null}
           />
         )}
+
+        <RelayPriceNote price={priceFor(model)} />
 
         <div className="flex justify-end gap-2">
           <button

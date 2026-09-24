@@ -42,6 +42,9 @@ import { CreateStudioPanel, type StudioSummary } from './CreateStudioPanel'
 import { IMAGE_SHOWCASE_CASES, VIDEO_SHOWCASE_CASES, type CreateShowcaseCase } from './showcaseCases'
 import { VIDEO_MODEL_SAMPLES, findSampleModelId, type VideoModelSample } from '@/lib/prompts/videoModelSamples'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
+import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
+
 import { describeAssetIssue, findAssetIssue, type AssetCheck } from './assetCompatibility'
 import { CREATE_MODES, filterModelsByMode, pickModelForMode, type CreateMode } from './createModes'
 import type { ProjectAsset, ProjectSummary } from '@/lib/api/types/projects'
@@ -640,6 +643,7 @@ export function SimplifiedCreateContent() {
   }, [searchParams])
 
   // 获取当前选中的模型
+  const priceFor = useRelayPricing()
   const selectedModel = useMemo<CreateSelectableModel | null>(() => {
     return models.find((m) => m.id === selectedModelId) ?? null
   }, [models, selectedModelId])
@@ -2447,6 +2451,11 @@ export function SimplifiedCreateContent() {
           {simpleSummary.blocker ?? t('simple.ready')}
         </span>
       </div>
+      {/* 走站长两个中转站时才显示价格；图片一次出几张就按几张算 */}
+      <RelayPriceNote
+        price={priceFor(activeTab === 'video' ? (selectedExecutionModel ?? selectedModel) : selectedModel)}
+        count={activeTab === 'image' ? imageCount : 1}
+      />
       <button
         type="button"
         onClick={handleSubmit}
@@ -2469,8 +2478,8 @@ export function SimplifiedCreateContent() {
   )
 
   return (
-    // 创作页固定深色工作台（用户拍板）：根节点带 .dark，内部组件的 dark: 样式全部生效；.studio-skin 再统一成参考站的黑灰金
-    <div className="dark studio-skin min-h-screen w-full">
+    // 工作台皮肤；深浅跟随站点主题（2026-09-23 用户要求「跟随系统」），所以根节点不再写死 .dark
+    <div className="studio-skin min-h-screen w-full">
     <PageTransition className="create-page-no-edge-glow mx-auto w-full max-w-[1560px] px-4 py-6 pb-24 sm:px-6 md:pb-12 lg:px-8">
       <Tabs className="block w-full min-w-0" value={createMode} onValueChange={(v) => setCreateMode(v as CreateMode)}>
         <>

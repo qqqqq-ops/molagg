@@ -266,7 +266,8 @@ export function TasksContent() {
   }
 
   return (
-    <div className="dark studio-skin min-h-screen w-full">
+    // 深浅跟随站点主题（2026-09-23 用户要求「跟随系统」），根节点不写死 .dark
+    <div className="studio-skin min-h-screen w-full">
       <PageTransition className="task-queue mx-auto w-full max-w-[1560px] px-4 py-6 pb-24 sm:px-6 md:pb-12 lg:px-8">
         <section className="mb-6 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">

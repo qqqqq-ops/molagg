@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 
 import { useTranslations } from '@/i18n/client'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
+import { estimateRelayCost, formatYuan } from '@/lib/utils/relayPricing'
 
 import type { CanvasNode } from '../canvasV2.types'
 import { useCanvasStore } from './canvasStore'
@@ -27,6 +29,7 @@ const MAX_LISTED_ISSUES = 3
 export function useCascade(models: { image: ModelWithCapabilities[]; video: ModelWithCapabilities[] }) {
   const t = useTranslations('canvas')
   const { run, cancelAll } = useRunner()
+  const priceFor = useRelayPricing()
   const [progress, setProgress] = useState<{ batch: number; total: number } | null>(null)
   const cancelled = useRef(false)
 
@@ -91,13 +94,22 @@ export function useCascade(models: { image: ModelWithCapabilities[]; video: Mode
     }
 
     const byId = new Map(nodes.map((node) => [node.id, node]))
-    const tasks = all.reduce((sum, id) => {
+    let tasks = 0
+    // 走站长两个中转站的节点能算出钱；别的渠道没有价格，不算进去
+    let cost = 0
+    for (const id of all) {
       const node = byId.get(id)
       const mode = node ? runModeOf(node) : null
       const options = node && mode ? buildRunOptions(node, models[mode]) : null
-      return sum + (options ? plannedTaskCount(options) : 0)
-    }, 0)
-    if (!window.confirm(t('cascade.confirm', { nodes: all.length, tasks, batches: plan.batches.length }))) return
+      if (!options) continue
+      const count = plannedTaskCount(options)
+      tasks += count
+      const price = priceFor(options.model)
+      if (price) cost += estimateRelayCost(price, count)
+    }
+    const message = t('cascade.confirm', { nodes: all.length, tasks, batches: plan.batches.length })
+    const costLine = cost > 0 ? `\n${t('cascade.confirmCost', { total: formatYuan(cost) })}` : ''
+    if (!window.confirm(message + costLine)) return
 
     cancelled.current = false
     toast.success(t('cascade.started', { n: plan.batches.length }))
@@ -126,7 +138,7 @@ export function useCascade(models: { image: ModelWithCapabilities[]; video: Mode
 
     setProgress(null)
     if (!cancelled.current) toast.success(t('cascade.done', { n: plan.batches.length }))
-  }, [models, preflight, progress, run, t])
+  }, [models, preflight, priceFor, progress, run, t])
 
   const cancel = useCallback(() => {
     cancelled.current = true

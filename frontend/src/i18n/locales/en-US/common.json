@@ -60,5 +60,11 @@
     "completed": "Completed",
     "failed": "Failed",
     "active": "Active"
+  },
+  "relayPricing": {
+    "image": "Price: {standard} per image ({high} for high quality), billed by OpusAPI",
+    "imageTotal": "; about {total} for {count} images",
+    "video": "Price: {price} per {seconds}-second clip, billed by Molagg",
+    "videoTotal": "; {total} for {count} clips"
   }
 }

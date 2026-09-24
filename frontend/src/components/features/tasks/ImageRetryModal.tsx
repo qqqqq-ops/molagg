@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
+import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
 import { SimplifiedModelSelector } from '@/components/features/create/SimplifiedModelSelector'
 import { modelService } from '@/lib/api/services'
 import type { ApiTask } from '@/lib/api/types/task'
@@ -69,6 +71,7 @@ export function ImageRetryModal({ isOpen, task, isSubmitting, onClose, onSubmit 
     () => models.find((model) => model.id === selectedModelId) ?? null,
     [models, selectedModelId],
   )
+  const priceFor = useRelayPricing()
 
   const retryParameters = useMemo(() => {
     if (!task || !selectedModel) return {}
@@ -114,6 +117,9 @@ export function ImageRetryModal({ isOpen, task, isSubmitting, onClose, onSubmit 
             ? t('retryModal.loadingModels')
             : parameterSummary || t('retryModal.defaultParams')}
         </div>
+
+        {/* 重新生成也是一次付费调用：走站长两个中转站时显示价格 */}
+        <RelayPriceNote price={priceFor(selectedModel)} />
       </div>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { userSettingsService } from '@/lib/api/services/userSettings'
 import type { Channel, UpdateChannelDto } from '@/lib/api/types/admin/channels'
+import { invalidateRelayPricing } from '@/lib/hooks/useRelayPricing'
 
 /**
  * 默认地址指向站长自己中转站的渠道（GPT Image → api.opusapi.xyz、Molagg 视频 → molagg.com，见 prisma/default-api-channels.json）。
@@ -80,6 +81,8 @@ export function ChannelModal({
       }
 
       await userSettingsService.updateChannel(channel.id, updateDto)
+      // 地址变了，生成入口上的价格说明（只在站长的中转站时显示）要重新判断
+      invalidateRelayPricing()
       onSuccess?.()
       handleClose()
     } catch (err) {

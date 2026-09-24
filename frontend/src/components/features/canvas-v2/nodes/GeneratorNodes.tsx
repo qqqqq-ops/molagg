@@ -23,7 +23,9 @@ import {
 } from '../data/shotOptions'
 import { useCanvasStore } from '../store/canvasStore'
 import { collectUpstreamInputs, summarizeInputs } from '../store/graphInputs'
+import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
 import { useMediaModels } from '@/lib/hooks/useMediaModels'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 import { useRunner } from '../store/runnerContext'
 import { buildRunOptions } from '../store/runOptions'
@@ -236,6 +238,7 @@ export function ImageGeneratorNode({ id, data, selected }: NodeProps) {
   const patch = useNodePatch(id)
   const { models, loading } = useMediaModels('image')
   const { run } = useRunner()
+  const priceFor = useRelayPricing()
   const running = ['submitting', 'pending', 'processing'].includes(String(data.status ?? 'idle'))
 
   const angleKeys = (data.angleKeys as string[]) ?? []
@@ -331,6 +334,15 @@ export function ImageGeneratorNode({ id, data, selected }: NodeProps) {
         onChange={(count) => patch({ outputCount: count })}
       />
 
+      {/* 走站长的中转站才显示；张数 = 生成数量 × 勾的角度数 */}
+      <RelayPriceNote
+        price={priceFor(model)}
+        count={
+          clampOutputCount(Number(data.outputCount ?? 1), getOutputCountConfig(model?.provider, 'image')) *
+          Math.max(1, angleKeys.length)
+        }
+      />
+
       <details className="cv2-details">
         <summary>
           {t('node.imageGenerator.multiAngle')}{' '}
@@ -416,6 +428,7 @@ export function VideoGeneratorNode({ id, data, selected }: NodeProps) {
   const patch = useNodePatch(id)
   const { models, loading } = useMediaModels('video')
   const { run } = useRunner()
+  const priceFor = useRelayPricing()
   const running = ['submitting', 'pending', 'processing'].includes(String(data.status ?? 'idle'))
   const snippetIds = (data.snippetIds as string[]) ?? []
   const model = models.find((item) => item.id === String(data.modelId ?? '')) ?? null
@@ -505,6 +518,11 @@ export function VideoGeneratorNode({ id, data, selected }: NodeProps) {
         mode="video"
         value={Number(data.outputCount ?? 1)}
         onChange={(count) => patch({ outputCount: count })}
+      />
+
+      <RelayPriceNote
+        price={priceFor(model)}
+        count={clampOutputCount(Number(data.outputCount ?? 1), getOutputCountConfig(model?.provider, 'video'))}
       />
 
       <SnippetPicker selected={snippetIds} onToggle={toggleSnippet} />

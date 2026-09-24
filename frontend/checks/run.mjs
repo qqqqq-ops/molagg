@@ -23,6 +23,7 @@ const BUNDLES = {
   'oc.cjs': 'src/components/features/create/config/outputCountOptions.ts',
   'ac.cjs': 'src/components/features/create/assetCompatibility.ts',
   'go.cjs': 'checks/go-entry.ts',
+  'rp.cjs': 'src/lib/utils/relayPricing.ts',
 }
 
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx'

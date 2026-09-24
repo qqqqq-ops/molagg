@@ -3306,3 +3306,10 @@ html:not(.dark) .task-drawer-failure p {
 html:not(.dark) .task-drawer-backdrop {
   background: rgba(30, 28, 22, 0.35);
 }
+
+/* ---- 生成按钮旁的价格说明（只在走站长两个中转站时出现，见 RelayPriceNote）---- */
+.relay-price-note {
+  color: var(--studio-gold, #b5782a);
+  font-size: 11px;
+  line-height: 1.5;
+}

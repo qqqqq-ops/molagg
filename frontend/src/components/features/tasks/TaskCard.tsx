@@ -15,6 +15,9 @@ import { classifyFailureMessage } from '@/lib/utils/failure'
 import { downloadTaskResult } from '@/lib/utils/downloadTask'
 import { MaskEditor } from './MaskEditor'
 import { PromptEditModal } from './PromptEditModal'
+import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
+
 import { ImageRetryModal } from './ImageRetryModal'
 import { toast } from 'sonner'
 
@@ -39,6 +42,7 @@ export function TaskCard({ task, onUpdate, onDelete, hideSummary = false }: Task
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false) // 图片加载状态
   const [showImageRetryModal, setShowImageRetryModal] = useState(false)
+  const priceFor = useRelayPricing()
   const [retryTaskDetail, setRetryTaskDetail] = useState<ApiTask | null>(null)
   const mjActionResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -630,6 +634,14 @@ export function TaskCard({ task, onUpdate, onDelete, hideSummary = false }: Task
                 </Button>
               </div>
             )}
+
+          {/* 重试 / 重绘 / 做同款都是再花一次钱：走站长两个中转站时显示价格 */}
+          {task.status === 'completed' || task.status === 'failed' ? (
+            <RelayPriceNote
+              price={priceFor({ provider: task.provider, channelId: task.channelId })}
+              className="mb-2"
+            />
+          ) : null}
 
           {/* 操作按钮 */}
           <div className="flex flex-wrap gap-2">

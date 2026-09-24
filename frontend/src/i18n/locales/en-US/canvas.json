@@ -459,7 +459,8 @@
     "andMore": "…",
     "stopped": "A node in batch {batch} didn't succeed — the rest were not submitted",
     "done": "Done — all {n} batches finished",
-    "cancelled": "Stopped. Video tasks were asked to cancel; image tasks can't be cancelled mid-way and will finish in the background — find them in the task queue"
+    "cancelled": "Stopped. Video tasks were asked to cancel; image tasks can't be cancelled mid-way and will finish in the background — find them in the task queue",
+    "confirmCost": "At relay prices this is about {total}."
   },
   "flow": {
     "edgeAutoFlipped": "Connection direction fixed: material → generator",

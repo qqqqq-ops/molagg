@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type FormEvent } from 'react'
 
 import { SystemConfigModal } from '@/components/admin/settings/SystemConfigModal'
+import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
 import { pickDefaultModelId } from '@/lib/utils/defaultModels'
 import { VIDEO_MODEL_SAMPLES, findSampleModelId } from '@/lib/prompts/videoModelSamples'
 import { useLandingHomePageShell } from './LandingHomePageShellClient'
@@ -49,6 +51,7 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
   const hasReference = referenceImages.length > 0
   const candidates = useMemo(() => filterLandingModels(models, hasReference), [models, hasReference])
   const selectedModel = candidates.find((model) => model.id === selectedModelId)
+  const priceFor = useRelayPricing()
   const durationOptions = useMemo(() => getVideoDurationOptions(selectedModel), [selectedModel])
   const maxReferences = getMaxReferenceImages(mode, selectedModel)
 
@@ -182,6 +185,9 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
             )
           })}
         </div>
+
+        {/* 走站长两个中转站时才显示价格 */}
+        <RelayPriceNote price={priceFor(selectedModel)} count={mode === 'image' ? imageCount : 1} />
       </>
     )
   }
