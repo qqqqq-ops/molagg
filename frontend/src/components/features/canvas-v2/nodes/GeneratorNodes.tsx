@@ -23,6 +23,7 @@ import {
 } from '../data/shotOptions'
 import { useCanvasStore } from '../store/canvasStore'
 import { collectUpstreamInputs, summarizeInputs } from '../store/graphInputs'
+import { getFixedVideoDuration } from '@/components/features/home/landingGenerate'
 import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
 import { useMediaModels } from '@/lib/hooks/useMediaModels'
 import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
@@ -433,6 +434,7 @@ export function VideoGeneratorNode({ id, data, selected }: NodeProps) {
   const snippetIds = (data.snippetIds as string[]) ?? []
   const model = models.find((item) => item.id === String(data.modelId ?? '')) ?? null
   const aspect = useAspectOptions(model?.provider, 'video')
+  const fixedDuration = getFixedVideoDuration(model)
 
   const toggleSnippet = (key: string) =>
     patch({ snippetIds: snippetIds.includes(key) ? snippetIds.filter((k) => k !== key) : [...snippetIds, key] })
@@ -498,20 +500,25 @@ export function VideoGeneratorNode({ id, data, selected }: NodeProps) {
         )}
       </div>
 
-      <div className="cv2-field">
-        <span className="cv2-field-label">
-          {t('node.videoGenerator.duration', { seconds: String(data.durationSeconds ?? 5) })}
-        </span>
-        <input
-          className="cv2-range"
-          type="range"
-          min={3}
-          max={12}
-          step={1}
-          value={Number(data.durationSeconds ?? 5)}
-          onChange={(event) => patch({ durationSeconds: Number(event.target.value) })}
-        />
-      </div>
+      {fixedDuration ? (
+        // 上游锁死时长、按条计费（Molagg Seedance 2.5）：不给拖
+        <p className="cv2-hint">{t('node.videoGenerator.fixedDuration', { seconds: fixedDuration })}</p>
+      ) : (
+        <div className="cv2-field">
+          <span className="cv2-field-label">
+            {t('node.videoGenerator.duration', { seconds: String(data.durationSeconds ?? 5) })}
+          </span>
+          <input
+            className="cv2-range"
+            type="range"
+            min={3}
+            max={12}
+            step={1}
+            value={Number(data.durationSeconds ?? 5)}
+            onChange={(event) => patch({ durationSeconds: Number(event.target.value) })}
+          />
+        </div>
+      )}
 
       <OutputCountField
         provider={model?.provider}

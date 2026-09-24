@@ -223,7 +223,16 @@ export function CreateStudioPanel({
         className="relative w-full overflow-hidden border border-[color:var(--studio-line)] bg-[color:var(--studio-stage)]"
         style={{ aspectRatio: '16 / 9' }}
       >
-        {focusedJob ? renderJobStage(focusedJob) : focusedCase ? renderCaseStage(focusedCase) : null}
+        {focusedJob ? (
+          renderJobStage(focusedJob)
+        ) : focusedCase ? (
+          renderCaseStage(focusedCase)
+        ) : (
+          // 这个模式还没有真实生成的示例（参考创作的样片要等能给出公网图片地址后再做）
+          <div className="flex h-full items-center justify-center px-8 text-center text-sm text-[color:var(--studio-muted)]">
+            {t('casesComing')}
+          </div>
+        )}
       </div>
 
       {/* 本次生成 */}
@@ -320,6 +329,7 @@ export function CreateStudioPanel({
         })}
       </div>
 
+      {cases.length > 0 ? (
       <button
         type="button"
         onClick={onMoreCases}
@@ -328,6 +338,7 @@ export function CreateStudioPanel({
         {t('moreCases')}
         <ArrowRight className="h-3.5 w-3.5" />
       </button>
+      ) : null}
 
       {/* 当前生成配置 */}
       <section className="border border-[color:var(--studio-line)] bg-[color:var(--studio-card)] p-5">

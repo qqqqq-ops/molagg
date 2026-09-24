@@ -14,8 +14,8 @@ import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 export type CreateMode = 'frames' | 'references'
 
 export const CREATE_MODES: { key: CreateMode; label: string; description: string }[] = [
-  { key: 'frames', label: '首尾帧创作', description: '支持纯提示词、首帧或首尾帧控制' },
-  { key: 'references', label: '参考创作', description: '参考图片、视频与音频可组合使用' },
+  { key: 'frames', label: '首尾帧创作', description: '用首帧和尾帧锁定视频的开头与结尾画面' },
+  { key: 'references', label: '参考创作', description: '参考图片、视频、音频，用提示词引导生成' },
 ]
 
 /** 万相那套命名：t2v 纯文生视频、i2v 图生视频（首帧）、r2v 参考生视频 */
@@ -38,26 +38,39 @@ export function resolveVideoModelKind(name: string): VideoModelKind | null {
 }
 
 /**
- * 这个模型支持哪些模式。
- * 名字里带 t2v/i2v/r2v 的（万相、happyhorse）按名字走；
- * 其余厂商看 provider：Seedance 2.x 两种都行，其他家只有首尾帧（给首帧或纯提示词）。
+ * 这个模型在创作页属于哪些模式（2026-09-24 按站长的定义收紧）：
+ * - 首尾帧创作 = 用首帧 + 尾帧两张图「框死」视频的开头和结尾——**只收真能同时吃首帧和尾帧的模型**，
+ *   而且提交时首尾帧都必须有（见 SimplifiedCreateContent 的 framesRequirement）。
+ * - 参考创作 = 参考图片 / 视频 / 音频 + 大量提示词引导。
+ * 只能纯文字（t2v）或只收首帧（可灵 / Sora / Veo / 海螺 / Vidu / happyhorse-i2v）的模型**不在创作页**，画布里照样能用。
+ *
+ * 临时例外（站长拍板）：Molagg 的 Seedance 2.5 只能纯文字（它要公网图片地址，本站在本机跑给不了），
+ * 先放在首尾帧创作里、允许不带帧；以后能给公网图片了再按规矩收紧。
  */
 export function getModelModes(model: ModelWithCapabilities): CreateMode[] {
   const name = modelName(model)
+  const provider = normalize(model.provider)
   const kind = resolveVideoModelKind(name)
   if (kind === 'r2v') return ['references']
-  // t2v 纯提示词、i2v 首帧，都归首尾帧模式
-  if (kind === 't2v' || kind === 'i2v') return ['frames']
+  if (kind === 't2v') return []
+  // i2v：只有能同时收尾帧的（万相 2.7）才算首尾帧；只收首帧的（happyhorse）不在创作页
+  if (kind === 'i2v') return supportsLastFrame(model) ? ['frames'] : []
 
-  const provider = normalize(model.provider)
   const isSeedance2x =
     (provider.includes('doubao') || provider.includes('bytedance') || provider.includes('ark')) &&
     (name.includes('seedance-2-0') || name.includes('seedance-2-5'))
   // Seedance 2.x 既吃首尾帧也吃参考素材（提交逻辑里 hasDoubaoSeedance20FrameInputs 就是在二选一）
   if (isSeedance2x) return ['frames', 'references']
 
-  // 可灵 / Sora / Veo / 海螺 / Vidu：只有首帧，没有参考素材通道
-  return ['frames']
+  if (isFramesOptionalModel(model)) return ['frames']
+
+  // 可灵 / Sora / Veo / 海螺 / Vidu：只有首帧、没有尾帧，也没有参考素材通道——不在创作页
+  return []
+}
+
+/** 首尾帧创作里的临时例外：允许不带帧（目前只有 Molagg Seedance 2.5，见上） */
+export function isFramesOptionalModel(model: ModelWithCapabilities | null | undefined) {
+  return normalize(model?.provider).includes('molagg')
 }
 
 export function filterModelsByMode(models: ModelWithCapabilities[], mode: CreateMode) {

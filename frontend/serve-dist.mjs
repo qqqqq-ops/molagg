@@ -27,12 +27,43 @@ const contentTypes = {
   '.webp': 'image/webp',
 }
 
-function sendFile(response, filePath) {
+/**
+ * 发静态文件，支持 Range（按段取）。
+ * Safari / iPhone 播 mp4 必须能按段取，否则视频根本放不出来；Chrome 没有它也拖不了进度条。
+ * 创作页的展示案例是 26MB 的原片，所以这里一定要支持。只认单段 `bytes=start-end`，多段请求按整文件返回。
+ */
+function sendFile(request, response, filePath) {
   const ext = path.extname(filePath)
-  response.writeHead(200, {
+  const size = statSync(filePath).size
+  const headers = {
     'Content-Type': contentTypes[ext] || 'application/octet-stream',
     'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
-  })
+    'Accept-Ranges': 'bytes',
+  }
+
+  const match = /^bytes=(\d*)-(\d*)$/.exec(request.headers.range || '')
+  if (match && (match[1] || match[2])) {
+    // bytes=100-  从 100 到末尾；bytes=-500  最后 500 字节
+    let start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2]))
+    let end = match[1] && match[2] ? Number(match[2]) : size - 1
+    end = Math.min(end, size - 1)
+    if (start > end || start >= size) {
+      response.writeHead(416, { 'Content-Range': `bytes */${size}` })
+      response.end()
+      return
+    }
+    response.writeHead(206, {
+      ...headers,
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Content-Length': end - start + 1,
+    })
+    if (request.method === 'HEAD') return response.end()
+    createReadStream(filePath, { start, end }).pipe(response)
+    return
+  }
+
+  response.writeHead(200, { ...headers, 'Content-Length': size })
+  if (request.method === 'HEAD') return response.end()
   createReadStream(filePath).pipe(response)
 }
 
@@ -143,7 +174,7 @@ const server = createServer(async (request, response) => {
   const candidate = path.join(distDir, safePath)
 
   if (existsSync(candidate) && statSync(candidate).isFile()) {
-    sendFile(response, candidate)
+    sendFile(request, response, candidate)
     return
   }
 

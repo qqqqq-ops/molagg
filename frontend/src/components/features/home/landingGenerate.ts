@@ -78,6 +78,15 @@ function rangeOptions(min: number, max: number) {
  * 可灵 5/10（3.0 为 3–15）、海螺 6/10（H3 为 4–15）、Veo 4–16、Sora 4/8/12/16/20、
  * Vidu 4/5/8、豆包 Seedance 2.5 最长 30、万相 3.0 最长 30。
  */
+/**
+ * 时长被上游锁死的模型：返回固定秒数，界面上不给时长选项，只显示「固定 N 秒一条」。
+ * 目前只有 Molagg 的 seedance-2-5-special：上游只收 30 秒、按条计费。
+ */
+export function getFixedVideoDuration(model: Pick<ModelWithCapabilities, 'provider'> | null | undefined): number | null {
+  if (!model) return null
+  return normalizeProviderFamily(model.provider).includes('molagg') ? 30 : null
+}
+
 export function getVideoDurationOptions(model: ModelWithCapabilities | undefined): number[] {
   if (!model) return [5, 10]
 

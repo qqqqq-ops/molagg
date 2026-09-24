@@ -42,11 +42,12 @@ import { CreateStudioPanel, type StudioSummary } from './CreateStudioPanel'
 import { IMAGE_SHOWCASE_CASES, VIDEO_SHOWCASE_CASES, type CreateShowcaseCase } from './showcaseCases'
 import { VIDEO_MODEL_SAMPLES, findSampleModelId, type VideoModelSample } from '@/lib/prompts/videoModelSamples'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
+import { getFixedVideoDuration } from '@/components/features/home/landingGenerate'
 import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
 import { useRelayPricing } from '@/lib/hooks/useRelayPricing'
 
 import { describeAssetIssue, findAssetIssue, type AssetCheck } from './assetCompatibility'
-import { CREATE_MODES, filterModelsByMode, pickModelForMode, type CreateMode } from './createModes'
+import { CREATE_MODES, filterModelsByMode, isFramesOptionalModel, pickModelForMode, type CreateMode } from './createModes'
 import type { ProjectAsset, ProjectSummary } from '@/lib/api/types/projects'
 import { modelService, imageService, videoService, projectsService, promptOptimizeService } from '@/lib/api/services'
 import { useSearchParams } from '@/lib/router'
@@ -952,6 +953,9 @@ export function SimplifiedCreateContent() {
     }
     return selectedModel.wanxMergedBundle[wanxResolvedModelKind]
   }, [selectedModel, wanxResolvedModelKind])
+  // 上游锁死时长的模型（Molagg Seedance 2.5 = 30 秒）：不给选，提交 / 摘要都用这个值
+  const fixedVideoDuration = getFixedVideoDuration(selectedExecutionModel ?? selectedModel)
+  const effectiveVideoDuration = fixedVideoDuration ? String(fixedVideoDuration) : videoDuration
 
   const imageReferenceUploadMaxFiles = useMemo(
     () => Math.max(0, maxInputImages - selectedProjectImageAssets.length),
@@ -1787,6 +1791,19 @@ export function SimplifiedCreateContent() {
     const totalWanxLastFrameCount = wanxLastFrameImages.length
     const totalWanxAudioCount = wanxReferenceAudios.length
 
+    // 首尾帧创作 = 用首帧 + 尾帧框死开头和结尾：两张都得有（上传或「生成这一帧」）。Molagg 是临时例外（见 createModes）
+    if (activeTab === 'video' && createMode === 'frames' && !isFramesOptionalModel(selectedExecutionModel ?? selectedModel)) {
+      const hasFirstAndLast = isDoubaoVideo
+        ? doubaoFrameImages.length >= 2
+        : isWanxVideo
+          ? wanxFirstFrameImages.length > 0 && wanxLastFrameImages.length > 0
+          : false
+      if (!hasFirstAndLast) {
+        toast.error(t('errors.framesRequired'))
+        return
+      }
+    }
+
     // 换模型不清素材（用户可能传了十张图），不兼容留到这里拦：说清楚哪不行，东西不动。
     const assetChecks: AssetCheck[] = isWanxVideo
       ? [
@@ -2024,7 +2041,7 @@ export function SimplifiedCreateContent() {
       } else {
         if (isWanxVideo) {
           parameters.resolution = videoResolution || '720P'
-          parameters.duration = parseInt(videoDuration) || 5
+          parameters.duration = parseInt(effectiveVideoDuration) || 5
           if (wanxCanCustomizeRatio) {
             parameters.ratio = aspectRatio
           }
@@ -2035,7 +2052,7 @@ export function SimplifiedCreateContent() {
           // 豆包 - resolution, ratio, duration, watermark
           parameters.resolution = videoResolution || '720p'
           parameters.ratio = aspectRatio
-          parameters.duration = parseInt(videoDuration) || 5
+          parameters.duration = parseInt(effectiveVideoDuration) || 5
           parameters.watermark = false // 默认无水印
           if (requestModel?.capabilities?.remoteModel) {
             parameters.model = requestModel.capabilities.remoteModel
@@ -2366,7 +2383,7 @@ export function SimplifiedCreateContent() {
     const outputParts = [typeLabel]
     if (ratioLabel) outputParts.push(ratioLabel)
     if (activeTab === 'video') {
-      if (videoDuration) outputParts.push(`${videoDuration} ${t('simple.secondsUnit')}`)
+      if (effectiveVideoDuration) outputParts.push(`${effectiveVideoDuration} ${t('simple.secondsUnit')}`)
       if (videoResolution) outputParts.push(videoResolution)
     } else {
       if (supportsResolutionSelect && imageSize) outputParts.push(imageSize)
@@ -2412,14 +2429,14 @@ export function SimplifiedCreateContent() {
           outputCell,
           {
             label: t('studio.cellDuration'),
-            value: t('studio.secondsValue', { value: videoDuration || '5' }),
+            value: t('studio.secondsValue', { value: effectiveVideoDuration || '5' }),
             sub: simpleSummary.ratioLabel || t('studio.defaultRatio'),
           },
           { label: t('studio.cellCount'), value: t('studio.countVideos', { count: 1 }), sub: t('models.typeVideo') },
           modelCell,
         ],
         noteTitle: t('studio.noteVideoTitle'),
-        noteText: t('studio.noteVideoText', { duration: videoDuration || '5' }),
+        noteText: t('studio.noteVideoText', { duration: effectiveVideoDuration || '5' }),
       }
     }
 
@@ -2597,6 +2614,7 @@ export function SimplifiedCreateContent() {
                 setDoubaoGenerateAudio={setDoubaoGenerateAudio}
                 seedanceSwitchClassName={seedanceSwitchClassName}
                 videoDuration={videoDuration}
+                fixedVideoDuration={fixedVideoDuration}
                 setVideoDuration={setVideoDuration}
                 videoResolution={videoResolution}
                 setVideoResolution={setVideoResolution}
@@ -3137,7 +3155,14 @@ export function SimplifiedCreateContent() {
           >
             <CreateStudioPanel
               locale={locale}
-              cases={activeTab === 'video' ? VIDEO_SHOWCASE_CASES : IMAGE_SHOWCASE_CASES}
+              // 现有 4 条视频样片是纯文字生成的（Molagg），只挂在首尾帧创作（Molagg 临时放在那）；参考创作还没有真实样片
+              cases={
+                activeTab === 'video'
+                  ? createMode === 'frames'
+                    ? VIDEO_SHOWCASE_CASES
+                    : []
+                  : IMAGE_SHOWCASE_CASES
+              }
               onApplyCase={handleApplyShowcaseCase}
               jobs={sessionJobs}
               onClearJobs={clearFinished}

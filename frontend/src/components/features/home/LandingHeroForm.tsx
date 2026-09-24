@@ -14,6 +14,7 @@ import {
   LANDING_MAX_IMAGE_COUNT,
   filterLandingModels,
   getMaxReferenceImages,
+  getFixedVideoDuration,
   getVideoDurationOptions,
 } from './landingGenerate'
 import { LANDING_IMAGE_SAMPLES, buildCreateHref, type LandingHomeCopy } from './landingHomePage.shared'
@@ -53,6 +54,7 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
   const selectedModel = candidates.find((model) => model.id === selectedModelId)
   const priceFor = useRelayPricing()
   const durationOptions = useMemo(() => getVideoDurationOptions(selectedModel), [selectedModel])
+  const fixedDuration = getFixedVideoDuration(selectedModel)
   const maxReferences = getMaxReferenceImages(mode, selectedModel)
 
   const referencePreviews = useMemo(() => referenceImages.map((file) => URL.createObjectURL(file)), [referenceImages])
@@ -162,6 +164,13 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
           </select>
         </label>
 
+        {mode === 'video' && fixedDuration ? (
+          // 上游锁死时长、按条计费（Molagg Seedance 2.5）：不给选
+          <div className={styles.optionGroup}>
+            <span className={styles.optionLabel}>{copy.durationLabel}</span>
+            <span className={styles.optionLabel}>{copy.fixedDuration.replace('{seconds}', String(fixedDuration))}</span>
+          </div>
+        ) : (
         <div
           className={styles.optionGroup}
           role="radiogroup"
@@ -185,6 +194,7 @@ export function LandingHeroForm({ locale, copy }: LandingHeroFormProps) {
             )
           })}
         </div>
+        )}
 
         {/* 走站长两个中转站时才显示价格 */}
         <RelayPriceNote price={priceFor(selectedModel)} count={mode === 'image' ? imageCount : 1} />

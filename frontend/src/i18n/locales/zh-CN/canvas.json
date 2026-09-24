@@ -122,7 +122,8 @@
     "videoGenerator": {
       "run": "生成视频",
       "placeholder": "运镜+场景提示词…",
-      "duration": "时长 {seconds}s"
+      "duration": "时长 {seconds}s",
+      "fixedDuration": "时长：固定 {seconds} 秒一条（上游按条计费，不可调）"
     },
     "audioGenerator": {
       "placeholder": "配音文本…",

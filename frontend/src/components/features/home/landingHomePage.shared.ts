@@ -24,6 +24,8 @@ export type LandingHomeCopy = {
   countLabel: string
   durationLabel: string
   secondsUnit: string
+  /** 时长被上游锁死时的说明，{seconds} 为秒数 */
+  fixedDuration: string
   imageUnit: string
   loadingModels: string
   noModels: string
@@ -138,6 +140,7 @@ export function getLandingHomeCopy(locale: string): LandingHomeCopy {
       countLabel: '张数',
       durationLabel: '时长',
       secondsUnit: '秒',
+      fixedDuration: '固定 {seconds} 秒一条',
       imageUnit: '张',
       loadingModels: '正在读取模型…',
       noModels: '还没有可用模型',
@@ -178,6 +181,7 @@ export function getLandingHomeCopy(locale: string): LandingHomeCopy {
     countLabel: 'Count',
     durationLabel: 'Duration',
     secondsUnit: 's',
+    fixedDuration: 'Fixed {seconds}s per clip',
     imageUnit: '',
     loadingModels: 'Loading models…',
     noModels: 'No model available yet',

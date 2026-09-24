@@ -7,6 +7,7 @@
 
 import { getImageSizeOptions } from '@/components/features/create/config/aspectRatioOptions'
 import { clampOutputCount, getOutputCountConfig } from '@/components/features/create/config/outputCountOptions'
+import { getFixedVideoDuration } from '@/components/features/home/landingGenerate'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 
 import type { CanvasNode } from '../canvasV2.types'
@@ -45,7 +46,10 @@ export function buildRunOptions(node: CanvasNode, models: ModelWithCapabilities[
     snippetIds: (data.snippetIds as string[]) ?? [],
   }
 
-  if (mode === 'video') return { ...common, durationSeconds: Number(data.durationSeconds ?? 5) }
+  if (mode === 'video') {
+    // 上游锁死时长的模型（Molagg Seedance 2.5 = 30 秒）按固定值发，不看节点上存的旧值
+    return { ...common, durationSeconds: getFixedVideoDuration(model) ?? Number(data.durationSeconds ?? 5) }
+  }
 
   const angleKeys = (data.angleKeys as string[]) ?? []
   return {

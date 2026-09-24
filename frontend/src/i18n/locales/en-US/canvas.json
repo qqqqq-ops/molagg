@@ -122,7 +122,8 @@
     "videoGenerator": {
       "run": "Generate video",
       "placeholder": "Camera movement + scene prompt…",
-      "duration": "Duration {seconds}s"
+      "duration": "Duration {seconds}s",
+      "fixedDuration": "Duration: fixed {seconds}s per clip (billed per clip)"
     },
     "audioGenerator": {
       "placeholder": "Voiceover text…",

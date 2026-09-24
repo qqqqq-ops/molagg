@@ -19,29 +19,34 @@ check('wan2.7-i2v → i2v', kindOf('wan2.7-i2v') === 'i2v')
 check('wan2.7-r2v → r2v', kindOf('wan2.7-r2v') === 'r2v')
 check('kling-v2-6 → null（名字里没有）', kindOf('kling-v2-6') === null)
 
-console.log('\n— 模式归属 —')
+console.log('\n— 模式归属（2026-09-24 按站长定义收紧）—')
+// 首尾帧创作 = 首帧 + 尾帧框死开头结尾，只收真能吃首尾帧的模型；参考创作 = 参考素材 + 提示词
 const modesOf = (id) => m.getModelModes(models.find(x=>x.id===id))
-check('t2v 归首尾帧（纯提示词也在这个模式）', modesOf('1').join() === 'frames')
-check('i2v 归首尾帧', modesOf('2').join() === 'frames')
+check('t2v 纯文字 → 不在创作页', modesOf('1').length === 0 && modesOf('4').length === 0 && modesOf('7').length === 0)
+check('wan2.7-i2v 能收首尾帧 → 首尾帧创作', modesOf('2').join() === 'frames')
+check('happyhorse-i2v 只收首帧 → 不在创作页', modesOf('5').length === 0)
 check('r2v 只归参考', modesOf('3').join() === 'references')
 check('happyhorse-r2v 只归参考', modesOf('6').join() === 'references')
 check('wan3.0-r2v 只归参考', modesOf('8').join() === 'references')
 check('Seedance 2.5 两种都支持', modesOf('9').sort().join() === 'frames,references')
 check('Seedance 2.0 两种都支持', modesOf('10').sort().join() === 'frames,references')
 for (const [id, name] of [['11','可灵'],['12','Sora'],['13','Veo'],['14','海螺'],['15','Vidu']]) {
-  check(`${name} 只有首尾帧（没有参考通道）`, modesOf(id).join() === 'frames')
+  check(`${name} 只收首帧、没参考通道 → 不在创作页`, modesOf(id).length === 0)
 }
+const molagg = M('16','molagg','seedance-2-5-special')
+check('Molagg Seedance 2.5（临时例外）→ 首尾帧创作，可以不带帧',
+  m.getModelModes(molagg).join() === 'frames' && m.isFramesOptionalModel(molagg) === true)
+check('别的模型都不是「可以不带帧」', !m.isFramesOptionalModel(models.find(x=>x.id==='9')) && !m.isFramesOptionalModel(null))
 
 console.log('\n— 按模式过滤 —')
 const frames = m.filterModelsByMode(models, 'frames').map(x=>x.id)
 const refs = m.filterModelsByMode(models, 'references').map(x=>x.id)
-check('首尾帧模式的模型数 = 12（15 个里除掉 3 个 r2v-only）', frames.length === 12, `实际 ${frames.length}: ${frames}`)
+check('首尾帧模式只剩 wan2.7-i2v + 两个 Seedance', frames.sort().join() === ['10','2','9'].sort().join(), `实际 ${frames}`)
 check('参考模式的模型数', refs.length === 5, `实际 ${refs.length}: ${refs}`)
-check('每个模型至少出现在一个模式里', models.every(x => frames.includes(x.id) || refs.includes(x.id)))
 check('r2v 不出现在首尾帧模式', !frames.includes('3') && !frames.includes('6') && !frames.includes('8'))
-check('可灵不出现在参考模式', !refs.includes('11'))
+check('可灵不出现在任何模式', !refs.includes('11') && !frames.includes('11'))
 check('停用的模型被过滤掉',
-  m.filterModelsByMode([{ ...M('x','kling','kling-v2-6'), isActive: false }], 'frames').length === 0)
+  m.filterModelsByMode([{ ...M('x','doubao','doubao-seedance-2-5-260628'), isActive: false }], 'frames').length === 0)
 
 console.log('\n— 尾帧支持 —')
 const byId = (id) => models.find(x=>x.id===id)

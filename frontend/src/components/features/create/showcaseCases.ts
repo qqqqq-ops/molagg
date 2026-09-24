@@ -5,8 +5,7 @@ import { VIDEO_MODEL_SAMPLES, type VideoModelSample } from '@/lib/prompts/videoM
  *
  * 图片案例：封面取自仓库自带配图（public/images → public/showcase 压缩版），提示词按画面反写，
  *   点缩略图把提示词带进左栏。
- * 视频案例：复用 VIDEO_MODEL_SAMPLES（带模型、时长、比例）。目前没有样片视频，
- *   `video` 留空时右栏显示文字海报、隐藏「播放样片」；生成出真实样片后放进 public/showcase/ 并填上 video / image 即可。
+ * 视频案例：提示词来自 VIDEO_MODEL_SAMPLES，样片已真实生成（见下方 VIDEO_SHOWCASE_CASES 的注释）。
  */
 
 export type CreateShowcaseCase = {
@@ -66,13 +65,34 @@ export const IMAGE_SHOWCASE_CASES: CreateShowcaseCase[] = [
   },
 ]
 
-export const VIDEO_SHOWCASE_CASES: CreateShowcaseCase[] = VIDEO_MODEL_SAMPLES.slice(0, 4).map((sample) => ({
-  id: sample.id,
-  mode: 'video',
-  title: sample.title,
-  tag: sample.tag,
-  prompt: sample.prompt,
-  ratio: sample.ratio,
-  duration: sample.duration,
-  sample,
-}))
+/**
+ * 视频案例的样片：2026-09-24 用站长的 Molagg 中转站（Seedance 2.5 按次，30 秒一条）真实生成，
+ * 原文件未压缩，放在 public/showcase/case-<id>.mp4，封面是第 3 秒截的一帧（case-<id>.jpg）。
+ * 提示词原样沿用 VIDEO_MODEL_SAMPLES；因为实际是 Seedance 2.5 生成的，角标 / 时长 / 点击后选的模型都按实际来，
+ * 不再显示原来的「可灵 3.0 / 万相 3.0」——点了能照着复现同样的效果。
+ */
+const GENERATED_VIDEO_CASE_IDS = ['seedance-25-story', 'seedance-20-product', 'kling-30-motion', 'wan-30-landscape']
+const GENERATED_MODEL_KEY = 'seedance-2-5-special'
+const GENERATED_DURATION = '30'
+
+export const VIDEO_SHOWCASE_CASES: CreateShowcaseCase[] = GENERATED_VIDEO_CASE_IDS.map((id) => {
+  const base = VIDEO_MODEL_SAMPLES.find((sample) => sample.id === id)!
+  const sample: VideoModelSample = {
+    ...base,
+    tag: 'Seedance 2.5',
+    modelKeyIncludes: [GENERATED_MODEL_KEY],
+    duration: GENERATED_DURATION,
+  }
+  return {
+    id,
+    mode: 'video',
+    title: base.title,
+    tag: sample.tag,
+    prompt: base.prompt,
+    ratio: base.ratio,
+    duration: GENERATED_DURATION,
+    image: `/showcase/case-${id}.jpg`,
+    video: `/showcase/case-${id}.mp4`,
+    sample,
+  }
+})

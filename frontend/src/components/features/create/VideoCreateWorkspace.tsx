@@ -108,6 +108,8 @@ export interface VideoCreateWorkspaceProps {
   setVideoInputImages: Dispatch<SetStateAction<File[]>>
   /** 顶层模式：首尾帧创作 / 参考创作。Seedance 2.x 两种都支持，靠它决定显示哪一块 */
   createMode: CreateMode
+  /** 上游锁死时长时的秒数（如 Molagg Seedance 2.5 = 30），有值就不给时长选项 */
+  fixedVideoDuration?: number | null
   doubaoReferenceImages: File[]
   setDoubaoReferenceImages: Dispatch<SetStateAction<File[]>>
   doubaoReferenceVideos: File[]
@@ -234,6 +236,7 @@ export function VideoCreateWorkspace({
   videoInputImages,
   setVideoInputImages,
   createMode,
+  fixedVideoDuration = null,
   doubaoReferenceImages,
   setDoubaoReferenceImages,
   doubaoReferenceVideos,
@@ -1203,7 +1206,7 @@ export function VideoCreateWorkspace({
                           // （用 slice(0,2) 的话，满了之后生成会被静默丢掉，按钮看着像没反应）
                           setDoubaoFrameImages((prev) => (prev.length === 0 ? [file] : [prev[0], file])),
                         )}
-                        {t('form.uploadReference.optional')}
+                        {t('form.uploadReference.requiredFrames')}
                       </span>
                     </div>
                     <FileDropzone
@@ -1424,15 +1427,22 @@ export function VideoCreateWorkspace({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">{t('form.parameters.videoDuration')}</label>
-                    <Select
-                      value={videoDuration}
-                      onChange={(event) => setVideoDuration(event.target.value)}
-                      options={[
-                        { value: '5', label: t('form.parameters.durations.5') },
-                        { value: '10', label: t('form.parameters.durations.10') },
-                        { value: '15', label: t('form.parameters.durations.15') },
-                      ]}
-                    />
+                    {fixedVideoDuration ? (
+                      // 上游锁死时长、按条计费：不给选，只说明
+                      <p className="rounded-md border border-[color:var(--studio-line)] px-3 py-2 text-sm text-[color:var(--studio-muted)]">
+                        {t('form.parameters.fixedDuration', { seconds: fixedVideoDuration })}
+                      </p>
+                    ) : (
+                      <Select
+                        value={videoDuration}
+                        onChange={(event) => setVideoDuration(event.target.value)}
+                        options={[
+                          { value: '5', label: t('form.parameters.durations.5') },
+                          { value: '10', label: t('form.parameters.durations.10') },
+                          { value: '15', label: t('form.parameters.durations.15') },
+                        ]}
+                      />
+                    )}
                   </div>
 
                   <div className="space-y-2">
