@@ -1,4 +1,5 @@
 import type { ApiTask } from '@/lib/api/types/task'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 /**
  * 下载任务结果：先 fetch 成 blob（同源或配了 CORS 的资源能直接存），
@@ -15,7 +16,7 @@ export async function downloadTaskResult(task: Pick<ApiTask, 'type' | 'taskNo' |
 
     // 尝试通过 fetch 下载（支持同源或配置了 CORS 的资源）
     try {
-      const response = await fetch(task.resultUrl)
+      const response = await fetch(toSameOriginAsset(task.resultUrl))
       if (!response.ok) throw new Error('Failed to fetch')
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -30,7 +31,7 @@ export async function downloadTaskResult(task: Pick<ApiTask, 'type' | 'taskNo' |
       // 如果 fetch 失败（CORS 问题），使用直接链接方式
       console.log('Fetch failed, trying direct link download:', fetchError)
       const a = document.createElement('a')
-      a.href = task.resultUrl
+      a.href = toSameOriginAsset(task.resultUrl)
       a.download = fileName
       a.target = '_blank'
       a.rel = 'noopener noreferrer'
@@ -42,6 +43,6 @@ export async function downloadTaskResult(task: Pick<ApiTask, 'type' | 'taskNo' |
     console.error('Failed to download:', err)
     alert('下载失败，请在新标签页中打开并手动保存')
     // 最后的备选方案：在新标签页中打开
-    window.open(task.resultUrl, '_blank', 'noopener,noreferrer')
+    window.open(toSameOriginAsset(task.resultUrl), '_blank', 'noopener,noreferrer')
   }
 }

@@ -6,8 +6,10 @@
  *
  * 远程地址没有 CORS 头时 fetch 会失败，调用方要处理（画布里会提示这张图用不了）。
  */
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
+
 export async function urlToFile(url: string, filename: string) {
-  const response = await fetch(url)
+  const response = await fetch(toSameOriginAsset(url))
   if (!response.ok) throw new Error(`下载素材失败：${response.status}`)
   const blob = await response.blob()
   const extension = blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg'

@@ -13,6 +13,7 @@ import type { ApiTask } from '@/lib/api/types/task'
 import { cn } from '@/lib/utils/cn'
 import { classifyFailureMessage } from '@/lib/utils/failure'
 import { downloadTaskResult } from '@/lib/utils/downloadTask'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import { MaskEditor } from './MaskEditor'
 import { PromptEditModal } from './PromptEditModal'
 import { RelayPriceNote } from '@/components/shared/RelayPriceNote'
@@ -441,7 +442,7 @@ export function TaskCard({ task, onUpdate, onDelete, hideSummary = false }: Task
                   </div>
                 )}
                 <img
-                  src={task.thumbnailUrl || task.resultUrl || ''}
+                  src={toSameOriginAsset(task.thumbnailUrl || task.resultUrl || '')}
                   alt={task.prompt}
                   loading="lazy"
                   className={cn(
@@ -457,11 +458,11 @@ export function TaskCard({ task, onUpdate, onDelete, hideSummary = false }: Task
               </div>
             ) : (
               <video
-                src={task.resultUrl || ''}
+                src={toSameOriginAsset(task.resultUrl || '')}
                 controls
                 preload="metadata"
                 className="w-full h-auto"
-                poster={task.thumbnailUrl || undefined}
+                poster={toSameOriginAsset(task.thumbnailUrl) || undefined}
                 onError={(e) => {
                   console.error('[TaskCard] Video load error for task:', task.id, 'url:', task.resultUrl)
                 }}

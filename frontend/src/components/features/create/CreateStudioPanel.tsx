@@ -9,6 +9,7 @@ import type { TrackedJob } from '@/lib/hooks/useTrackedTasks'
 import { TaskProgress } from '@/components/shared/TaskProgress'
 import { cn } from '@/lib/utils/cn'
 import { isConfigurationFailure } from '@/lib/utils/failure'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 import type { CreateShowcaseCase } from './showcaseCases'
 
@@ -87,18 +88,18 @@ export function CreateStudioPanel({
           {job.mode === 'video' ? (
             <video
               key={job.key}
-              src={job.resultUrl}
-              poster={job.thumbnailUrl || undefined}
+              src={toSameOriginAsset(job.resultUrl)}
+              poster={toSameOriginAsset(job.thumbnailUrl) || undefined}
               controls
               playsInline
               className="h-full w-full object-contain"
             />
           ) : (
-            <img src={job.resultUrl} alt="" className="h-full w-full object-contain" />
+            <img src={toSameOriginAsset(job.resultUrl)} alt="" className="h-full w-full object-contain" />
           )}
           <div className="absolute right-3 top-3 flex gap-1.5">
             <a
-              href={job.resultUrl}
+              href={toSameOriginAsset(job.resultUrl)}
               download
               title={tResults('download')}
               className="inline-flex h-8 w-8 items-center justify-center rounded-[3px] border border-white/10 bg-black/60 text-white hover:bg-black/75"
@@ -106,7 +107,7 @@ export function CreateStudioPanel({
               <Download className="h-4 w-4" />
             </a>
             <a
-              href={job.resultUrl}
+              href={toSameOriginAsset(job.resultUrl)}
               target="_blank"
               rel="noreferrer"
               title={tResults('open')}
@@ -169,8 +170,8 @@ export function CreateStudioPanel({
       return (
         <video
           key={item.id}
-          src={item.video}
-          poster={item.image}
+          src={toSameOriginAsset(item.video)}
+          poster={toSameOriginAsset(item.image)}
           controls
           autoPlay
           playsInline
@@ -183,7 +184,7 @@ export function CreateStudioPanel({
     return (
       <>
         {item.image ? (
-          <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+          <img src={toSameOriginAsset(item.image)} alt={item.title} className="h-full w-full object-cover" />
         ) : (
           // 还没有样片素材的视频案例：文字海报
           <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(217,155,69,0.22),transparent_60%),radial-gradient(circle_at_80%_90%,rgba(147,153,151,0.14),transparent_55%)] px-10">
@@ -204,7 +205,7 @@ export function CreateStudioPanel({
         {item.reference ? (
           // 参考创作：角落里放生成时用的参考图，一眼看出「参考了什么 → 生成了什么」
           <figure className="pointer-events-none absolute bottom-4 left-4 w-[22%] min-w-20 overflow-hidden border border-white/20 bg-black/65 backdrop-blur-sm">
-            <img src={item.reference} alt="" className="aspect-[3/2] w-full object-cover" />
+            <img src={toSameOriginAsset(item.reference)} alt="" className="aspect-[3/2] w-full object-cover" />
             <figcaption className="px-2 py-1 text-[10px] font-semibold text-white/85">{t('referenceImage')}</figcaption>
           </figure>
         ) : null}
@@ -282,7 +283,7 @@ export function CreateStudioPanel({
                   style={{ aspectRatio: '1 / 1' }}
                 >
                   {job.status === 'completed' && (job.thumbnailUrl || (job.mode === 'image' && job.resultUrl)) ? (
-                    <img src={job.thumbnailUrl || job.resultUrl || ''} alt="" className="h-full w-full object-cover" />
+                    <img src={toSameOriginAsset(job.thumbnailUrl || job.resultUrl || '')} alt="" className="h-full w-full object-cover" />
                   ) : job.status === 'failed' ? (
                     <XCircle className="mx-auto h-5 w-5 text-red-400" />
                   ) : job.status === 'completed' ? (
@@ -317,7 +318,7 @@ export function CreateStudioPanel({
               style={{ aspectRatio: '16 / 9' }}
             >
               {item.image ? (
-                <img src={item.image} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                <img src={toSameOriginAsset(item.image)} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(217,155,69,0.28),transparent_65%)] px-2">
                   <span className="line-clamp-2 text-center text-[11px] font-medium leading-4 text-[color:var(--studio-text)]">

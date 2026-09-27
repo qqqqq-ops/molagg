@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslations } from '@/i18n/client'
 import { Button, Modal } from '@/components/ui'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 interface MaskEditorProps {
   isOpen: boolean
@@ -80,7 +81,7 @@ export function MaskEditor({ isOpen, imageUrl, onClose, onSubmit, mode = 'midjou
           reject(new Error('Failed to load image. Please check CORS configuration.'))
         }
 
-        img.src = imageUrl
+        img.src = toSameOriginAsset(imageUrl)
       })
     }
 
@@ -177,7 +178,7 @@ export function MaskEditor({ isOpen, imageUrl, onClose, onSubmit, mode = 'midjou
             console.error('[MaskEditor] Failed to load image for mask generation:', err)
             reject(new Error('Failed to load image. Please check CORS configuration.'))
           }
-          img.src = imageUrl
+          img.src = toSameOriginAsset(imageUrl)
         })
 
         // 使用实际加载的图片尺寸（而不是 imageSize state）
@@ -258,7 +259,7 @@ export function MaskEditor({ isOpen, imageUrl, onClose, onSubmit, mode = 'midjou
             console.error('[MaskEditor] Failed to load image:', err)
             reject(new Error('Failed to load image. Please check CORS configuration.'))
           }
-          img.src = imageUrl
+          img.src = toSameOriginAsset(imageUrl)
         })
 
         const actualWidth = img.naturalWidth
@@ -339,7 +340,7 @@ export function MaskEditor({ isOpen, imageUrl, onClose, onSubmit, mode = 'midjou
           }}
         >
           {/* 背景图片 - 使用原生 img 标签，避免图片代理导致的 CORS 问题 */}          <img
-            src={imageUrl}
+            src={toSameOriginAsset(imageUrl)}
             alt="Source image"
             className="absolute inset-0 w-full h-full object-contain"
             onError={() => {

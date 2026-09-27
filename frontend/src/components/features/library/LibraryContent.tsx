@@ -15,6 +15,7 @@ import Link from '@/lib/compat/link'
 import { useRouter } from '@/lib/router'
 import { cn } from '@/lib/utils/cn'
 import { buildRemixHref } from '@/lib/utils/remix'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 /**
  * 资产库：原「我的作品」+「项目」合并，并按参考站「资产中心」的思路加入素材管理。
@@ -257,7 +258,7 @@ export function LibraryContent({ locale }: { locale: string }) {
 
   const downloadSelected = () => {
     selectedItems.forEach((item) => {
-      const url = item.task?.resultUrl || item.asset?.url
+      const url = toSameOriginAsset(item.task?.resultUrl || item.asset?.url)
       if (!url) return
       const link = document.createElement('a')
       link.href = url
@@ -358,7 +359,7 @@ export function LibraryContent({ locale }: { locale: string }) {
           {works.map((task) => {
             const key = workKey(task)
             const checked = selected.has(key)
-            const src = task.thumbnailUrl || task.resultUrl || ''
+            const src = toSameOriginAsset(task.thumbnailUrl || task.resultUrl || '')
             return (
               <article
                 key={key}
@@ -371,7 +372,7 @@ export function LibraryContent({ locale }: { locale: string }) {
               >
                 {renderSelectBox(checked, () => toggleSelect({ key, kind: 'work', task }))}
                 {task.type === 'video' && !task.thumbnailUrl && task.resultUrl ? (
-                  <video src={task.resultUrl} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                  <video src={toSameOriginAsset(task.resultUrl)} muted playsInline preload="metadata" className="h-full w-full object-cover" />
                 ) : src ? (
                   <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
                 ) : null}
@@ -446,11 +447,11 @@ export function LibraryContent({ locale }: { locale: string }) {
               {renderSelectBox(checked, () => toggleSelect({ key, kind: 'asset', asset }))}
               <div className="relative bg-stone-100 dark:bg-stone-950" style={{ aspectRatio: '1 / 1' }}>
                 {asset.kind === 'image' ? (
-                  <img src={asset.thumbnailUrl || asset.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <img src={toSameOriginAsset(asset.thumbnailUrl || asset.url)} alt="" loading="lazy" className="h-full w-full object-cover" />
                 ) : asset.kind === 'video' ? (
                   <video
-                    src={asset.url}
-                    poster={asset.thumbnailUrl || undefined}
+                    src={toSameOriginAsset(asset.url)}
+                    poster={toSameOriginAsset(asset.thumbnailUrl) || undefined}
                     muted
                     playsInline
                     preload="metadata"

@@ -1,4 +1,5 @@
 import type { ApiTask } from '@/lib/api/types/task'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 export { formatDuration } from '@/lib/utils/taskProgress'
 
@@ -33,5 +34,5 @@ export function formatDateTime(value: string | null, locale: string) {
 }
 
 export function getTaskPreviewUrl(task: ApiTask) {
-  return task.thumbnailUrl || task.resultUrl || null
+  return toSameOriginAsset(task.thumbnailUrl || task.resultUrl || null)
 }

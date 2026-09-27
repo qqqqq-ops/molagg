@@ -7,6 +7,7 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import Image from '@/lib/compat/image'
 import { useState } from 'react'
 
@@ -43,7 +44,7 @@ export const ArtCard = ({
         {/* 宽高比容器 */}
         <div className="aspect-square">
           <Image
-            src={imageUrl}
+            src={toSameOriginAsset(imageUrl)}
             alt={title || 'Artwork'}
             width={800}
             height={800}

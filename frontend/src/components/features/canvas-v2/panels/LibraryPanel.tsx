@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from '@/i18n/client'
 import { canvasService, projectsService, tasksService, type CanvasTemplateSummary } from '@/lib/api/services'
 import type { ApiTask } from '@/lib/api/types'
 import type { ImportableWork } from '@/lib/api/types/projects'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 import { useCanvasStore } from '../store/canvasStore'
 import type { Graph } from '../store/graphPersist'
@@ -138,7 +139,7 @@ function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
                 }
               >
                 {item.type === 'image' || item.thumbnailUrl ? (
-                  <img src={item.thumbnailUrl ?? url} alt="" loading="lazy" />
+                  <img src={toSameOriginAsset(item.thumbnailUrl ?? url)} alt="" loading="lazy" />
                 ) : (
                   <Film className="h-5 w-5" />
                 )}

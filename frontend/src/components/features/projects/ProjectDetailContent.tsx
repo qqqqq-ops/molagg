@@ -40,6 +40,7 @@ import type {
 } from '@/lib/api/types/projects'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import { ProjectInspirationWorkspace } from './ProjectInspirationWorkspace'
 import { ProjectPromptWorkspace } from './ProjectPromptWorkspace'
 
@@ -74,7 +75,7 @@ function DocumentPreview({ asset }: { asset: ProjectAsset }) {
     let cancelled = false
     setTextLoading(true)
     setTextError(false)
-    fetch(asset.url)
+    fetch(toSameOriginAsset(asset.url))
       .then((res) => {
         if (!res.ok) throw new Error('fetch failed')
         return res.text()
@@ -96,7 +97,7 @@ function DocumentPreview({ asset }: { asset: ProjectAsset }) {
   if (ext === 'pdf') {
     return (
       <iframe
-        src={asset.url}
+        src={toSameOriginAsset(asset.url)}
         title={asset.title}
         className="aspect-[16/10] w-full bg-stone-100 dark:bg-stone-800"
       />
@@ -856,7 +857,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {filteredAssets.map((asset) => {
-                    const previewUrl = asset.thumbnailUrl || asset.url
+                    const previewUrl = toSameOriginAsset(asset.thumbnailUrl || asset.url)
                     const isSaving = savingAssetId === asset.id
                     const isDeleting = deletingAssetId === asset.id
                     const fileSizeLabel = formatFileSize(asset.fileSize)
@@ -875,8 +876,8 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
                           ) : asset.kind === 'video' ? (
                             previewUrl ? (
                               <video
-                                src={asset.url}
-                                poster={asset.thumbnailUrl || undefined}
+                                src={toSameOriginAsset(asset.url)}
+                                poster={toSameOriginAsset(asset.thumbnailUrl) || undefined}
                                 className="aspect-[16/10] w-full object-cover"
                                 muted
                                 playsInline
@@ -962,7 +963,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
 
                             <div className="grid grid-cols-2 gap-2">
                               <a
-                                href={asset.url}
+                                href={toSameOriginAsset(asset.url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
@@ -971,7 +972,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
                                 {t('assets.open')}
                               </a>
                               <a
-                                href={asset.url}
+                                href={toSameOriginAsset(asset.url)}
                                 download={downloadName}
                                 className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
                               >
@@ -1321,15 +1322,15 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
                           {work.thumbnailUrl ? (
                             work.type === 'video' ? (
                               <video
-                                src={work.resultUrl || work.thumbnailUrl}
-                                poster={work.thumbnailUrl || undefined}
+                                src={toSameOriginAsset(work.resultUrl || work.thumbnailUrl)}
+                                poster={toSameOriginAsset(work.thumbnailUrl) || undefined}
                                 className="h-36 w-full object-cover"
                                 muted
                                 playsInline
                               />
                             ) : (
                               <img
-                                src={work.thumbnailUrl}
+                                src={toSameOriginAsset(work.thumbnailUrl)}
                                 alt={work.prompt}
                                 className="h-36 w-full object-cover"
                               />

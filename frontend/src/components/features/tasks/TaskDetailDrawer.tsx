@@ -17,6 +17,7 @@ import {
 } from './taskQueueUtils'
 import { TaskProgress } from '@/components/shared/TaskProgress'
 import { useNow } from '@/lib/hooks/useNow'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 interface TaskDetailDrawerProps {
   task: ApiTask
@@ -93,14 +94,14 @@ export function TaskDetailDrawer({ task, projectName, onClose, onRemix, onUpdate
           <div className="task-drawer-preview" style={{ aspectRatio: '16 / 9' }}>
             {previewUrl && task.type === 'video' ? (
               <video
-                src={task.resultUrl || undefined}
-                poster={task.thumbnailUrl || undefined}
+                src={toSameOriginAsset(task.resultUrl) || undefined}
+                poster={toSameOriginAsset(task.thumbnailUrl) || undefined}
                 controls
                 playsInline
                 preload="metadata"
               />
             ) : previewUrl ? (
-              <img src={task.resultUrl || previewUrl} alt={task.prompt} />
+              <img src={toSameOriginAsset(task.resultUrl || previewUrl)} alt={task.prompt} />
             ) : (
               <span className="task-row-thumb-placeholder">
                 {task.type === 'video' ? <Film className="h-7 w-7" /> : <ImageIcon className="h-7 w-7" />}
@@ -124,7 +125,7 @@ export function TaskDetailDrawer({ task, projectName, onClose, onRemix, onUpdate
             modelId={task.modelId}
           />
           {task.status === 'completed' && task.resultUrl && (
-            <a className="studio-gold-link inline-flex items-center gap-1" href={task.resultUrl} target="_blank" rel="noopener noreferrer">
+            <a className="studio-gold-link inline-flex items-center gap-1" href={toSameOriginAsset(task.resultUrl)} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-3 w-3" />
               {t('drawer.openOriginal')}
             </a>

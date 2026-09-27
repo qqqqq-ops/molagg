@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from '@/i18n/client'
 import type { Prompt } from '@/lib/types/prompt'
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import { Button } from '@/components/ui'
 
 interface PromptDetailModalProps {
@@ -73,7 +74,7 @@ export function PromptDetailModal({ prompt, onClose }: PromptDetailModalProps) {
         <div className="relative w-full pt-[56.25%] overflow-hidden rounded-t-3xl bg-gradient-to-br from-stone-100 to-stone-200">
           {prompt.preview && !imageError ? (
             <img
-              src={prompt.preview}
+              src={toSameOriginAsset(prompt.preview)}
               alt={prompt.title}
               className="absolute top-0 left-0 w-full h-full object-cover"
               onError={() => {

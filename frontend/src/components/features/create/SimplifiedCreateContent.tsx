@@ -30,6 +30,7 @@ import { readRemixPayload } from '@/lib/utils/remix'
 import { useStudioBodySkin } from '@/lib/hooks/useStudioBodySkin'
 import { classifyFailure, isConfigurationFailure } from '@/lib/utils/failure'
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import { useTrackedTasks } from '@/lib/hooks/useTrackedTasks'
 import { pickDefaultModelId } from '@/lib/utils/defaultModels'
 import { inspectMolaggPrompt, isMolaggVideoModel } from '@/lib/utils/molaggPromptGuard'
@@ -2716,7 +2717,7 @@ export function SimplifiedCreateContent() {
                                       >
                                         {media.kind === 'image' && previewUrl ? (
                                           <img
-                                            src={previewUrl}
+                                            src={toSameOriginAsset(previewUrl)}
                                             alt={mediaName}
                                             className="h-full w-full object-cover"
                                           />
@@ -3262,7 +3263,7 @@ export function SimplifiedCreateContent() {
                     >
                       {tpl.preview ? (
                         <img
-                          src={tpl.preview}
+                          src={toSameOriginAsset(tpl.preview)}
                           alt={tpl.title}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         />

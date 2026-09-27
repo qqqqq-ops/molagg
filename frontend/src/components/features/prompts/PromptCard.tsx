@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useTranslations } from '@/i18n/client'
 import type { Prompt } from '@/lib/types/prompt'
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import { AnimatedCard } from '@/components/shared/AnimatedCard'
 
 interface PromptCardProps {
@@ -40,7 +41,7 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
           {shouldShowImage ? (
             /* 实际图片 */
             <img
-              src={prompt.preview}
+              src={toSameOriginAsset(prompt.preview)}
               alt={prompt.title}
               className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => {

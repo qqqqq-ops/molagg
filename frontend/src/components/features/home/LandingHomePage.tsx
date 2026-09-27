@@ -8,6 +8,7 @@ import {
 } from './landingHomePage.shared'
 import styles from './LandingHomePage.module.css'
 import type { ApiTask } from '@/lib/api/types'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 export type LandingHomePageProps = {
   locale: string
@@ -21,11 +22,11 @@ export function LandingHomePage({
   const copy = getLandingHomeCopy(locale)
   const userImageUrls = heroTasks
     .filter((item) => item.type === 'image' && item.status === 'completed')
-    .map((item) => item.resultUrl || item.thumbnailUrl || '')
+    .map((item) => toSameOriginAsset(item.resultUrl || item.thumbnailUrl || ''))
     .filter(Boolean)
   const userVideoUrls = heroTasks
     .filter((item) => item.type === 'video' && item.status === 'completed')
-    .map((item) => item.resultUrl || '')
+    .map((item) => toSameOriginAsset(item.resultUrl || ''))
     .filter(Boolean)
   const backgroundImages = userImageUrls.length > 0
     ? userImageUrls

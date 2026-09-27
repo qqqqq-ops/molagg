@@ -13,6 +13,7 @@ import type { ApiTask } from '@/lib/api/types'
 import { useRouter } from '@/lib/router'
 import { cn } from '@/lib/utils/cn'
 import { buildRemixHref } from '@/lib/utils/remix'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 interface GalleryContentProps {
   locale: string
@@ -20,12 +21,12 @@ interface GalleryContentProps {
 
 function getCardPreview(task: ApiTask) {
   if (task.type === 'video' && !task.thumbnailUrl && task.resultUrl) {
-    return { kind: 'video' as const, src: task.resultUrl }
+    return { kind: 'video' as const, src: toSameOriginAsset(task.resultUrl) }
   }
 
   return {
     kind: 'image' as const,
-    src: task.thumbnailUrl || task.resultUrl || '',
+    src: toSameOriginAsset(task.thumbnailUrl || task.resultUrl || ''),
   }
 }
 
@@ -83,7 +84,7 @@ function GalleryArtworkCard({
           {preview.kind === 'video' ? (
             <video
               src={preview.src}
-              poster={artwork.thumbnailUrl || undefined}
+              poster={toSameOriginAsset(artwork.thumbnailUrl) || undefined}
               className={cn(
                 'block h-full w-full object-cover transition-opacity duration-500',
                 isLoaded ? 'opacity-100' : 'opacity-0',

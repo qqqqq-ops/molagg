@@ -43,6 +43,7 @@ import { ChatMarkdown } from '@/components/features/chat/ChatMarkdown'
 import { AutoProjectWorkflowCard } from '@/components/features/chat/AutoProjectWorkflowCard'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { chatService, imageService, modelService, projectsService, videoService } from '@/lib/api/services'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import type { AiModel } from '@/lib/api/types/models'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 import type { ApiTask } from '@/lib/api/types/task'
@@ -4249,7 +4250,7 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
                             {message.images.map((image, index) => (
                               <img
                                 key={`${message.id}-${index}`}
-                                src={image}
+                                src={toSameOriginAsset(image)}
                                 alt={`chat-image-${index + 1}`}
                                 className={styles.messageImage}
                               />
@@ -4726,7 +4727,7 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
                             {message.images.map((image, index) => (
                               <img
                                 key={`${message.id}-${index}`}
-                                src={image}
+                                src={toSameOriginAsset(image)}
                                 alt={`chat-image-${index + 1}`}
                                 className={styles.messageImage}
                               />
@@ -4801,7 +4802,7 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
 
                                   {taskRef.kind === 'video' && taskRef.resultUrl ? (
                                     <video
-                                      src={taskRef.resultUrl}
+                                      src={toSameOriginAsset(taskRef.resultUrl)}
                                       className={styles.taskCardImage}
                                       controls
                                       muted
@@ -4810,7 +4811,7 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
                                     />
                                   ) : taskRef.resultUrl || taskRef.thumbnailUrl ? (
                                     <img
-                                      src={taskRef.resultUrl || taskRef.thumbnailUrl || ''}
+                                      src={toSameOriginAsset(taskRef.resultUrl || taskRef.thumbnailUrl || '')}
                                       alt={taskRef.prompt || 'generated-media-task'}
                                       className={styles.taskCardImage}
                                     />
@@ -4842,7 +4843,7 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
                                         type="button"
                                         className={styles.taskCardBtn}
                                         onClick={() =>
-                                          window.open(taskRef.resultUrl || '', '_blank', 'noopener,noreferrer')
+                                          window.open(toSameOriginAsset(taskRef.resultUrl || ''), '_blank', 'noopener,noreferrer')
                                         }
                                       >
                                         {taskRef.kind === 'video'
@@ -5134,7 +5135,7 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
                             <div className={styles.imageComposerThumbList}>
                               {agentReferenceImages.map((item) => (
                                 <div key={item.id} className={styles.imageComposerThumbItem}>
-                                  <img src={item.url} alt={item.name} className={styles.imageComposerThumb} />
+                                  <img src={toSameOriginAsset(item.url)} alt={item.name} className={styles.imageComposerThumb} />
                                   <button
                                     type="button"
                                     onClick={() =>

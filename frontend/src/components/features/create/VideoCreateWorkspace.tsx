@@ -31,6 +31,7 @@ import { FileDropzone } from '@/components/ui/FileDropzone'
 import { Switch } from '@/components/ui/switch'
 import { AspectRatioSelect } from '@/components/ui/AspectRatioSelect'
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 import type { ProjectAsset, ProjectSummary } from '@/lib/api/types/projects'
 import { promptOptimizeService } from '@/lib/api/services'
 import type { AspectRatioOption } from './config/aspectRatioOptions'
@@ -581,7 +582,7 @@ export function VideoCreateWorkspace({
                             >
                               {media.kind === 'image' && previewUrl ? (
                                 <img
-                                  src={previewUrl}
+                                  src={toSameOriginAsset(previewUrl)}
                                   alt={mediaName}
                                   className="h-full w-full object-cover"
                                 />

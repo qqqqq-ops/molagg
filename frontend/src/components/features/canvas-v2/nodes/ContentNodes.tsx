@@ -7,16 +7,11 @@ import { toast } from 'sonner'
 
 import { useTranslations } from '@/i18n/client'
 
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
+
 import { STICKY_COLORS } from '../canvasV2.types'
 import { useCanvasStore } from '../store/canvasStore'
 import { NodeShell } from './NodeShell'
-
-// 上传结果在库里存的是绝对地址 http://<host>:3000/uploads/...；画布常开在 3001，跨源会被 CORS 挡下
-// （视频还带 crossOrigin，会直接放不出、显示打叉播放键，截帧也失败）。统一改成相对 /uploads/...，
-// 跟着当前站点走 = 同源（3001 会把 /uploads 代理到后端），视频既能放、截帧也能用。blob: / data: 本地预览地址不匹配、原样保留。
-function sameOriginUpload(url: string): string {
-  return url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1')
-}
 
 /** 内容类节点：文字、便利贴、Markdown、图片、视频、音频 */
 
@@ -115,7 +110,7 @@ export function ImageNode({ id, data, selected }: NodeProps) {
         url ? (
           <a
             className="cv2-icon-button"
-            href={url}
+            href={toSameOriginAsset(url)}
             target="_blank"
             rel="noopener noreferrer"
             title={t('node.image.openOriginal')}
@@ -126,7 +121,7 @@ export function ImageNode({ id, data, selected }: NodeProps) {
       }
     >
       {url ? (
-        <img className="cv2-media" src={sameOriginUpload(url)} alt="" />
+        <img className="cv2-media" src={toSameOriginAsset(url)} alt="" />
       ) : (
         <div className="cv2-placeholder">
           <ImageIcon className="h-6 w-6" />
@@ -217,7 +212,7 @@ export function VideoNode({ id, data, selected }: NodeProps) {
       }
     >
       {url ? (
-        <video ref={videoRef} className="cv2-media" src={sameOriginUpload(url)} controls crossOrigin="anonymous" />
+        <video ref={videoRef} className="cv2-media" src={toSameOriginAsset(url)} controls crossOrigin="anonymous" />
       ) : (
         <div className="cv2-placeholder">
           <Film className="h-6 w-6" />
@@ -245,7 +240,7 @@ export function AudioNode({ id, data, selected }: NodeProps) {
   return (
     <NodeShell title={String(data.title ?? t('nodeKinds.audio'))} selected={selected} width={260}>
       {url ? (
-        <audio className="cv2-audio" src={sameOriginUpload(url)} controls />
+        <audio className="cv2-audio" src={toSameOriginAsset(url)} controls />
       ) : (
         <div className="cv2-placeholder">
           <Music className="h-6 w-6" />

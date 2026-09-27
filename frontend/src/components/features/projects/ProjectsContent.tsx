@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { projectsService } from '@/lib/api/services'
 import type { ProjectQuotaSummary, ProjectSummary } from '@/lib/api/types/projects'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 function formatProjectUpdatedAt(value: string, locale: string) {
   try {
@@ -301,8 +302,8 @@ export function ProjectsContent() {
 
               <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 {projects.map((project) => {
-                  const coverPreviewUrl = project.coverThumbnailUrl
-                  const coverAssetUrl = project.coverUrl
+                  const coverPreviewUrl = toSameOriginAsset(project.coverThumbnailUrl)
+                  const coverAssetUrl = toSameOriginAsset(project.coverUrl)
                   const hasVideoCover = project.coverKind === 'video' && Boolean(coverAssetUrl)
                   const hasImageCover = project.coverKind === 'image' && Boolean(coverPreviewUrl)
                   const isDeleting = deletingProjectId === project.id

@@ -9,6 +9,7 @@ import { EnhancedSelect, type EnhancedSelectOption } from '@/components/ui/Enhan
 import { Modal } from '@/components/ui/Modal'
 import type { ProjectAsset, ProjectSummary } from '@/lib/api/types/projects'
 import { cn } from '@/lib/utils/cn'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 export interface ProjectContextPanelProps {
   locale: string
@@ -70,7 +71,7 @@ export function ProjectContextPanel({
   const renderAssetCard = (asset: ProjectAsset) => {
     const active = selectedAssetIds.includes(asset.id)
     const disabled = !active && disabledAssetIds.includes(asset.id)
-    const previewUrl = asset.thumbnailUrl || asset.url
+    const previewUrl = toSameOriginAsset(asset.thumbnailUrl || asset.url)
 
     return (
       <button
@@ -91,8 +92,8 @@ export function ProjectContextPanel({
           {asset.kind === 'video' ? (
             previewUrl ? (
               <video
-                src={asset.url}
-                poster={asset.thumbnailUrl || undefined}
+                src={toSameOriginAsset(asset.url)}
+                poster={toSameOriginAsset(asset.thumbnailUrl) || undefined}
                 muted
                 playsInline
                 className="h-full w-full object-cover"

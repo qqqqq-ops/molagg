@@ -4,6 +4,7 @@ import { useTranslations } from '@/i18n/client'
 import Link from '@/lib/compat/link'
 import { isConfigurationFailure } from '@/lib/utils/failure'
 import { TaskProgress } from '@/components/shared/TaskProgress'
+import { toSameOriginAsset } from '@/lib/utils/assetUrl'
 
 import type { LandingHomeCopy } from './landingHomePage.shared'
 import type { LandingJob } from './useLandingGeneration'
@@ -30,11 +31,11 @@ export function LandingResults({ locale, copy, jobs, onClear, onConfigure }: Lan
             {job.status === 'completed' && job.resultUrl && job.mode === 'video' ? (
               // 视频不能包在链接里，否则点播放控件会直接跳走
               <div className={styles.resultMedia}>
-                <video src={job.resultUrl} poster={job.thumbnailUrl || undefined} controls playsInline preload="metadata" />
+                <video src={toSameOriginAsset(job.resultUrl)} poster={toSameOriginAsset(job.thumbnailUrl) || undefined} controls playsInline preload="metadata" />
               </div>
             ) : job.status === 'completed' && job.resultUrl ? (
-              <a href={job.resultUrl} target="_blank" rel="noreferrer" className={styles.resultMedia} title={copy.openResult}>
-                <img src={job.thumbnailUrl || job.resultUrl} alt="" loading="lazy" />
+              <a href={toSameOriginAsset(job.resultUrl)} target="_blank" rel="noreferrer" className={styles.resultMedia} title={copy.openResult}>
+                <img src={toSameOriginAsset(job.thumbnailUrl || job.resultUrl)} alt="" loading="lazy" />
               </a>
             ) : job.status === 'failed' ? (
               <div className={styles.resultFailed}>
