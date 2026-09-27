@@ -9,6 +9,7 @@ import { MidjourneyImageAdapter } from './midjourney/midjourney-image.adapter';
 import { NanobananaImageAdapter } from './nanobanana/nanobanana-image.adapter';
 import { QianwenImageAdapter } from './qianwen/qianwen-image.adapter';
 import { MolaggVideoAdapter } from './molagg/molagg-video.adapter';
+import { MolaggOpenaiVideoAdapter } from './molagg/molagg-openai-video.adapter';
 import { SoraVideoAdapter } from './sora/sora-video.adapter';
 import { VeoVideoAdapter } from './veo/veo-video.adapter';
 import { ViduVideoAdapter } from './vidu/vidu-video.adapter';
@@ -45,6 +46,8 @@ export class AdapterFactory {
     ['minimax', HailuoVideoAdapter],
     ['vidu', ViduVideoAdapter],
     ['molagg', MolaggVideoAdapter],
+    // Molagg「按秒」分组的 seedance-2.5-pro/-720p/-g、2.0-eco/-mini：走 OpenAI-video 协议
+    ['molagg-persecond', MolaggOpenaiVideoAdapter],
   ]);
 
   static createImageAdapter(provider: string, channel: ApiChannel): BaseImageAdapter {
