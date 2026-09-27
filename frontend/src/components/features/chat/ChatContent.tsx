@@ -56,6 +56,7 @@ import type {
 } from '@/lib/api/types/chat'
 import type { ProjectStoryboardStatus, ProjectSummary } from '@/lib/api/types/projects'
 import { cn } from '@/lib/utils/cn'
+import { inspectMolaggPrompt, isMolaggVideoModel } from '@/lib/utils/molaggPromptGuard'
 import { type AspectRatioOption } from '@/components/features/create/config/aspectRatioOptions'
 import {
   AUTO_AGENT_OPTION_VALUE,
@@ -824,6 +825,7 @@ interface ChatContentProps {
 
 export function ChatContent({ initialConversationId }: ChatContentProps) {
   const t = useTranslations('chat')
+  const tErr = useTranslations('errors')
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
@@ -3429,6 +3431,20 @@ export function ChatContent({ initialConversationId }: ChatContentProps) {
     if (metadata.referenceImageCount > 0 && sourceImages.length === 0) {
       toast.error(isZh ? '未找到对应的图片参考，请重新发送本轮创作' : 'Reference images were not found. Please resend this turn.')
       return
+    }
+
+    // Molagg 内容审核在生成后才拦，踩雷要白等约一小时。确认生成前先扫一遍提示词，命中就提醒、让用户自己决定
+    if (metadata.modelType === 'video') {
+      const genModel = agentModels.find((item) => item.id === metadata.modelId)
+      if (isMolaggVideoModel(genModel)) {
+        const hits = inspectMolaggPrompt(metadata.optimizedPrompt)
+        if (hits.length > 0) {
+          const label = hits
+            .map((cat) => (cat === 'realHuman' ? tErr('molagg.realHuman') : tErr('molagg.violence')))
+            .join(' / ')
+          if (!window.confirm(tErr('molagg.warn', { hits: label }))) return
+        }
+      }
     }
 
     try {

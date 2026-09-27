@@ -386,7 +386,10 @@
     "materialSwitch": "Switch to \"{model}\"",
     "materialNoAlternative": "None of the available models accept {kind}",
     "mediaNotSent": "Connected video / audio isn't sent to the model yet — only images are used as references",
-    "partialFailed": "{failed} of {total} didn't generate"
+    "partialFailed": "{failed} of {total} didn't generate",
+    "molaggContentRealHuman": "photorealistic real people",
+    "molaggContentViolence": "graphic violence",
+    "molaggContentWarn": "This prompt may trip Molagg's content review ({hits}); if you submit, it will most likely be rejected after ~an hour of waiting with nothing to show. Suggested rewrite: use \"cinematic realistic style\" instead of \"real person / hyper-realistic\", and \"clashing / sparring / parrying\" instead of \"kill / slay\". Submit anyway?"
   },
   "assistant": {
     "inspector": "Node Details",
@@ -400,7 +403,10 @@
     "empty": "Say what you want in plain words, e.g. \"add a video generator after this image\".",
     "placeholder": "Say what to do… (Enter to send, Shift+Enter for a new line)",
     "send": "Send",
-    "sending": "Working…",
+    "queued": "Queued, sends after the current reply",
+    "unqueue": "Withdraw",
+    "queueSend": "Queue",
+    "sending": "Thinking…",
     "clear": "Clear chat",
     "applied": "Applied: {added} added · {changed} changed · {connected} connected · {removed} removed",
     "rejected": "{count} instruction(s) didn't make sense and were skipped (hover for details)",
@@ -512,7 +518,8 @@
     "failed": "Save failed — changes are still on this page",
     "offline": "Not saving",
     "offlineHint": "Couldn't load the saved canvas (not signed in, or the server is down). You can keep working, but a refresh will lose it — export JSON first",
-    "staleRuns": "{count} nodes were still generating last time; results will show up in the task queue, not here"
+    "staleRuns": "{count} nodes were still generating last time; results will show up in the task queue, not here",
+    "reattaching": "Reconnecting {count} nodes that were still generating — results will appear here automatically"
   },
   "library": {
     "loading": "Loading…",
@@ -520,11 +527,15 @@
     "loadMore": "Load more",
     "refresh": "Refresh",
     "assets": {
-      "title": "Assets",
+      "title": "Works & assets",
+      "sourceWorks": "My works",
+      "sourceLibrary": "Asset library",
       "images": "Images",
       "videos": "Videos",
       "search": "Search prompts, press Enter",
+      "searchLibrary": "Search names, press Enter",
       "empty": "No generated works yet",
+      "emptyLibrary": "No assets in the library yet",
       "add": "Add to canvas",
       "added": "Added to the canvas"
     },

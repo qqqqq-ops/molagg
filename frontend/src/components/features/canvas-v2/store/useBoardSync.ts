@@ -53,11 +53,15 @@ export function useBoardSync() {
         if (storedNodes.length > 0 || local.nodes.length === 0) {
           const settled = settleStaleRuns(storedNodes)
           hydrate(settled.nodes, (board.graph?.edges ?? []) as CanvasEdge[])
-          if (settled.count > 0) {
-            // 取最新语言的 t。变量名保持叫 t：checks/test-i18n 是按这个名字静态收集文案 key 的
-            const t = tRef.current
-            toast.info(t('board.staleRuns', { count: settled.count }))
+          // 取最新语言的 t。变量名保持叫 t：checks/test-i18n 是按这个名字静态收集文案 key 的
+          const t = tRef.current
+          if (settled.resumable.length > 0) {
+            // 留着 taskId 的交给 useNodeRun（provider 内）重新接回轮询：还在跑就继续显示、已出片就自动落节点
+            useCanvasStore.getState().setPendingReattach(settled.resumable)
+            toast.info(t('board.reattaching', { count: settled.resumable.length }))
           }
+          const unrecoverable = settled.count - settled.resumable.length
+          if (unrecoverable > 0) toast.info(t('board.staleRuns', { count: unrecoverable }))
           lastSaved.current = JSON.stringify(cleanGraph(settled.nodes, (board.graph?.edges ?? []) as CanvasEdge[]))
         }
         setBoardId(String(board.id))

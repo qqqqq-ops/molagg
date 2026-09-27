@@ -35,9 +35,10 @@ function useShortTime() {
   )
 }
 
-/** 资产库：自己生成过的图 / 视频，点一下放到画布上 */
+/** 素材：我的作品（生成过的图 / 视频）或资产库（上传的素材，跨全部项目），点一下放到画布上 */
 function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
   const t = useTranslations('canvas')
+  const [source, setSource] = useState<'works' | 'library'>('works')
   const [type, setType] = useState<'image' | 'video'>('image')
   const [query, setQuery] = useState('')
   const [applied, setApplied] = useState('')
@@ -49,8 +50,8 @@ function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
 
   useEffect(() => {
     let cancelled = false
-    projectsService
-      .getImportableWorks({ page, limit: ASSET_PAGE_SIZE, type, ...(applied ? { q: applied } : {}) })
+    const fetchPage = source === 'library' ? projectsService.getAssetLibrary : projectsService.getImportableWorks
+    fetchPage({ page, limit: ASSET_PAGE_SIZE, type, ...(applied ? { q: applied } : {}) })
       .then((result) => {
         if (cancelled) return
         setItems((current) => (page === 1 ? result.data : [...current, ...result.data]))
@@ -66,11 +67,17 @@ function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
     return () => {
       cancelled = true
     }
-  }, [applied, page, type])
+  }, [applied, page, source, type])
 
-  const restart = (next: { type?: 'image' | 'video'; q?: string }) => {
+  const restart = (next: { source?: 'works' | 'library'; type?: 'image' | 'video'; q?: string }) => {
     setLoading(true)
     setPage(1)
+    setItems([])
+    if (next.source) {
+      setSource(next.source)
+      setQuery('')
+      setApplied('')
+    }
     if (next.type) setType(next.type)
     if (next.q !== undefined) setApplied(next.q)
   }
@@ -78,6 +85,18 @@ function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
   return (
     <details className="cv2-details" open>
       <summary>{t('library.assets.title')}</summary>
+      <div className="cv2-chips">
+        {(['works', 'library'] as const).map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            className={source === kind ? 'cv2-chip cv2-chip-active' : 'cv2-chip'}
+            onClick={() => kind !== source && restart({ source: kind })}
+          >
+            {kind === 'works' ? t('library.assets.sourceWorks') : t('library.assets.sourceLibrary')}
+          </button>
+        ))}
+      </div>
       <div className="cv2-chips">
         {(['image', 'video'] as const).map((kind) => (
           <button
@@ -93,7 +112,7 @@ function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
       <input
         className="cv2-input"
         value={query}
-        placeholder={t('library.assets.search')}
+        placeholder={source === 'library' ? t('library.assets.searchLibrary') : t('library.assets.search')}
         onChange={(event) => setQuery(event.target.value)}
         onKeyDown={(event) => {
           if (event.key === 'Enter') restart({ q: query.trim() })
@@ -102,7 +121,7 @@ function AssetSection({ onAddMedia }: Pick<LibraryPanelProps, 'onAddMedia'>) {
       {failed ? (
         <p className="cv2-hint">{t('library.loadFailed')}</p>
       ) : items.length === 0 && !loading ? (
-        <p className="cv2-hint">{t('library.assets.empty')}</p>
+        <p className="cv2-hint">{source === 'library' ? t('library.assets.emptyLibrary') : t('library.assets.empty')}</p>
       ) : (
         <div className="cv2-asset-grid">
           {items.map((item) => {

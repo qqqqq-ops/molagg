@@ -32,6 +32,7 @@ import { classifyFailure, isConfigurationFailure } from '@/lib/utils/failure'
 import { cn } from '@/lib/utils/cn'
 import { useTrackedTasks } from '@/lib/hooks/useTrackedTasks'
 import { pickDefaultModelId } from '@/lib/utils/defaultModels'
+import { inspectMolaggPrompt, isMolaggVideoModel } from '@/lib/utils/molaggPromptGuard'
 
 import { SystemConfigModal } from '@/components/admin/settings/SystemConfigModal'
 import { SimplifiedModelSelector } from './SimplifiedModelSelector'
@@ -1847,6 +1848,17 @@ export function SimplifiedCreateContent() {
     if (!requestPrompt) {
       toast.error(t('errors.promptRequired'))
       return
+    }
+
+    // Molagg 内容审核在生成后才拦，踩雷要白等约一小时。提交前先扫一遍提示词，命中就提醒、让用户自己决定
+    if (activeTab === 'video' && isMolaggVideoModel(selectedExecutionModel)) {
+      const hits = inspectMolaggPrompt(requestPrompt)
+      if (hits.length > 0) {
+        const label = hits
+          .map((cat) => (cat === 'realHuman' ? t('errors.molaggContentRealHuman') : t('errors.molaggContentViolence')))
+          .join(' / ')
+        if (!window.confirm(t('errors.molaggContentWarn', { hits: label }))) return
+      }
     }
 
     if (activeTab === 'image' && supportsImageInput && totalImageReferenceCount > maxInputImages) {

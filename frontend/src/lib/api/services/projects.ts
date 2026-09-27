@@ -147,6 +147,10 @@ export const projectsService = {
     return apiClient.get('/projects/importable-works', { params })
   },
 
+  async getAssetLibrary(params?: ListImportableWorksParams): Promise<ImportableWorksPage> {
+    return apiClient.get('/projects/asset-library', { params })
+  },
+
   async importProjectAssets(projectId: string, data: ImportProjectAssetsDto): Promise<ImportProjectAssetsResponse> {
     return apiClient.post(`/projects/${projectId}/assets/import`, data)
   },

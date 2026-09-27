@@ -1972,6 +1972,45 @@ export class ProjectsService {
     return assets.map((asset) => this.serializeProjectAsset(asset));
   }
 
+  // 画布「素材」面板用：跨用户全部项目的资产库，形状对齐 importable-works 好让前端复用渲染
+  async listAssetLibrary(userId: bigint, query: ListImportableWorksDto): Promise<PaginatedResult<any>> {
+    const { page = 1, limit = 12 } = query;
+    const skip = (page - 1) * limit;
+    const titleFilter = trimText(query.q);
+    const kind = query.type === 'video' ? 'video' : 'image';
+
+    const where: Prisma.ProjectAssetWhereInput = {
+      userId,
+      kind,
+      ...(titleFilter ? { title: { contains: titleFilter } } : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.projectAsset.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        select: { id: true, kind: true, title: true, thumbnailUrl: true, url: true, createdAt: true },
+      }),
+      this.prisma.projectAsset.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data: items.map((item) =>
+        this.serializeImportableWork(item.kind === 'video' ? 'video' : 'image', {
+          id: item.id,
+          prompt: item.title,
+          thumbnailUrl: item.thumbnailUrl,
+          resultUrl: item.url,
+          createdAt: item.createdAt,
+        }),
+      ),
+      pagination: { page, limit, total, totalPages, hasMore: page < totalPages },
+    };
+  }
+
   async updateAsset(userId: bigint, projectId: bigint, assetId: bigint, dto: UpdateProjectAssetDto) {
     await this.ensureOwnedProject(this.prisma, userId, projectId);
     const existing = await this.ensureOwnedAsset(this.prisma, userId, projectId, assetId);

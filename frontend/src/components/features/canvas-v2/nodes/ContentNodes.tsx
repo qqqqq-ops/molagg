@@ -11,6 +11,13 @@ import { STICKY_COLORS } from '../canvasV2.types'
 import { useCanvasStore } from '../store/canvasStore'
 import { NodeShell } from './NodeShell'
 
+// 上传结果在库里存的是绝对地址 http://<host>:3000/uploads/...；画布常开在 3001，跨源会被 CORS 挡下
+// （视频还带 crossOrigin，会直接放不出、显示打叉播放键，截帧也失败）。统一改成相对 /uploads/...，
+// 跟着当前站点走 = 同源（3001 会把 /uploads 代理到后端），视频既能放、截帧也能用。blob: / data: 本地预览地址不匹配、原样保留。
+function sameOriginUpload(url: string): string {
+  return url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1')
+}
+
 /** 内容类节点：文字、便利贴、Markdown、图片、视频、音频 */
 
 function useNodePatch(id: string) {
@@ -25,7 +32,7 @@ export function TextNode({ id, data, selected }: NodeProps) {
     // 没改过标题的节点显示类型名，跟着站点语言走（store 不再把标题烤进节点数据）
     <NodeShell title={String(data.title ?? t('nodeKinds.text'))} selected={selected} width={260}>
       <textarea
-        className="cv2-textarea"
+        className="cv2-textarea nowheel"
         rows={4}
         value={String(data.text ?? '')}
         placeholder={t('node.text.placeholder')}
@@ -62,7 +69,7 @@ export function StickyNoteNode({ id, data, selected }: NodeProps) {
       }
     >
       <textarea
-        className="cv2-textarea cv2-sticky-text"
+        className="cv2-textarea cv2-sticky-text nowheel"
         rows={5}
         style={{ borderColor: color }}
         value={String(data.text ?? '')}
@@ -83,7 +90,7 @@ export function MarkdownNode({ id, data, selected }: NodeProps) {
   return (
     <NodeShell title={String(data.title ?? t('nodeKinds.markdown'))} selected={selected} width={300}>
       <textarea
-        className="cv2-textarea cv2-mono"
+        className="cv2-textarea cv2-mono nowheel"
         rows={7}
         value={String(data.markdown ?? '')}
         placeholder={t('node.markdown.placeholder')}
@@ -119,7 +126,7 @@ export function ImageNode({ id, data, selected }: NodeProps) {
       }
     >
       {url ? (
-        <img className="cv2-media" src={url} alt="" />
+        <img className="cv2-media" src={sameOriginUpload(url)} alt="" />
       ) : (
         <div className="cv2-placeholder">
           <ImageIcon className="h-6 w-6" />
@@ -210,7 +217,7 @@ export function VideoNode({ id, data, selected }: NodeProps) {
       }
     >
       {url ? (
-        <video ref={videoRef} className="cv2-media" src={url} controls crossOrigin="anonymous" />
+        <video ref={videoRef} className="cv2-media" src={sameOriginUpload(url)} controls crossOrigin="anonymous" />
       ) : (
         <div className="cv2-placeholder">
           <Film className="h-6 w-6" />
@@ -238,7 +245,7 @@ export function AudioNode({ id, data, selected }: NodeProps) {
   return (
     <NodeShell title={String(data.title ?? t('nodeKinds.audio'))} selected={selected} width={260}>
       {url ? (
-        <audio className="cv2-audio" src={url} controls />
+        <audio className="cv2-audio" src={sameOriginUpload(url)} controls />
       ) : (
         <div className="cv2-placeholder">
           <Music className="h-6 w-6" />

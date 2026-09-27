@@ -3,6 +3,11 @@
     "unauthorized": "请先登录",
     "forbidden": "权限不足"
   },
+  "molagg": {
+    "realHuman": "真人写实",
+    "violence": "杀戮暴力",
+    "warn": "这段提示词可能命中 Molagg 的内容审核（{hits}），提交后大概率要白等约一小时才被拒、不出片。建议改写：用「电影级写实风格 / 影视质感」代替「真人 / 超写实」，用「交锋、过招、格挡」代替「斩杀、杀敌」。仍要提交吗？"
+  },
   "tasks": {
     "generateFailed": "生成失败，请重试",
     "pollTimeout": "轮询超时，请手动刷新",

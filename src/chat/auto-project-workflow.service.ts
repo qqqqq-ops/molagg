@@ -11,6 +11,7 @@ import {
 } from '../common/utils/task-provider-data.util';
 import { UserCredentialsService } from '../credentials/user-credentials.service';
 import { EncryptionService } from '../encryption/encryption.service';
+import { inspectMolaggPrompt, isMolaggVideoModel } from '../common/utils/molagg-prompt-guard';
 import { ImagesService } from '../images/images.service';
 import { buildModelCapabilities } from '../models/model-capabilities';
 import { PrismaService } from '../prisma/prisma.service';
@@ -5351,6 +5352,20 @@ export class AutoProjectWorkflowService {
         latestContextAsset: null,
       }),
     );
+
+    // Molagg 内容审核在生成后才拦，踩雷要白等约一小时。这里是 agent 自动生成、没有用户能确认，
+    // 所以命中就早退拦掉（抛错由上层 catch 记为该镜头失败），不白等、不扣费。用户手动的入口走前端「警告+可强行」。
+    if (isMolaggVideoModel(videoModel)) {
+      const hits = inspectMolaggPrompt(params.prompt);
+      if (hits.length > 0) {
+        this.logger.warn(
+          `[molagg-guard] auto-project shot prompt likely blocked (${hits.join(', ')}); skipping submit to save the ~1h wait`,
+        );
+        throw new Error(
+          `Molagg content guard: prompt likely violates content policy (${hits.join(', ')}); rewrite to avoid photorealistic real people / graphic violence`,
+        );
+      }
+    }
 
     const createdTask = await this.videosService.generate(params.userId, {
       modelId: videoModelIdRaw,

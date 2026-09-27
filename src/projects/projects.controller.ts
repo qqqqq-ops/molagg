@@ -178,6 +178,11 @@ export class ProjectsController {
     return this.projectsService.listImportableWorks(userId, query);
   }
 
+  @Get('asset-library')
+  assetLibrary(@CurrentUser('id') userId: bigint, @Query() query: ListImportableWorksDto) {
+    return this.projectsService.listAssetLibrary(userId, query);
+  }
+
   @Get('quota')
   quota(@CurrentUser('id') userId: bigint) {
     return this.projectsService.getProjectQuota(userId);

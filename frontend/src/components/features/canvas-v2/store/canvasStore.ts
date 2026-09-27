@@ -11,6 +11,7 @@ import {
   type CanvasNodeKind,
   type CanvasProjectFile,
 } from '../canvasV2.types'
+import type { ReattachEntry } from './graphPersist'
 
 /** 撤销栈最多留这么多步；节点里可能带 base64 预览，留太多会吃内存 */
 const HISTORY_LIMIT = 50
@@ -42,6 +43,11 @@ type CanvasState = {
   loadProject: (file: CanvasProjectFile, mode: 'replace' | 'merge') => void
   toProjectFile: (name?: string) => CanvasProjectFile
   clear: () => void
+
+  /** 刷新/重启后要重新接回轮询的节点：useBoardSync 读盘后挑出，useNodeRun（在 provider 内）消费。不持久化 */
+  pendingReattach: ReattachEntry[]
+  setPendingReattach: (entries: ReattachEntry[]) => void
+  clearPendingReattach: () => void
 }
 
 let nodeSeq = 0
@@ -123,6 +129,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   edges: [],
   past: [],
   future: [],
+  pendingReattach: [],
 
   onNodesChange: (changes) => {
     // 只有增删才记历史；位置/选中的变化太频繁，记了撤销会变成一帧一帧倒带
@@ -299,6 +306,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     })),
 
   hydrate: (nodes, edges) => set({ nodes, edges, past: [], future: [] }),
+
+  setPendingReattach: (entries) => set({ pendingReattach: entries }),
+  clearPendingReattach: () => set({ pendingReattach: [] }),
 
   clear: () => set((state) => ({ ...pushHistory(state), nodes: [], edges: [] })),
 }))

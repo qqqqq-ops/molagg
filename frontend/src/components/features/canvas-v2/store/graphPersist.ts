@@ -28,18 +28,26 @@ export function cleanGraph(nodes: CanvasNode[], edges: CanvasEdge[]): Graph {
   }
 }
 
+/** 需要重新接回轮询的节点：存盘时还在生成、且留着上游 taskId 的生成器 */
+export type ReattachEntry = { nodeId: string; taskId: string; mode: 'image' | 'video' }
+
 /**
- * 读回来的画布里，有些节点存盘时还在生成——刷新之后轮询已经断了，转圈会一直转下去。
- * 这里把它们放回「空闲」，结果去任务队列找（调用方会提示用户）。
+ * 读回来的画布里，有些节点存盘时还在生成——刷新之后内存里的轮询已经断了，转圈会一直转下去。
+ * 这里先把它们放回「空闲」（避免死转），同时挑出「留着 taskId 的生成器」交给调用方重新接回轮询：
+ * 接回后任务还在跑就继续显示进度、已经出片就自动落结果节点。接不回的（没 taskId）就只能去任务队列看。
  */
 export function settleStaleRuns(nodes: CanvasNode[]) {
   let count = 0
+  const resumable: ReattachEntry[] = []
   const next = nodes.map((node) => {
     if (!RUNNING.has(String(node.data?.status ?? ''))) return node
     count += 1
+    const taskId = node.data?.taskId
+    const mode = node.type === 'videoGenerator' ? 'video' : node.type === 'imageGenerator' ? 'image' : null
+    if (typeof taskId === 'string' && taskId && mode) resumable.push({ nodeId: node.id, taskId, mode })
     return { ...node, data: { ...node.data, status: 'idle', progress: null } }
   })
-  return { nodes: next, count }
+  return { nodes: next, count, resumable }
 }
 
 function contentOf(node: CanvasNode) {

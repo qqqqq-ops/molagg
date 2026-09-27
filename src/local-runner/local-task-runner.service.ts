@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ApiChannel, ImageTask, VideoTask } from '@prisma/client';
 
 import { AdapterFactory } from '../adapters/adapter.factory';
@@ -103,7 +103,7 @@ function extractTaskErrorMessage(error: any) {
 }
 
 @Injectable()
-export class LocalTaskRunnerService {
+export class LocalTaskRunnerService implements OnApplicationBootstrap {
   private readonly logger = new Logger(LocalTaskRunnerService.name);
   private readonly imageJobs = new Map<string, LocalJobState>();
   private readonly videoJobs = new Map<string, LocalJobState>();
@@ -115,6 +115,32 @@ export class LocalTaskRunnerService {
     private readonly projects: ProjectsService,
     private readonly credentials: UserCredentialsService,
   ) {}
+
+  // 开机恢复：进程一重启，内存里的轮询循环就没了，正在跑的任务会永远卡在 processing（孤儿）。
+  // 启动时把所有「已提交到上游（有 providerTaskId）、状态仍是 processing」的任务重新入队一遍——
+  // processVideoTask / processImageTask 对这种状态会复用 providerTaskId、只重新轮询，不重新提交、不重扣费。
+  async onApplicationBootstrap() {
+    try {
+      const [videos, images] = await Promise.all([
+        this.prisma.videoTask.findMany({
+          where: { status: TaskStatus.processing, providerTaskId: { not: null } },
+          select: { id: true, retryCount: true },
+        }),
+        this.prisma.imageTask.findMany({
+          where: { status: TaskStatus.processing, providerTaskId: { not: null } },
+          select: { id: true, retryCount: true },
+        }),
+      ]);
+      if (videos.length + images.length === 0) return;
+      this.logger.log(
+        `[resume] 开机恢复 ${videos.length} 个视频 + ${images.length} 个图片任务（复用上游任务号，不重扣费）`,
+      );
+      for (const task of videos) void this.enqueueVideo(task.id, task.retryCount);
+      for (const task of images) void this.enqueueImage(task.id, task.retryCount);
+    } catch (error) {
+      this.logger.error(`[resume] 开机恢复失败: ${(error as Error)?.message ?? error}`);
+    }
+  }
 
   async enqueueImage(taskId: bigint | string, retryCount?: number) {
     const key = this.buildJobKey(taskId, retryCount);
@@ -374,6 +400,13 @@ export class LocalTaskRunnerService {
     const waitMinutes = String(model.provider ?? '').toLowerCase() === 'molagg' ? 90 : 20;
     const deadline = Date.now() + waitMinutes * 60_000;
 
+    // 打点：想看时间到底耗在哪。注意上游只报 processing/completed，分不出「排队 vs 渲染」，
+    // 所以这里能测的是：总时长、首个上游响应用了多久、轮询了几次。
+    const startedAt = Date.now();
+    const elapsedSec = () => Math.round((Date.now() - startedAt) / 1000);
+    let polls = 0;
+    let firstStatusAt = 0;
+
     const pollErrors = { count: 0 };
     while (Date.now() < deadline) {
       await sleep(delayMs);
@@ -386,7 +419,9 @@ export class LocalTaskRunnerService {
       if (latestState.status === TaskStatus.failed) return;
 
       const status = await pollOnce(() => adapter.queryTaskStatus(providerTaskId), pollErrors);
+      polls += 1;
       if (!status) continue;
+      if (!firstStatusAt) firstStatusAt = Date.now();
       const providerData = mergeTaskProviderData(latestState.providerData, status.providerData);
 
       if (status.status === TaskStatus.completed) {
@@ -403,11 +438,18 @@ export class LocalTaskRunnerService {
           taskNo: task.taskNo,
           model,
         });
+        const firstReply = firstStatusAt ? Math.round((firstStatusAt - startedAt) / 1000) : -1;
+        this.logger.log(
+          `[timing] video ${task.taskNo} ${model.provider}: completed in ${elapsedSec()}s (first upstream reply ${firstReply}s, ${polls} polls)`,
+        );
         await this.markVideoCompleted(task, taskId, saved.url, thumbnailUrl, saved.storageKey, providerData);
         return;
       }
 
       if (status.status === TaskStatus.failed) {
+        this.logger.log(
+          `[timing] video ${task.taskNo} ${model.provider}: FAILED in ${elapsedSec()}s (${status.errorMessage ?? 'failed'}, ${polls} polls)`,
+        );
         await this.markVideoFailed(taskId, status.errorMessage ?? 'Task failed', providerData);
         return;
       }
@@ -415,6 +457,7 @@ export class LocalTaskRunnerService {
       await this.updateVideoNonTerminalState(taskId, status.status, attachTaskProgress(providerData, status, providerTaskId));
     }
 
+    this.logger.warn(`[timing] video ${task.taskNo} ${model.provider}: TIMEOUT after ${elapsedSec()}s (${polls} polls)`);
     await this.markVideoFailed(taskId, 'Task timeout');
   }
 

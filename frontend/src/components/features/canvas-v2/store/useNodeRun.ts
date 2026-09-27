@@ -9,6 +9,7 @@ import type { ApiTask } from '@/lib/api/types'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 import { useTranslations } from '@/i18n/client'
 import { classifyFailureMessage } from '@/lib/utils/failure'
+import { inspectMolaggPrompt, isMolaggVideoModel } from '@/lib/utils/molaggPromptGuard'
 import { urlToFile } from '@/lib/utils/urlToFile'
 
 import type { CanvasNode } from '../canvasV2.types'
@@ -135,6 +136,8 @@ export function useNodeRun() {
   const updateNodeData = useCanvasStore((state) => state.updateNodeData)
   const addNode = useCanvasStore((state) => state.addNode)
   const onConnect = useCanvasStore((state) => state.onConnect)
+  const pendingReattach = useCanvasStore((state) => state.pendingReattach)
+  const clearPendingReattach = useCanvasStore((state) => state.clearPendingReattach)
   /** taskId → 正在轮询的任务 */
   const watchers = useRef(new Map<string, Watcher>())
   /** 被「取消级联」叫停的节点，run 收尾时据此返回 cancelled */
@@ -204,6 +207,26 @@ export function useNodeRun() {
     [landResult, updateNodeData],
   )
 
+  // 刷新/重启后重新接回轮询：useBoardSync 挑出「存盘时还在生成、留着 taskId」的生成器节点交到这里。
+  // 接着盯——任务还在跑就继续显示进度，已经出片就自动落结果节点（watchTask 里的 landResult），失败就标失败。
+  useEffect(() => {
+    if (pendingReattach.length === 0) return
+    const entries = pendingReattach
+    clearPendingReattach()
+    for (const { nodeId, mode, taskId } of entries) {
+      updateNodeData(nodeId, { status: 'processing', taskId })
+      void watchTask(nodeId, mode, taskId, true).then((task) => {
+        if (!task) {
+          updateNodeData(nodeId, { status: 'idle', progress: null })
+        } else if (task.status === 'completed' && task.resultUrl) {
+          updateNodeData(nodeId, { status: 'completed', progress: 100, errorMessage: null })
+        } else {
+          updateNodeData(nodeId, { status: 'failed', errorMessage: task.errorMessage ?? t('node.generator.failed') })
+        }
+      })
+    }
+  }, [pendingReattach, clearPendingReattach, updateNodeData, watchTask, t])
+
   /**
    * 取消级联：不再等这些任务，视频任务顺手向后台发取消（图片接口没有取消，只能让它在后台跑完，
    * 结果去任务队列里找）。只停这份 runner 里正在跑的，不影响别的。
@@ -259,6 +282,17 @@ export function useNodeRun() {
       if (!options.prompt.trim()) {
         toast.error(t('errors.promptRequired'))
         return 'blocked'
+      }
+
+      // Molagg 内容审核在生成后才拦，踩雷要白等约一小时。提交前先扫一遍，命中就提醒、让用户自己决定
+      if (isMolaggVideoModel(model)) {
+        const hits = inspectMolaggPrompt(options.prompt)
+        if (hits.length > 0) {
+          const label = hits
+            .map((cat) => (cat === 'realHuman' ? t('errors.molaggContentRealHuman') : t('errors.molaggContentViolence')))
+            .join(' / ')
+          if (!window.confirm(t('errors.molaggContentWarn', { hits: label }))) return 'blocked'
+        }
       }
 
       // 连线真正起作用：把直接上游的文字 / 素材 / 提示词组收进来

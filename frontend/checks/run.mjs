@@ -24,6 +24,7 @@ const BUNDLES = {
   'ac.cjs': 'src/components/features/create/assetCompatibility.ts',
   'go.cjs': 'checks/go-entry.ts',
   'rp.cjs': 'src/lib/utils/relayPricing.ts',
+  'mg.cjs': 'src/lib/utils/molaggPromptGuard.ts',
 }
 
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx'

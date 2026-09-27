@@ -6,6 +6,8 @@ import { imageService, modelService, videoService } from '@/lib/api/services'
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 import { useTrackedTasks, type TrackedJob } from '@/lib/hooks/useTrackedTasks'
 import { classifyFailure } from '@/lib/utils/failure'
+import { inspectMolaggPrompt, isMolaggVideoModel } from '@/lib/utils/molaggPromptGuard'
+import { useTranslations } from '@/i18n/client'
 
 import { buildLandingParameters } from './landingGenerate'
 import type { LandingMode } from './landingHomePage.shared'
@@ -29,6 +31,7 @@ export function useLandingGeneration({ mode, userId }: { mode: LandingMode; user
   const [modelsLoading, setModelsLoading] = useState(false)
   const [modelsReloadToken, setModelsReloadToken] = useState(0)
   const { jobs, addPlaceholders, resolveJob, failJobs, clearFinished } = useTrackedTasks(userId)
+  const tErr = useTranslations('errors')
 
   useEffect(() => {
     if (!userId) {
@@ -59,6 +62,15 @@ export function useLandingGeneration({ mode, userId }: { mode: LandingMode; user
 
   const submit = useCallback(
     async ({ mode: jobMode, prompt, model, count, duration, referenceImages, size, gptImageModel }: SubmitInput) => {
+      // Molagg 内容审核在生成后才拦，踩雷要白等约一小时。提交前先扫一遍提示词，命中就提醒、让用户自己决定
+      if (jobMode === 'video' && isMolaggVideoModel(model)) {
+        const hits = inspectMolaggPrompt(prompt)
+        if (hits.length > 0) {
+          const label = hits.map((cat) => (cat === 'realHuman' ? tErr('molagg.realHuman') : tErr('molagg.violence'))).join(' / ')
+          if (!window.confirm(tErr('molagg.warn', { hits: label }))) return
+        }
+      }
+
       const keys = addPlaceholders(jobMode, jobMode === 'image' ? count : 1)
 
       let parameters: Record<string, unknown>
@@ -99,7 +111,7 @@ export function useLandingGeneration({ mode, userId }: { mode: LandingMode; user
         }),
       )
     },
-    [addPlaceholders, failJobs, resolveJob],
+    [addPlaceholders, failJobs, resolveJob, tErr],
   )
 
   const reloadModels = useCallback(() => setModelsReloadToken((token) => token + 1), [])

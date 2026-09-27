@@ -3,6 +3,11 @@
     "unauthorized": "Please sign in first.",
     "forbidden": "Access denied"
   },
+  "molagg": {
+    "realHuman": "photorealistic real people",
+    "violence": "graphic violence",
+    "warn": "This prompt may trip Molagg's content review ({hits}); if you submit, it will most likely be rejected after ~an hour of waiting with nothing to show. Suggested rewrite: use \"cinematic realistic style\" instead of \"real person / hyper-realistic\", and \"clashing / sparring / parrying\" instead of \"kill / slay\". Submit anyway?"
+  },
   "tasks": {
     "generateFailed": "Generation failed, please try again",
     "pollTimeout": "Polling timeout, please refresh manually",

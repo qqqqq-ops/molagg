@@ -283,7 +283,7 @@ export function ImageGeneratorNode({ id, data, selected }: NodeProps) {
       }
     >
       <textarea
-        className="cv2-textarea"
+        className="cv2-textarea nowheel"
         rows={3}
         value={String(data.prompt ?? '')}
         placeholder={t('node.imageGenerator.placeholder')}
@@ -457,7 +457,7 @@ export function VideoGeneratorNode({ id, data, selected }: NodeProps) {
       }
     >
       <textarea
-        className="cv2-textarea"
+        className="cv2-textarea nowheel"
         rows={3}
         value={String(data.prompt ?? '')}
         placeholder={t('node.videoGenerator.placeholder')}
@@ -546,7 +546,7 @@ export function AudioGeneratorNode({ id, data, selected }: NodeProps) {
   return (
     <NodeShell title={String(data.title ?? t('nodeKinds.audioGenerator'))} selected={selected} width={300}>
       <textarea
-        className="cv2-textarea"
+        className="cv2-textarea nowheel"
         rows={3}
         value={String(data.text ?? '')}
         placeholder={t('node.audioGenerator.placeholder')}

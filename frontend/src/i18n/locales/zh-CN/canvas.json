@@ -386,7 +386,10 @@
     "materialSwitch": "换成「{model}」",
     "materialNoAlternative": "现有模型里没有能收{kind}的",
     "mediaNotSent": "连进来的视频 / 音频这一版还不会发给模型，只有图片会作为参考",
-    "partialFailed": "{total} 条里有 {failed} 条没生成出来"
+    "partialFailed": "{total} 条里有 {failed} 条没生成出来",
+    "molaggContentRealHuman": "真人写实",
+    "molaggContentViolence": "杀戮暴力",
+    "molaggContentWarn": "这段提示词可能命中 Molagg 的内容审核（{hits}），提交后大概率要白等约一小时才被拒、不出片。建议改写：用「电影级写实风格 / 影视质感」代替「真人 / 超写实」，用「交锋、过招、格挡」代替「斩杀、杀敌」。仍要提交吗？"
   },
   "assistant": {
     "inspector": "节点详情",
@@ -400,7 +403,10 @@
     "empty": "用大白话说要做什么，比如「加一个视频创作节点，接在这张图后面」。",
     "placeholder": "说一句要做的事… (Enter 发送，Shift+Enter 换行)",
     "send": "发送",
-    "sending": "处理中…",
+    "queued": "排队中，等上一条回完再发",
+    "unqueue": "撤回",
+    "queueSend": "排队发送",
+    "sending": "思考中…",
     "clear": "清空对话",
     "applied": "已改动：新建 {added} 个 · 修改 {changed} 处 · 连线 {connected} 条 · 删除 {removed} 个",
     "rejected": "有 {count} 条指令看不懂，已跳过（鼠标悬停看原因）",
@@ -512,7 +518,8 @@
     "failed": "保存失败，改动还在本页",
     "offline": "不会自动保存",
     "offlineHint": "读不到存着的画布（没登录，或后台没开）。画布照样能用，但刷新就没了，记得先导出 JSON",
-    "staleRuns": "有 {count} 个节点上次还在生成，页面刷新后这里不再跟进，结果去任务队列看"
+    "staleRuns": "有 {count} 个节点上次还在生成，页面刷新后这里不再跟进，结果去任务队列看",
+    "reattaching": "有 {count} 个还在生成的节点，正在重新接回，出结果会自动显示在这里"
   },
   "library": {
     "loading": "加载中…",
@@ -520,11 +527,15 @@
     "loadMore": "加载更多",
     "refresh": "刷新",
     "assets": {
-      "title": "资产库",
+      "title": "作品与素材",
+      "sourceWorks": "我的作品",
+      "sourceLibrary": "资产库",
       "images": "图片",
       "videos": "视频",
       "search": "按提示词搜，回车",
+      "searchLibrary": "按名称搜，回车",
       "empty": "还没有生成过的作品",
+      "emptyLibrary": "资产库里还没有素材",
       "add": "放到画布上",
       "added": "已放到画布上"
     },

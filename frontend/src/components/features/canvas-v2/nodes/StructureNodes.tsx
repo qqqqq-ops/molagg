@@ -78,7 +78,7 @@ export function DirectorNode({ id, data, selected }: NodeProps) {
       <div className="cv2-field">
         <span className="cv2-field-label">{t('node.director.outline')}</span>
         <textarea
-          className="cv2-textarea"
+          className="cv2-textarea nowheel"
           rows={5}
           value={String(data.outline ?? '')}
           placeholder={t('node.director.outlinePlaceholder')}
@@ -96,7 +96,7 @@ export function ScriptNode({ id, data, selected }: NodeProps) {
   return (
     <NodeShell title={String(data.title ?? t('nodeKinds.script'))} selected={selected} width={320}>
       <textarea
-        className="cv2-textarea cv2-mono"
+        className="cv2-textarea cv2-mono nowheel"
         rows={8}
         value={String(data.script ?? '')}
         placeholder={t('node.script.placeholder')}
