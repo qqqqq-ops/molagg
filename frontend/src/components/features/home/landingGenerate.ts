@@ -9,6 +9,7 @@
 import type { ModelWithCapabilities } from '@/lib/api/types/modelCapabilities'
 
 import type { LandingMode } from './landingHomePage.shared'
+import { toPublicAssetUrl } from '@/lib/utils/assetUrl'
 
 export const LANDING_MAX_IMAGE_COUNT = 4
 export const LANDING_MAX_VIDEO_SECONDS = 30
@@ -266,6 +267,10 @@ export async function buildLandingParameters({
     else parameters.referenceImages = urls
   } else if (isSeedance2x) {
     parameters.referenceImages = await uploadVideoReference(referenceImages, 'seedance')
+  } else if (provider.includes('molagg')) {
+    // Molagg 自己去下载参考图：先传到本站拿地址，再补成完整公网地址（不收 base64）
+    const urls = await uploadVideoReference(referenceImages, 'seedance')
+    parameters.referenceImages = urls.map(toPublicAssetUrl)
   } else {
     parameters.referenceImages = await Promise.all(referenceImages.map(fileToDataUrl))
   }

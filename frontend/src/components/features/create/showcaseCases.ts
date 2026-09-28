@@ -102,7 +102,7 @@ export const VIDEO_SHOWCASE_CASES: CreateShowcaseCase[] = GENERATED_VIDEO_CASE_I
 /**
  * 参考创作的样片：2026-09-24 站长先在 draw.opusapi.xyz 用写实增强生成 4 张参考图（public/showcase/ref-<id>.jpg），
  * 再用 Molagg Seedance 2.5 的参考模式（mode=reference）各生成一条 30 秒视频，原文件未压缩。
- * 参考创作界面里暂时还没有 Molagg（要等部署后图片有公网地址），所以点案例只带提示词和比例，不切模型。
+ * 点案例只带提示词和比例，不切模型。
  */
 // version：同名文件换过内容时 +1，地址带上 ?v=，浏览器里的旧缓存就不会顶着不换（雨后女孩 2026-09-24 重做过一次）
 const REFERENCE_CASES: Array<{ id: string; title: string; prompt: string; version?: number }> = [

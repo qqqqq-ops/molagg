@@ -14,3 +14,13 @@ export function toSameOriginAsset<T extends string | null | undefined>(url: T): 
   if (typeof url !== 'string') return url
   return url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1') as T
 }
+
+/**
+ * 发给上游、要上游自己去下载的地址（Molagg 参考图）：必须是完整的公网地址。
+ * 先按上面归一成相对 `/uploads/...`，再补上当前站点的域名——这样后端 APP_PUBLIC_URL 没配好（还是 localhost）也不怕。
+ * 在本机访问时补出来的还是 localhost，上游下载不到，后端会直接报「参考图必须是公网地址」。
+ */
+export function toPublicAssetUrl(url: string): string {
+  const sameOrigin = toSameOriginAsset(url)
+  return sameOrigin.startsWith('/') && typeof window !== 'undefined' ? `${window.location.origin}${sameOrigin}` : sameOrigin
+}

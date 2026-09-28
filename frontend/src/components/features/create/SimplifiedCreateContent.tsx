@@ -30,7 +30,7 @@ import { readRemixPayload } from '@/lib/utils/remix'
 import { useStudioBodySkin } from '@/lib/hooks/useStudioBodySkin'
 import { classifyFailure, isConfigurationFailure } from '@/lib/utils/failure'
 import { cn } from '@/lib/utils/cn'
-import { toSameOriginAsset } from '@/lib/utils/assetUrl'
+import { toPublicAssetUrl, toSameOriginAsset } from '@/lib/utils/assetUrl'
 import { useTrackedTasks } from '@/lib/hooks/useTrackedTasks'
 import { pickDefaultModelId } from '@/lib/utils/defaultModels'
 import { inspectMolaggPrompt, isMolaggVideoModel } from '@/lib/utils/molaggPromptGuard'
@@ -2220,6 +2220,14 @@ export function SimplifiedCreateContent() {
             if (base64Array.length > 1) {
               parameters.lastFrame = base64Array[1]
             }
+          }
+        } else if (isMolaggVideoModel(selectedExecutionModel ?? selectedModel)) {
+          // Molagg 自己去下载参考图：不收 base64，要完整公网地址。首尾帧创作里它只有首帧，只发第一张
+          if (videoInputImages.length > 0 || selectedProjectImageAssets.length > 0) {
+            const uploadedUrls = await uploadReferenceInputs('image', videoInputImages)
+            const imageUrls = [...uploadedUrls, ...selectedProjectImageAssets.map((asset) => asset.url)].map(toPublicAssetUrl)
+            if (createMode === 'frames') parameters.firstFrame = imageUrls[0]
+            else parameters.referenceImages = imageUrls
           }
         } else if (videoInputImages.length > 0 || selectedProjectImageAssets.length > 0) {
           const [localBase64Array, projectBase64Array] = await Promise.all([

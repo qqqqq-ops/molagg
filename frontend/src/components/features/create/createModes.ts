@@ -44,8 +44,8 @@ export function resolveVideoModelKind(name: string): VideoModelKind | null {
  * - 参考创作 = 参考图片 / 视频 / 音频 + 大量提示词引导。
  * 只能纯文字（t2v）或只收首帧（可灵 / Sora / Veo / 海螺 / Vidu / happyhorse-i2v）的模型**不在创作页**，画布里照样能用。
  *
- * 临时例外（站长拍板）：Molagg 的 Seedance 2.5 只能纯文字（它要公网图片地址，本站在本机跑给不了），
- * 先放在首尾帧创作里、允许不带帧；以后能给公网图片了再按规矩收紧。
+ * Molagg 的 Seedance 2.5（2026-09-28 部署到公网后）：参考图要公网地址，现在上传的图有了，放进参考创作。
+ * 首尾帧创作里仍保留它（允许不带帧 = 纯文字）；它只收首帧、没有尾帧，带图时只把第一张当首帧发。
  */
 export function getModelModes(model: ModelWithCapabilities): CreateMode[] {
   const name = modelName(model)
@@ -62,13 +62,13 @@ export function getModelModes(model: ModelWithCapabilities): CreateMode[] {
   // Seedance 2.x 既吃首尾帧也吃参考素材（提交逻辑里 hasDoubaoSeedance20FrameInputs 就是在二选一）
   if (isSeedance2x) return ['frames', 'references']
 
-  if (isFramesOptionalModel(model)) return ['frames']
+  if (isFramesOptionalModel(model)) return ['frames', 'references']
 
   // 可灵 / Sora / Veo / 海螺 / Vidu：只有首帧、没有尾帧，也没有参考素材通道——不在创作页
   return []
 }
 
-/** 首尾帧创作里的临时例外：允许不带帧（目前只有 Molagg Seedance 2.5，见上） */
+/** 首尾帧创作里的例外：允许不带帧（目前只有 Molagg Seedance 2.5，见上） */
 export function isFramesOptionalModel(model: ModelWithCapabilities | null | undefined) {
   return normalize(model?.provider).includes('molagg')
 }

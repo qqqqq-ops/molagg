@@ -355,16 +355,18 @@ export function buildModelCapabilities(model: AiModel, providerConfig?: ModelPro
     }
 
     if (providerKey === 'molagg') {
-      // Molagg 按次 Seedance：只接公网图片直链，本站上传的参考图是本机地址、它下载不到，所以先只开文生视频
-      caps.supports.imageInput = false;
-      caps.supports.multiImageInput = false;
+      // Molagg 按次 Seedance：参考图只接公网直链（上游自己去下载）。站点部署到公网域名后，
+      // 本站上传的图就是公网地址了，所以开放图片输入（前端提交前会把 /uploads 地址补成完整公网地址）
+      caps.supports.imageInput = true;
+      caps.supports.multiImageInput = true;
+      caps.limits.maxInputImages = 9;
       caps.operations = [
         {
           key: 'molagg.video',
           execution: 'async',
           description: 'Molagg Seedance 按次视频（固定 30 秒）',
           requiredParameters: ['model', 'prompt'],
-          optionalParameters: ['ratio', 'resolution'],
+          optionalParameters: ['ratio', 'resolution', 'referenceImages', 'firstFrame'],
         },
       ];
       return withAdminOverrides(caps, model, remoteModel);

@@ -34,8 +34,8 @@ for (const [id, name] of [['11','可灵'],['12','Sora'],['13','Veo'],['14','海�
   check(`${name} 只收首帧、没参考通道 → 不在创作页`, modesOf(id).length === 0)
 }
 const molagg = M('16','molagg','seedance-2-5-special')
-check('Molagg Seedance 2.5（临时例外）→ 首尾帧创作，可以不带帧',
-  m.getModelModes(molagg).join() === 'frames' && m.isFramesOptionalModel(molagg) === true)
+check('Molagg Seedance 2.5 → 首尾帧创作（可以不带帧）+ 参考创作',
+  m.getModelModes(molagg).join() === 'frames,references' && m.isFramesOptionalModel(molagg) === true)
 check('别的模型都不是「可以不带帧」', !m.isFramesOptionalModel(models.find(x=>x.id==='9')) && !m.isFramesOptionalModel(null))
 
 console.log('\n— 按模式过滤 —')
