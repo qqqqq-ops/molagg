@@ -27,6 +27,8 @@ import type {
   UpdateConversationRequest,
 } from '../types/chat'
 
+const LONG_RUNNING_REQUEST_TIMEOUT_MS = 5 * 60 * 1000
+
 interface StreamHandlers {
   onStart?: (event: ChatStreamStartEvent) => void
   onDelta?: (chunk: string) => void
@@ -74,7 +76,10 @@ export const chatService = {
     conversationId: string,
     data: SendMessageRequest
   ): Promise<SendMessageResponse> => {
-    return apiClient.post(`/chat/conversations/${conversationId}/messages`, data)
+    // 会先思考再回答的模型经常超过默认的 30 秒，跟提示词优化一样放宽到 5 分钟
+    return apiClient.post(`/chat/conversations/${conversationId}/messages`, data, {
+      timeout: LONG_RUNNING_REQUEST_TIMEOUT_MS,
+    })
   },
 
   createImageTask: async (

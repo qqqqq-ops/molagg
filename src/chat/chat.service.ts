@@ -22,6 +22,7 @@ import {
 import { normalizeProviderKey } from '../common/utils/provider.util';
 import { canCancelVideoTask, supportsVideoTaskCancel } from '../common/utils/video-task-cancel.util';
 import { parseSqliteJson, toSqliteJson } from '../common/utils/sqlite-json.util';
+import { TRANSIENT_UPSTREAM_MESSAGE, TRANSIENT_UPSTREAM_STATUSES, retryOnTransientStatus } from '../common/utils/transient-retry.util';
 import { buildModelCapabilities } from '../models/model-capabilities';
 import { ChatFileParserService } from './chat-file-parser.service';
 import {
@@ -1363,14 +1364,23 @@ export class ChatService {
     const timer = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const response = await fetch(this.buildChatCompletionUrl(conversation.model.channel.baseUrl), {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
+      const response = await retryOnTransientStatus(
+        () =>
+          fetch(this.buildChatCompletionUrl(conversation.model.channel.baseUrl), {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          }),
+        (res) => res.status,
+        (res) => res.body?.cancel(),
+      );
 
       if (!response.ok) {
+        if (TRANSIENT_UPSTREAM_STATUSES.has(response.status)) {
+          await response.body?.cancel().catch(() => undefined);
+          throw new BadRequestException(TRANSIENT_UPSTREAM_MESSAGE);
+        }
         const body = await response.text().catch(() => '');
         const parsed = this.tryParseJson(body);
         const message =
@@ -1611,14 +1621,21 @@ export class ChatService {
 
     const timeout = Math.max(5_000, Math.min(conversation.model.channel.timeout ?? 60_000, 600_000));
 
-    const response = await axios.post(url, payload, {
-      headers,
-      timeout,
-      validateStatus: () => true,
-    });
+    const response = await retryOnTransientStatus(
+      () =>
+        axios.post(url, payload, {
+          headers,
+          timeout,
+          validateStatus: () => true,
+        }),
+      (res) => res.status,
+    );
 
     const body = response.data;
 
+    if (TRANSIENT_UPSTREAM_STATUSES.has(response.status)) {
+      throw new BadRequestException(TRANSIENT_UPSTREAM_MESSAGE);
+    }
     if (response.status >= 400) {
       const message = this.extractErrorMessage(body) ?? `Upstream chat request failed (${response.status})`;
       throw new BadRequestException(message);
@@ -1945,6 +1962,8 @@ export class ChatService {
   private buildChatCompletionUrl(baseUrl: string): string {
     const trimmed = baseUrl.replace(/\/+$/, '');
     if (/\/chat\/completions$/i.test(trimmed)) return trimmed;
+    // 只填了域名（如 https://opusapi.xyz）时补 /v1，否则中转站回 404；带了路径的原样尊重
+    if (/^https?:\/\/[^/]+$/i.test(trimmed)) return `${trimmed}/v1/chat/completions`;
     return `${trimmed}/chat/completions`;
   }
 

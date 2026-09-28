@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import { TRANSIENT_UPSTREAM_MESSAGE, TRANSIENT_UPSTREAM_STATUSES, retryOnTransientStatus } from '../common/utils/transient-retry.util';
 import { UserCredentialsService } from '../credentials/user-credentials.service';
 import {
   MIDJOURNEY_SYSTEM_PROMPT,
@@ -191,23 +192,31 @@ export class PromptOptimizeService {
         { role: 'user', content: userContent },
       ];
 
-      const apiUrl = `${settings.apiBaseUrl.replace(/\/+$/, '')}/chat/completions`;
-      const apiRes = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: settings.modelName,
-          messages,
-          stream: false,
-        }),
-      });
+      const baseUrl = settings.apiBaseUrl.replace(/\/+$/, '');
+      // 只填了域名时补 /v1，跟对话那边一致
+      const apiUrl = /^https?:\/\/[^/]+$/i.test(baseUrl) ? `${baseUrl}/v1/chat/completions` : `${baseUrl}/chat/completions`;
+      const apiRes = await retryOnTransientStatus(
+        () =>
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${settings.apiKey}`,
+            },
+            body: JSON.stringify({
+              model: settings.modelName,
+              messages,
+              stream: false,
+            }),
+          }),
+        (res) => res.status,
+        (res) => res.body?.cancel(),
+      );
 
       if (!apiRes.ok) {
         const errText = await apiRes.text().catch(() => 'Unknown error');
         this.logger.error(`AI API error: ${apiRes.status} ${errText}`);
+        if (TRANSIENT_UPSTREAM_STATUSES.has(apiRes.status)) throw new BadRequestException(TRANSIENT_UPSTREAM_MESSAGE);
         throw new BadRequestException(`AI 服务请求失败 (${apiRes.status})`);
       }
 

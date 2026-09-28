@@ -79,13 +79,14 @@ function NodeInspector() {
 
 export function AssistantPanel() {
   const t = useTranslations('canvas')
-  const { models, modelId, setModelId, turns, busy, send, reset } = useAssistant()
+  const { models, modelId, setModelId, turns, busy, send, unqueue, reset } = useAssistant()
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
 
   const submit = () => {
-    if (!draft.trim() || busy) return
-    void send(draft)
+    // 助手还在想时也能发，发出去的先排队
+    if (!draft.trim()) return
+    send(draft)
     setDraft('')
     // 发完滚到底；用 requestAnimationFrame 等这一帧渲染完
     requestAnimationFrame(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight }))
@@ -140,6 +141,14 @@ export function AssistantPanel() {
                 }
               >
                 <p>{turn.text}</p>
+                {turn.queued ? (
+                  <p className="cv2-bubble-meta">
+                    {t('assistant.queued')}{' '}
+                    <button type="button" className="cv2-link-button" onClick={() => unqueue(turn.id)}>
+                      {t('assistant.unqueue')}
+                    </button>
+                  </p>
+                ) : null}
                 {turn.applied && (turn.applied.added.length || turn.applied.changed || turn.applied.connected || turn.applied.removed) ? (
                   <p className="cv2-bubble-meta">
                     {t('assistant.applied', {
@@ -158,13 +167,14 @@ export function AssistantPanel() {
               </div>
             ))
           )}
+          {busy ? <div className="cv2-bubble cv2-bubble-pending">{t('assistant.sending')}</div> : null}
         </div>
 
         <textarea
           className="cv2-textarea"
           rows={3}
           value={draft}
-          disabled={busy || !modelId}
+          disabled={!modelId}
           placeholder={t('assistant.placeholder')}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
@@ -185,10 +195,10 @@ export function AssistantPanel() {
             type="button"
             className="cv2-mini-button cv2-mini-primary"
             onClick={submit}
-            disabled={busy || !draft.trim() || !modelId}
+            disabled={!draft.trim() || !modelId}
           >
             <Send className="h-3 w-3" />
-            {busy ? t('assistant.sending') : t('assistant.send')}
+            {busy ? t('assistant.queueSend') : t('assistant.send')}
           </button>
         </div>
 

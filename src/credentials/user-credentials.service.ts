@@ -201,7 +201,7 @@ export class UserCredentialsService {
           provider: SHARED_CHAT_PROVIDER,
           baseUrl,
           apiKey: null,
-          timeout: 120_000,
+          timeout: 240_000, // 文本中转站慢的时候只回一个字都要 90 秒，2 分钟不够
           maxRetry: 2,
           status: ApiChannelStatus.active,
           priority: 0,

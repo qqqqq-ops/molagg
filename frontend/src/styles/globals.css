@@ -2439,6 +2439,16 @@
   color: #d99b45;
 }
 
+.cv2-bubble-pending {
+  color: var(--studio-faint);
+}
+
+.cv2-link-button {
+  color: var(--studio-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .cv2-assistant-actions {
   display: flex;
   justify-content: space-between;
